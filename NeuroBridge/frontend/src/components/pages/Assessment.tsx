@@ -25,8 +25,8 @@ export function AssessmentPage() {
   };
 
   const handleContinue = () => {
-    // Navigate to dashboard or home
-    window.location.href = '/';
+    // Navigate to dashboard
+    window.location.href = '/dashboard';
   };
 
   if (testState === 'test') {
