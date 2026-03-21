@@ -1,16 +1,18 @@
 import { motion } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
-import { getTranslation } from '../../utils/translations';
 
 export function ProgressTracking() {
-  const { language, testScore } = useDyslexia();
-  const t = getTranslation(language);
+  const { testScore, completedQuizzes, quizScores } = useDyslexia();
 
-  // Mock data - in real app, this would come from backend
+  const averageAccuracy = quizScores.length > 0  
+    ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length)
+    : 0;
+
+  // Mock data combined with dynamic stats
   const progressData = {
     learningTime: 12.5, // hours
-    coursesCompleted: 3,
-    accuracy: 78,
+    coursesCompleted: completedQuizzes,
+    accuracy: averageAccuracy,
     weeklyActivity: [45, 52, 38, 65, 58, 72, 68],
     skillGrowth: [
       { skill: 'Reading', level: 65 },
@@ -117,7 +119,7 @@ export function ProgressTracking() {
                 initial={{ height: 0 }}
                 animate={{ height: `${(value / 100) * 100}%` }}
                 transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
-                className="w-full bg-gradient-to-t from-blue-500 to-purple-500 rounded-t-lg min-h-[20px]"
+                className="w-full bg-linear-to-t from-blue-500 to-purple-500 rounded-t-lg min-h-[20px]"
               />
               <span className="text-xs font-semibold text-gray-500">
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
@@ -169,7 +171,7 @@ export function ProgressTracking() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
-        className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100"
+        className="bg-linear-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100"
       >
         <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
           <span className="text-2xl">🏆</span>

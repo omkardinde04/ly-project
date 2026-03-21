@@ -92,6 +92,23 @@ export interface Translation {
   yourPersonalizedDashboard: string;
   startLearning: string;
   trackProgress: string;
+  
+  // Dashboard Menu
+  navHome: string;
+  navLearning: string;
+  navQuizzes: string;
+  navProgress: string;
+  navSettings: string;
+  
+  // Accessibility
+  accPreferences: string;
+  accVisual: string;
+  accAudio: string;
+  saveChanges: string;
+  
+  // Preview
+  previewTitle: string;
+  previewText: string;
 }
 
 const translations: Record<Language, Translation> = {
@@ -187,6 +204,23 @@ const translations: Record<Language, Translation> = {
     yourPersonalizedDashboard: 'Your Personalized Dashboard',
     startLearning: 'Start Learning',
     trackProgress: 'Track Progress',
+    
+    // Dashboard Menu
+    navHome: 'Home',
+    navLearning: 'Learning',
+    navQuizzes: 'Tests & Quizzes',
+    navProgress: 'Progress',
+    navSettings: 'Accessibility',
+    
+    // Accessibility
+    accPreferences: 'Accessibility Preferences',
+    accVisual: 'Visual Adjustments',
+    accAudio: 'Audio & Localization',
+    saveChanges: 'Save Changes',
+    
+    // Preview
+    previewTitle: 'The Reading Brain',
+    previewText: 'Neuroplasticity allows the brain to form new connections—proving that learning differences are pathways, not roadblocks. Our platform adapts to your visual processing speed and structural preferences seamlessly.',
   },
   
   hi: {
@@ -281,6 +315,23 @@ const translations: Record<Language, Translation> = {
     yourPersonalizedDashboard: 'आपका वैयक्तिकृत डैशबोर्ड',
     startLearning: 'सीखना शुरू करें',
     trackProgress: 'प्रगति ट्रैक करें',
+    
+    // Dashboard Menu
+    navHome: 'होम',
+    navLearning: 'सीखना',
+    navQuizzes: 'प्रश्नोत्तरी',
+    navProgress: 'प्रगति',
+    navSettings: 'पहुंच',
+    
+    // Accessibility
+    accPreferences: 'पहुंच प्राथमिकताएं',
+    accVisual: 'दृश्य समायोजन',
+    accAudio: 'ऑडियो और भाषा',
+    saveChanges: 'परिवर्तन सहेजें',
+    
+    // Preview
+    previewTitle: 'पढ़ने वाला मस्तिष्क',
+    previewText: 'न्यूरोप्लास्टी मस्तिष्क को नए संबंध बनाने की अनुमति देती है-यह साबित करते हुए कि सीखने के अंतर रास्ते हैं, बाधाएं नहीं। हमारा मंच आपके बिना किसी परेशानी के अनुकूल होता है।',
   },
   
   mr: {
@@ -375,6 +426,23 @@ const translations: Record<Language, Translation> = {
     yourPersonalizedDashboard: 'तुमचे वैयक्तिकृत डॅशबोर्ड',
     startLearning: 'शिकणे सुरू करा',
     trackProgress: 'प्रगती ट्रॅक करा',
+    
+    // Dashboard Menu
+    navHome: 'मुख्यपृष्ठ',
+    navLearning: 'शिक्षण',
+    navQuizzes: 'प्रश्नमंजुषा',
+    navProgress: 'प्रगती',
+    navSettings: 'प्रवेशयोग्यता',
+    
+    // Accessibility
+    accPreferences: 'प्रवेशयोग्यता प्राधान्ये',
+    accVisual: 'दृश्य समायोजन',
+    accAudio: 'ऑडिओ आणि भाषा',
+    saveChanges: 'बदल जतन करा',
+    
+    // Preview
+    previewTitle: 'वाचन करणारा मेंदू',
+    previewText: 'न्यूरोप्लास्टिसिटी मेंदूला नवीन जोडणी बनवण्यास अनुमती देते - हे सिद्ध करते की शिकण्यातील फरक हे मार्ग आहेत, अडथळे नाहीत. आमचा प्लॅटफॉर्म आपल्यासाठी अखंडपणे अनुकूल करतो.',
   },
 };
 

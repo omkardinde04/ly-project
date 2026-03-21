@@ -7,15 +7,12 @@ import { AudioControl } from '../ui/AudioControl';
 import { DashboardSidebar } from '../dashboard/DashboardSidebar';
 import { MyLearning } from '../dashboard/MyLearning';
 import { ProgressTracking } from '../dashboard/ProgressTracking';
-import { Opportunities } from '../dashboard/Opportunities';
-import { NotebookLLM } from '../dashboard/NotebookLLM';
-import { Community } from '../dashboard/Community';
-import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
+import { Quizzes } from '../dashboard/Quizzes';
 import { Profile } from '../dashboard/Profile';
+import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
 
 export function Dashboard() {
-  const { dyslexiaLevel, testScore, isTestCompleted, language } = useDyslexia();
-  const t = getTranslation(language);
+  const { testScore, isTestCompleted } = useDyslexia();
   const [activeTab, setActiveTab] = useState('home');
 
   // Redirect to assessment if not completed
@@ -32,23 +29,19 @@ export function Dashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeDashboard activeTab={activeTab} onNavigate={setActiveTab} />;
+        return <HomeDashboard onNavigate={setActiveTab} />;
       case 'learning':
         return <MyLearning />;
       case 'progress':
         return <ProgressTracking />;
-      case 'opportunities':
-        return <Opportunities />;
-      case 'notebook':
-        return <NotebookLLM />;
-      case 'community':
-        return <Community />;
+      case 'quizzes':
+        return <Quizzes />;
       case 'profile':
         return <Profile />;
       case 'accessibility':
         return <AccessibilitySettings />;
       default:
-        return <HomeDashboard activeTab={activeTab} onNavigate={setActiveTab} />;
+        return <HomeDashboard onNavigate={setActiveTab} />;
     }
   };
 
@@ -65,8 +58,7 @@ export function Dashboard() {
   );
 }
 
-// Home Dashboard Component
-function HomeDashboard({ activeTab, onNavigate }: { activeTab: string, onNavigate: (tab: string) => void }) {
+function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { dyslexiaLevel, testScore, language } = useDyslexia();
   const t = getTranslation(language);
 
@@ -129,19 +121,19 @@ function HomeDashboard({ activeTab, onNavigate }: { activeTab: string, onNavigat
 
         {/* Profile Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
+          <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
             <div className="text-sm font-semibold text-blue-600 mb-2">Your Level</div>
             <div className={`inline-block px-4 py-2 rounded-full font-bold ${getLevelColor(dyslexiaLevel)}`}>
               {dyslexiaLevel === 'none' ? 'Standard' : dyslexiaLevel === 'mild' ? 'Mild Support' : dyslexiaLevel === 'moderate' ? 'Moderate Support' : 'Enhanced Support'}
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6">
+          <div className="bg-linear-to-br from-green-50 to-green-100 rounded-2xl p-6">
             <div className="text-sm font-semibold text-green-600 mb-2">Assessment Score</div>
             <div className="text-3xl font-black text-green-700">{testScore}</div>
           </div>
           
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6">
+          <div className="bg-linear-to-br from-purple-50 to-purple-100 rounded-2xl p-6">
             <div className="text-sm font-semibold text-purple-600 mb-2">Accessibility Mode</div>
             <div className="text-lg font-bold text-purple-700">Active ✓</div>
           </div>
@@ -152,11 +144,9 @@ function HomeDashboard({ activeTab, onNavigate }: { activeTab: string, onNavigat
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
           { id: 'learning', icon: '📚', title: 'My Learning', desc: 'Personalized courses' },
-          { id: 'opportunities', icon: '🚀', title: 'Opportunities', desc: 'Jobs & competitions' },
-          { id: 'notebook', icon: '🧠', title: 'Notebook LLM', desc: 'AI learning assistant' },
+          { id: 'quizzes', icon: '📝', title: 'Tests & Quizzes', desc: 'Interactive practice' },
           { id: 'progress', icon: '📊', title: 'Track Progress', desc: 'See your growth' },
-          { id: 'community', icon: '👥', title: 'Community', desc: 'Connect with others' },
-          { id: 'global', icon: '🌍', title: 'Global Map', desc: 'Worldwide insights' },
+          { id: 'accessibility', icon: '⚙️', title: 'Accessibility', desc: 'Customize experience' },
         ].map((item, index) => (
           <motion.div
             key={item.id}

@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff, Palette } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
-import { speakText, stopSpeech } from '../../utils/textToSpeech';
+import { speakText, stopSpeech, changeSpeechSpeed } from '../../utils/textToSpeech';
 
 export function Login() {
     const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const { isDyslexiaMode, toggleDyslexiaMode, language, setLanguage } = useDyslexia();
+    const { isDyslexiaMode, toggleDyslexiaMode, language, setLanguage, audioSpeed, setAudioSpeed } = useDyslexia();
     const t = getTranslation(language);
     const navigate = useNavigate();
     const [isPlaying, setIsPlaying] = useState(false);
@@ -23,9 +23,14 @@ export function Login() {
             stopSpeech();
             setIsPlaying(false);
         } else {
-            speakText(speechText, language, 1);
+            speakText(speechText, language, audioSpeed);
             setIsPlaying(true);
         }
+    };
+
+    const handleSpeedChange = (newSpeed: number) => {
+        setAudioSpeed(newSpeed);
+        changeSpeechSpeed(newSpeed);
     };
 
     const handleLogin = () => {
@@ -89,6 +94,30 @@ export function Login() {
                                 </>
                             )}
                         </button>
+                        
+                        {/* Speed Controls */}
+                        <div className="flex items-center bg-blue-50/50 rounded-full p-0.5 ml-4 border border-blue-100/30">
+                          <button
+                            onClick={() => handleSpeedChange(0.5)}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
+                              audioSpeed === 0.5
+                                ? 'bg-white text-blue-600 shadow-sm shadow-blue-900/5'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                            }`}
+                          >
+                            0.5x
+                          </button>
+                          <button
+                            onClick={() => handleSpeedChange(1)}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
+                              audioSpeed === 1
+                                ? 'bg-white text-blue-600 shadow-sm shadow-blue-900/5'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                            }`}
+                          >
+                            1.0x
+                          </button>
+                        </div>
                         
                         {/* Divider */}
                         <div className="h-5 w-px bg-[#D1E4F9] mx-4"></div>

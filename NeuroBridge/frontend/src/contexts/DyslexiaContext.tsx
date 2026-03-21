@@ -12,6 +12,8 @@ interface DyslexiaSettings {
   dyslexiaLevel: DyslexiaLevel;
   isTestCompleted: boolean;
   testScore: number | null;
+  completedQuizzes: number;
+  quizScores: number[];
 }
 
 interface DyslexiaContextType extends DyslexiaSettings {
@@ -22,6 +24,7 @@ interface DyslexiaContextType extends DyslexiaSettings {
   setDyslexiaLevel: (level: DyslexiaLevel) => void;
   markTestCompleted: (score: number) => void;
   resetTest: () => void;
+  completeQuiz: (score: number) => void;
 }
 
 const defaultSettings: DyslexiaSettings = {
@@ -32,6 +35,8 @@ const defaultSettings: DyslexiaSettings = {
   dyslexiaLevel: 'none',
   isTestCompleted: false,
   testScore: null,
+  completedQuizzes: 0,
+  quizScores: [],
 };
 
 const DyslexiaContext = createContext<DyslexiaContextType | undefined>(undefined);
@@ -80,7 +85,17 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       ...prev, 
       isTestCompleted: false, 
       testScore: null,
-      dyslexiaLevel: 'none'
+      dyslexiaLevel: 'none',
+      completedQuizzes: 0,
+      quizScores: []
+    }));
+  };
+
+  const completeQuiz = (score: number) => {
+    setSettings(prev => ({
+      ...prev,
+      completedQuizzes: prev.completedQuizzes + 1,
+      quizScores: [...prev.quizScores, score]
     }));
   };
 
@@ -101,6 +116,7 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       setDyslexiaLevel,
       markTestCompleted,
       resetTest,
+      completeQuiz,
     }}>
       {children}
     </DyslexiaContext.Provider>

@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
-import { getTranslation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
 
 export function Profile() {
-  const { language, dyslexiaLevel, testScore } = useDyslexia();
-  const t = getTranslation(language);
+  const { dyslexiaLevel, testScore } = useDyslexia();
   
   const [formData, setFormData] = useState({
     location: '',
@@ -24,7 +22,7 @@ export function Profile() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl ">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-black text-gray-800 mb-2">Your Profile</h1>
@@ -35,7 +33,7 @@ export function Profile() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white"
+        className="bg-linear-to-r from-blue-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white"
       >
         <div className="flex items-center gap-4 mb-4">
           <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
@@ -51,10 +49,12 @@ export function Profile() {
           </div>
         </div>
         
-        <AudioControl 
-          text={`Your profile shows your dyslexia level as ${dyslexiaLevel} with a score of ${testScore}. Complete the form below to personalize your experience.`} 
-          showControls={true} 
-        />
+        <div className="mt-4 flex w-fit bg-white/10 rounded-full shadow-inner p-1 backdrop-blur-xs border border-white/20">
+          <AudioControl 
+            text={`Your profile shows your dyslexia level as ${dyslexiaLevel} with a score of ${testScore}. Complete the form below to personalize your experience.`} 
+            showControls={true} 
+          />
+        </div>
       </motion.div>
 
       {/* Progress Indicator */}
@@ -68,7 +68,7 @@ export function Profile() {
           <span className="font-bold text-blue-600">40%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full w-[40%]" />
+          <div className="bg-linear-to-r from-blue-500 to-purple-500 h-full rounded-full w-[40%]" />
         </div>
         <p className="text-sm text-gray-600 mt-3">Complete all fields to unlock personalized recommendations</p>
       </motion.div>
@@ -250,7 +250,7 @@ export function Profile() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           type="submit"
-          className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-2xl shadow-lg transition-all transform hover:scale-105"
+          className="w-full py-4 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-2xl shadow-lg transition-all transform hover:scale-105"
         >
           💾 Save Profile
         </motion.button>

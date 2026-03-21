@@ -1,15 +1,20 @@
 import { useState } from 'react';
-import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useDyslexia, type Language } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
 import { speakText, stopSpeech, changeSpeechSpeed } from '../../utils/textToSpeech';
 
 interface AudioControlProps {
   text?: string;
   showControls?: boolean;
+  overrideLanguage?: Language;
+  overrideSpeed?: number;
 }
 
-export function AudioControl({ text = '', showControls = true }: AudioControlProps) {
-  const { language, audioSpeed, setAudioSpeed } = useDyslexia();
+export function AudioControl({ text = '', showControls = true, overrideLanguage, overrideSpeed }: AudioControlProps) {
+  const context = useDyslexia();
+  const language = overrideLanguage || context.language;
+  const audioSpeed = overrideSpeed || context.audioSpeed;
+  
   const t = getTranslation(language);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -24,7 +29,9 @@ export function AudioControl({ text = '', showControls = true }: AudioControlPro
   };
 
   const handleSpeedChange = (newSpeed: number) => {
-    setAudioSpeed(newSpeed);
+    if (!overrideSpeed) {
+      context.setAudioSpeed(newSpeed);
+    }
     changeSpeechSpeed(newSpeed);
   };
 
@@ -64,26 +71,19 @@ export function AudioControl({ text = '', showControls = true }: AudioControlPro
       {/* Sleek Segmented Speed Controls */}
       {showControls && (
         <div className="flex items-center bg-gray-100/50 rounded-full p-0.5 border border-gray-100">
-          <button
-            onClick={() => handleSpeedChange(0.5)}
-            className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
-              audioSpeed === 0.5
-                ? 'bg-white text-blue-600 shadow-sm shadow-blue-900/5'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-            }`}
-          >
-            0.5x
-          </button>
-          <button
-            onClick={() => handleSpeedChange(1)}
-            className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
-              audioSpeed === 1
-                ? 'bg-white text-blue-600 shadow-sm shadow-blue-900/5'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-            }`}
-          >
-            1.0x
-          </button>
+          {[0.5, 1.0, 1.5].map(speedVal => (
+            <button
+              key={speedVal}
+              onClick={() => handleSpeedChange(speedVal)}
+              className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
+                audioSpeed === speedVal
+                  ? 'bg-white text-blue-600 shadow-sm shadow-blue-900/5'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+              }`}
+            >
+              {speedVal}x
+            </button>
+          ))}
         </div>
       )}
 

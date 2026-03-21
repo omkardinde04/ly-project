@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { DyslexiaProvider, useDyslexia } from './contexts/DyslexiaContext';
 import { Navbar } from './components/layout/Navbar'
@@ -27,11 +27,14 @@ function Layout({ children }: { children: ReactNode }) {
 }
 
 function AppContent() {
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/dashboard');
+
   return (
     <Layout>
-      <div className="min-h-screen bg-[#DBEAF5]">
-        <Navbar links={["Home", "Learn", "Opportunities", "Community", "About"]} showLogin={true} />
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#DBEAF5] flex flex-col">
+        {!isDashboard && <Navbar links={["Home", "Learn", "Opportunities", "Community", "About"]} showLogin={true} />}
+        <main className={`flex-1 ${isDashboard ? "" : "max-w-7xl mx-auto py-6 w-full sm:px-6 lg:px-8"}`}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -39,7 +42,7 @@ function AppContent() {
             <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </main>
-        <Footer />
+        {!isDashboard && <Footer />}
       </div>
     </Layout>
   );
