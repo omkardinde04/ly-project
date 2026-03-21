@@ -16,7 +16,7 @@
 
 /* Dyslexia-Friendly Styles */
 .dyslexia-mode {
-  font-family: 'Open Dyslexic', cursive !important;
+  font-family: 'Lexend', 'Comic Sans MS', sans-serif !important;
   font-size: 18px !important;
   line-height: 2 !important;
   letter-spacing: 0.12em !important;
@@ -24,7 +24,7 @@
 }
 
 .dyslexia-mode * {
-  font-family: 'Open Dyslexic', cursive !important;
+  font-family: 'Lexend', 'Comic Sans MS', sans-serif !important;
 }
 
 .mild-dyslexia {

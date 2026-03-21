@@ -2,18 +2,11 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
-import { AudioControl } from '../ui/AudioControl';
-
+// Removed AudioControl import
 export function Hero() {
   const navigate = useNavigate();
   const { language } = useDyslexia();
   const t = getTranslation(language);
-
-  const heroContent = `
-    ${t.inclusiveLearning}. 
-    ${t.heroTitle} 
-    ${t.heroSubtitle}
-  `;
 
   return (
     <div className="bg-[#F5F9FD] rounded-[40px] p-8 md:p-12 lg:p-16 shadow-sm mx-auto max-w-7xl mt-4 border border-white/50">
@@ -26,9 +19,6 @@ export function Hero() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          {/* Audio Control */}
-          <AudioControl text={heroContent} />
-
           {/* Badge */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}

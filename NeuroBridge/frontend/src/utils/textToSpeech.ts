@@ -10,6 +10,9 @@ interface VoiceSettings {
 export class TextToSpeechService {
   private synth: SpeechSynthesis;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private currentIndex: number = 0;
+  private currentText: string = '';
+  private currentLanguage: Language = 'en';
 
   constructor() {
     this.synth = window.speechSynthesis;
@@ -24,16 +27,32 @@ export class TextToSpeechService {
     return voiceMap[language];
   }
 
-  speak(text: string, language: Language, speed: number = 1): void {
-    this.stop();
+  speak(text: string, language: Language, speed: number = 1, startIndex: number = 0): void {
+    // If not resuming, reset
+    if (startIndex === 0) {
+      this.currentIndex = 0;
+    }
+    this.currentText = text;
+    this.currentLanguage = language;
+
+    this.synth.cancel();
 
     const settings = this.getVoiceSettings(language);
-    this.currentUtterance = new SpeechSynthesisUtterance(text);
+    const textToSpeak = text.substring(startIndex);
+    
+    this.currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
     
     this.currentUtterance.lang = settings.lang;
     this.currentUtterance.rate = settings.rate * speed;
     this.currentUtterance.pitch = settings.pitch;
     this.currentUtterance.volume = settings.volume;
+
+    // Track words to know where we are if we need to change speed mid-speech
+    this.currentUtterance.onboundary = (event) => {
+      if (event.name === 'word') {
+        this.currentIndex = startIndex + event.charIndex;
+      }
+    };
 
     // Try to find a voice for the specific language
     const voices = this.synth.getVoices();
@@ -48,11 +67,19 @@ export class TextToSpeechService {
     this.synth.speak(this.currentUtterance);
   }
 
+  setSpeed(speed: number): void {
+    if (this.synth.speaking && this.currentText) {
+      // Resume from current tracked point at new speed
+      this.speak(this.currentText, this.currentLanguage, speed, this.currentIndex);
+    }
+  }
+
   stop(): void {
     if (this.synth.speaking) {
       this.synth.cancel();
     }
     this.currentUtterance = null;
+    this.currentIndex = 0;
   }
 
   pause(): void {
@@ -75,7 +102,6 @@ export class TextToSpeechService {
     return this.synth.paused;
   }
 
-  // Get available voices for debugging
   getVoices(): SpeechSynthesisVoice[] {
     return this.synth.getVoices();
   }
@@ -87,6 +113,10 @@ export const ttsService = new TextToSpeechService();
 // Hook-friendly functions
 export const speakText = (text: string, language: Language, speed: number = 1) => {
   ttsService.speak(text, language, speed);
+};
+
+export const changeSpeechSpeed = (speed: number) => {
+  ttsService.setSpeed(speed);
 };
 
 export const stopSpeech = () => {

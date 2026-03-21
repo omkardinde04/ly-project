@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff, Palette } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
-import { AudioControl } from '../ui/AudioControl';
+import { speakText, stopSpeech } from '../../utils/textToSpeech';
 
 export function Login() {
     const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -12,6 +12,21 @@ export function Login() {
     const { isDyslexiaMode, toggleDyslexiaMode, language, setLanguage } = useDyslexia();
     const t = getTranslation(language);
     const navigate = useNavigate();
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const speechText = activeTab === 'login' 
+        ? `${t.loginTitle}. Login to continue your learning journey.` 
+        : `Join NeuroBridge. Create a free account and start learning your way today.`;
+
+    const handlePlay = () => {
+        if (isPlaying) {
+            stopSpeech();
+            setIsPlaying(false);
+        } else {
+            speakText(speechText, language, 1);
+            setIsPlaying(true);
+        }
+    };
 
     const handleLogin = () => {
         // Simulate login - in real app, this would validate credentials
@@ -44,31 +59,71 @@ export function Login() {
                         </button>
                     </div>
 
-                    {/* Heading with Audio */}
-                    <div className="mb-6">
-                        <AudioControl 
-                            text={activeTab === 'login' ? t.loginTitle : 'Create your account and start learning'} 
-                            showControls={false} 
-                        />
-                        <h1 className="text-2xl font-black text-[#1A202C] mb-2 mt-3">
-                            {activeTab === 'login' ? t.loginTitle : 'Join NeuroBridge'}
-                        </h1>
-                        <p className="text-[#5b6b79] text-sm font-medium">
-                            {activeTab === 'login' ? 'Login to continue your learning journey.' : 'Create a free account and start learning your way today.'}
-                        </p>
+                    {/* Combined Audio & Language Control (Theme-Matched) */}
+                    <div className="flex items-center bg-[#F4F9FD] rounded-full px-5 py-2.5 border border-blue-100 max-w-max mb-6 shadow-sm">
+                        {/* Audio Button */}
+                        <button
+                            type="button"
+                            onClick={handlePlay}
+                            className={`flex items-center gap-2 font-bold text-[15px] transition-colors ${isPlaying ? 'text-red-500' : 'text-[#1D64D8] hover:text-blue-700'}`}
+                        >
+                            {isPlaying ? (
+                                <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
+                                    </svg>
+                                    <span>{t.stop}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-300 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                        </svg>
+                                    </div>
+                                    <span>{t.listen}</span>
+                                </>
+                            )}
+                        </button>
+                        
+                        {/* Divider */}
+                        <div className="h-5 w-px bg-[#D1E4F9] mx-4"></div>
+
+                        {/* Language Dropdown */}
+                        <div className="relative flex items-center gap-2 text-[#4A5568] font-bold text-[15px] hover:text-[#2D3748] transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                            <select
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value as 'en' | 'hi' | 'mr')}
+                                className="appearance-none bg-transparent outline-none cursor-pointer pr-4 font-bold"
+                            >
+                                <option value="en">EN</option>
+                                <option value="hi">HI</option>
+                                <option value="mr">MR</option>
+                            </select>
+                            {/* Custom caret */}
+                            <div className="absolute right-0 pointer-events-none opacity-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Language Selector */}
-                    <div className="flex items-center justify-end mb-4">
-                        <select
-                            value={language}
-                            onChange={(e) => setLanguage(e.target.value as 'en' | 'hi' | 'mr')}
-                            className="bg-white border-2 border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium focus:border-blue-400 focus:outline-none transition-colors cursor-pointer"
-                        >
-                            <option value="en">🇬🇧 English</option>
-                            <option value="hi">🇮🇳 हिन्दी</option>
-                            <option value="mr">🇮🇳 मराठी</option>
-                        </select>
+                    {/* Heading */}
+                    <div className="mb-6">
+                        <h1 className="text-[26px] font-black text-[#1A202C] mb-2">
+                            {activeTab === 'login' ? t.loginTitle : 'Join NeuroBridge'}
+                        </h1>
+                        <p className="text-[#5b6b79] text-[15px] font-medium leading-relaxed">
+                            {activeTab === 'login' ? 'Login to continue your learning journey.' : 'Create a free account and start learning your way today.'}
+                        </p>
                     </div>
 
                     {/* Dyslexia Mode Toggle */}
