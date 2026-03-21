@@ -1,9 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { getTranslation } from '../../utils/translations';
 import brain from "../assets/brain.png";
 
 export function Navbar({ links = [], showLogin = true }: { links?: string[], showLogin?: boolean }) {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
+  const { isDyslexiaMode, toggleDyslexiaMode, language } = useDyslexia();
+  const t = getTranslation(language);
 
   return (
     <nav className={`${isLoginPage ? 'bg-white' : 'bg-white'} shadow`}>
@@ -36,7 +40,43 @@ export function Navbar({ links = [], showLogin = true }: { links?: string[], sho
           )}
 
           {/* Right Section / Buttons */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            {/* Language Selector */}
+            {!isLoginPage && (
+              <div className="flex items-center gap-2">
+                <select
+                  value={language}
+                  onChange={(e) => window.location.reload()} // Simple reload to apply language
+                  className="bg-white border-2 border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium focus:border-blue-400 focus:outline-none transition-colors cursor-pointer"
+                  aria-label="Select language"
+                >
+                  <option value="en">🇬🇧 EN</option>
+                  <option value="hi">🇮🇳 HI</option>
+                  <option value="mr">🇮🇳 MR</option>
+                </select>
+              </div>
+            )}
+
+            {/* Dyslexia Mode Toggle */}
+            {!isLoginPage && (
+              <button
+                onClick={toggleDyslexiaMode}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all ${
+                  isDyslexiaMode
+                    ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                    : 'bg-gray-100 text-gray-600 border-2 border-gray-300 hover:border-gray-400'
+                }`}
+                aria-label="Toggle dyslexia mode"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span className="hidden md:inline text-sm">
+                  {isDyslexiaMode ? t.on : t.off}
+                </span>
+              </button>
+            )}
+
             {isLoginPage ? (
               <Link to="/" className="flex items-center gap-2 px-6 py-2 rounded-full bg-[#4A90E2] text-white font-semibold hover:bg-blue-600 transition-colors">
                 Go Back

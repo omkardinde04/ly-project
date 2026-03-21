@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700&family=Open+Dyslexic&display=swap');
 
 @theme {
   --color-primary: #3b82f6;
@@ -11,4 +12,55 @@
     color: var(--color-gray-900);
     font-family: 'Inter', system-ui, sans-serif;
   }
+}
+
+/* Dyslexia-Friendly Styles */
+.dyslexia-mode {
+  font-family: 'Open Dyslexic', cursive !important;
+  font-size: 18px !important;
+  line-height: 2 !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.15em !important;
+}
+
+.dyslexia-mode * {
+  font-family: 'Open Dyslexic', cursive !important;
+}
+
+.mild-dyslexia {
+  font-family: 'Lexend', sans-serif !important;
+  font-size: 17px !important;
+  line-height: 1.8 !important;
+}
+
+.high-contrast {
+  background-color: #FEF9E7 !important;
+  color: #1a1a1a !important;
+}
+
+.text-highlight {
+  background-color: rgba(255, 255, 0, 0.3) !important;
+  padding: 2px 4px !important;
+  border-radius: 4px !important;
+}
+
+.line-focus {
+  position: relative;
+}
+
+.line-focus::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100vw;
+  width: 100vw;
+  height: 2em;
+  background-color: rgba(255, 255, 0, 0.15);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Smooth transitions */
+* {
+  transition: font-family 0.3s ease, font-size 0.3s ease, line-height 0.3s ease;
 }

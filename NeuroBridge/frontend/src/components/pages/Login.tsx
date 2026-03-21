@@ -1,11 +1,22 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff, Palette } from 'lucide-react';
+import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { getTranslation } from '../../utils/translations';
+import { AudioControl } from '../ui/AudioControl';
 
 export function Login() {
     const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-    const [dyslexiaMode, setDyslexiaMode] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { isDyslexiaMode, toggleDyslexiaMode, language, setLanguage } = useDyslexia();
+    const t = getTranslation(language);
+    const navigate = useNavigate();
+
+    const handleLogin = () => {
+        // Simulate login - in real app, this would validate credentials
+        navigate('/assessment');
+    };
 
     return (
         <>
@@ -33,14 +44,31 @@ export function Login() {
                         </button>
                     </div>
 
-                    {/* Heading */}
+                    {/* Heading with Audio */}
                     <div className="mb-6">
-                        <h1 className="text-2xl font-black text-[#1A202C] mb-2">
-                            {activeTab === 'login' ? 'Welcome back' : 'Join NeuroBridge'}
+                        <AudioControl 
+                            text={activeTab === 'login' ? t.loginTitle : 'Create your account and start learning'} 
+                            showControls={false} 
+                        />
+                        <h1 className="text-2xl font-black text-[#1A202C] mb-2 mt-3">
+                            {activeTab === 'login' ? t.loginTitle : 'Join NeuroBridge'}
                         </h1>
                         <p className="text-[#5b6b79] text-sm font-medium">
                             {activeTab === 'login' ? 'Login to continue your learning journey.' : 'Create a free account and start learning your way today.'}
                         </p>
+                    </div>
+
+                    {/* Language Selector */}
+                    <div className="flex items-center justify-end mb-4">
+                        <select
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value as 'en' | 'hi' | 'mr')}
+                            className="bg-white border-2 border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium focus:border-blue-400 focus:outline-none transition-colors cursor-pointer"
+                        >
+                            <option value="en">🇬🇧 English</option>
+                            <option value="hi">🇮🇳 हिन्दी</option>
+                            <option value="mr">🇮🇳 मराठी</option>
+                        </select>
                     </div>
 
                     {/* Dyslexia Mode Toggle */}
@@ -50,19 +78,18 @@ export function Login() {
                                 <Palette className="w-7 h-7 text-blue-400 stroke-[1.5]" />
                             </div>
                             <div className="flex flex-col">
-                                <h3 className="font-extrabold text-[#1A202C] text-[15px] mb-0.5">Dyslexia-Friendly Mode</h3>
+                                <h3 className="font-extrabold text-[#1A202C] text-[15px] mb-0.5">{t.dyslexiaMode}</h3>
                                 <p className="text-[#5b6b79] text-[13px] leading-snug font-medium">
-                                    Larger text, extra spacing,<br />warm background
+                                    Larger text, extra spacing, warm background
                                 </p>
                             </div>
                         </div>
-                        {/* Toggle Switch */}
                         <button
                             type="button"
-                            onClick={() => setDyslexiaMode(!dyslexiaMode)}
-                            className={`w-[46px] h-[24px] rounded-full p-1 transition-colors ${dyslexiaMode ? 'bg-blue-500' : 'bg-[#E5E7EB] shadow-inner'} relative flex items-center`}
+                            onClick={toggleDyslexiaMode}
+                            className={`w-[46px] h-[24px] rounded-full p-1 transition-colors ${isDyslexiaMode ? 'bg-blue-500' : 'bg-[#E5E7EB] shadow-inner'} relative flex items-center`}
                         >
-                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${dyslexiaMode ? 'translate-x-[22px]' : 'translate-x-0'}`}></div>
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${isDyslexiaMode ? 'translate-x-[22px]' : 'translate-x-0'}`}></div>
                         </button>
                     </div>
 
@@ -70,7 +97,7 @@ export function Login() {
                     <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
                         {/* Email */}
                         <div>
-                            <label className="block text-sm font-bold text-[#2A3B4C] mb-2">Email Address</label>
+                            <label className="block text-sm font-bold text-[#2A3B4C] mb-2">{t.emailLabel}</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <div className="bg-orange-100 p-1 rounded-full">
@@ -79,7 +106,7 @@ export function Login() {
                                 </div>
                                 <input
                                     type="email"
-                                    placeholder="you@example.com"
+                                    placeholder={t.emailPlaceholder}
                                     className="w-full pl-14 pr-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
                                 />
                             </div>
@@ -87,7 +114,7 @@ export function Login() {
 
                         {/* Password */}
                         <div>
-                            <label className="block text-sm font-bold text-[#2A3B4C] mb-2">Password</label>
+                            <label className="block text-sm font-bold text-[#2A3B4C] mb-2">{t.passwordLabel}</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <div className="bg-yellow-100 p-1 rounded-md">
@@ -96,7 +123,7 @@ export function Login() {
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="Enter Your Password"
+                                    placeholder={t.passwordPlaceholder}
                                     className="w-full pl-14 pr-12 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
                                 />
                                 <button
@@ -170,8 +197,12 @@ export function Login() {
 
                         {/* Submit Button */}
                         <div className="pt-2">
-                            <button className="w-full py-3.5 bg-[#1D64D8] hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px]">
-                                {activeTab === 'login' ? 'Login' : 'Create My Account'}
+                            <button 
+                                type="button" 
+                                onClick={handleLogin}
+                                className="w-full py-3.5 bg-[#1D64D8] hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
+                            >
+                                {activeTab === 'login' ? t.loginButton : 'Create My Account'}
                             </button>
                         </div>
                     </form>
