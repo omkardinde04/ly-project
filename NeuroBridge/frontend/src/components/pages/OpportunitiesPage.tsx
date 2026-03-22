@@ -3,28 +3,14 @@ import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
 
-export function Community() {
-  const { language } = useDyslexia();
+export function OpportunitiesPage() {
+  const { language, isDyslexiaMode } = useDyslexia();
   const t = getTranslation(language);
 
-  const pageContent = `
-    Community Platform Overview.
-    
-    Connect with other learners, share experiences, and find support from individuals who understand your journey.
-    
-    Features include:
-    - Discussion forums on various topics
-    - Peer support groups
-    - Mentor matching program
-    - Success stories and inspiration
-    - Safe, moderated environment
-    
-    Our community platform fosters connection and mutual support among individuals with dyslexia.
-  `;
+  const pageContent = `Opportunities Platform Overview. Access job listings and career opportunities designed for dyslexic professionals. Features include simplified job descriptions, audio summaries, one-click applications, and accessibility-focused employers. All opportunities are vetted for inclusive workplace culture.`;
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Header */}
+    <div className="max-w-5xl mx-auto py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -32,14 +18,14 @@ export function Community() {
       >
         <div className="flex items-center justify-center gap-3 mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-800">Community</h1>
+          <h1 className={`font-black text-gray-800 ${isDyslexiaMode ? 'text-5xl' : 'text-4xl md:text-5xl'}`}>Opportunities</h1>
         </div>
-        <AudioControl text={pageContent} />
+        <AudioControl text={pageContent} showControls={true} />
       </motion.div>
 
-      {/* Overview Card */}
+      {/* Main Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -53,35 +39,39 @@ export function Community() {
           What This Offers
         </h2>
 
-        <div className="prose prose-lg max-w-none">
+        <div className={`prose max-w-none ${isDyslexiaMode ? 'text-lg leading-loose' : 'prose-lg'}`}>
           <p className="text-lg text-gray-700 leading-relaxed mb-6">
-            Our Community platform provides a safe, supportive space where individuals with dyslexia can connect, share experiences, and learn from each other's journeys.
+            Our Opportunities platform connects you with dyslexia-friendly employers and career paths that value your unique strengths and thinking style.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
             <div className="bg-blue-50 rounded-2xl p-6">
               <h3 className="font-bold text-xl text-gray-800 mb-3 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Discussion Forums
+                Job Features
               </h3>
               <ul className="space-y-2 text-gray-700">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-500 font-bold mt-1">•</span>
-                  Study tips and strategies
+                  Simplified job descriptions
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-500 font-bold mt-1">•</span>
-                  Career advice and guidance
+                  Audio summaries for each position
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-500 font-bold mt-1">•</span>
-                  Tool and resource recommendations
+                  Accessibility-focused employers
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-500 font-bold mt-1">•</span>
-                  Success stories and inspiration
+                  One-click application assistance
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold mt-1">•</span>
+                  Visual company information
                 </li>
               </ul>
             </div>
@@ -89,67 +79,45 @@ export function Community() {
             <div className="bg-purple-50 rounded-2xl p-6">
               <h3 className="font-bold text-xl text-gray-800 mb-3 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
-                Support Groups
+                Competitions & Internships
               </h3>
               <ul className="space-y-2 text-gray-700">
                 <li className="flex items-start gap-2">
                   <span className="text-purple-500 font-bold mt-1">•</span>
-                  Age-specific peer groups
+                  Hackathons and challenges
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-purple-500 font-bold mt-1">•</span>
-                  Mentor-mentee matching
+                  Paid internship programs
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-purple-500 font-bold mt-1">•</span>
-                  Parent and educator networks
+                  Clear eligibility criteria
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-purple-500 font-bold mt-1">•</span>
-                  Professional networking
+                  Deadline tracking
                 </li>
               </ul>
             </div>
           </div>
-        </div>
-      </motion.div>
 
-      {/* Benefits Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-8 border border-blue-100"
-      >
-        <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Why Join Our Community?
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-3">🤝</div>
-            <h4 className="font-bold text-gray-800 mb-2">Peer Support</h4>
-            <p className="text-gray-600 text-sm">
-              Connect with others who understand your challenges and celebrate your successes
-            </p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-6 text-center">
-            <div className="text-4xl font-bold text-purple-600 mb-3">💡</div>
-            <h4 className="font-bold text-gray-800 mb-2">Shared Knowledge</h4>
-            <p className="text-gray-600 text-sm">
-              Learn proven strategies and tools from experienced community members
-            </p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-6 text-center">
-            <div className="text-4xl font-bold text-green-600 mb-3">🌟</div>
-            <h4 className="font-bold text-gray-800 mb-2">Inspiration</h4>
-            <p className="text-gray-600 text-sm">
-              Read success stories and find motivation from those who've walked your path
-            </p>
+          <div className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+              Partner Platforms
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl p-6 text-center">
+                <div className="text-3xl font-bold text-[#0A66C2] mb-2">LinkedIn</div>
+                <p className="text-gray-600 text-sm">Professional networking and jobs</p>
+              </div>
+              <div className="bg-white rounded-xl p-6 text-center">
+                <div className="text-3xl font-bold text-[#E93E30] mb-2">Unstop</div>
+                <p className="text-gray-600 text-sm">Competitions and internships</p>
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -158,7 +126,7 @@ export function Community() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.2 }}
         className="mt-8 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6 text-center"
       >
         <div className="flex items-center justify-center gap-3 mb-3">
@@ -168,7 +136,7 @@ export function Community() {
           <h4 className="font-bold text-lg text-gray-800">Coming Soon</h4>
         </div>
         <p className="text-gray-700">
-          Full community features including forums, chat, and mentor matching are under development.
+          Full opportunities platform is under development. We're building partnerships with inclusive employers.
         </p>
       </motion.div>
     </div>

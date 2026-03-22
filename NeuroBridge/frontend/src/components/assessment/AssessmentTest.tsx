@@ -23,23 +23,23 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
 
   const questions: Question[] = [
     // Section 1 - Frequency Questions
-    { id: 1, text: t.q1, type: 'frequency', image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=300&fit=crop' },
-    { id: 2, text: t.q2, type: 'frequency', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=300&fit=crop' },
-    { id: 3, text: t.q3, type: 'frequency', image: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=400&h=300&fit=crop' },
-    { id: 4, text: t.q4, type: 'frequency', image: 'https://images.unsplash.com/photo-1496307653780-12ee5e26b02d?w=400&h=300&fit=crop' },
-    { id: 5, text: t.q5, type: 'frequency', image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&h=300&fit=crop' },
-    { id: 6, text: t.q6, type: 'frequency', image: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=400&h=300&fit=crop' },
-    { id: 7, text: t.q7, type: 'frequency', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop' },
-    { id: 8, text: t.q8, type: 'frequency', image: 'https://images.unsplash.com/photo-1516387938699-a93567ec168e?w=400&h=300&fit=crop' },
-    { id: 9, text: t.q9, type: 'frequency', image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=300&fit=crop' },
-    { id: 10, text: t.q10, type: 'frequency', image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop' },
+    { id: 1, text: t.q1, type: 'frequency', image: 'https://images.pexels.com/photos/788943/pexels-photo-788943.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q1: Cat vs Cot - similar-looking words confusion (shows books/reading)
+    { id: 2, text: t.q2, type: 'frequency', image: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q2: Skipping lines while reading (finger tracking text)
+    { id: 3, text: t.q3, type: 'frequency', image: 'https://images.pexels.com/photos/3762916/pexels-photo-3762916.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q3: Confusing similar objects (person comparing items)
+    { id: 4, text: t.q4, type: 'frequency', image: 'https://images.pexels.com/photos/5499532/pexels-photo-5499532.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q4: Left-right directional confusion (arrows/direction signs)
+    { id: 5, text: t.q5, type: 'frequency', image: 'https://images.pexels.com/photos/2506305/pexels-photo-2506305.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q5: Sequencing difficulty (map with route planning)
+    { id: 6, text: t.q6, type: 'frequency', image: 'https://images.pexels.com/photos/6693133/pexels-photo-6693133.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q6: Rereading same passage (highlighted text multiple times)
+    { id: 7, text: t.q7, type: 'frequency', image: 'https://images.pexels.com/photos/8613262/pexels-photo-8613262.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q7: Following multi-step instructions (checklist/notes)
+    { id: 8, text: t.q8, type: 'frequency', image: 'https://images.pexels.com/photos/5905708/pexels-photo-5905708.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q8: Spelling inconsistencies (written work with corrections)
+    { id: 9, text: t.q9, type: 'frequency', image: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q9: Word retrieval (person searching for words/thinking)
+    { id: 10, text: t.q10, type: 'frequency', image: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q10: Organizing thoughts for writing (brainstorming/mind map)
     
     // Section 2 - Difficulty Questions
-    { id: 11, text: t.q11, type: 'difficulty', image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop' },
-    { id: 12, text: t.q12, type: 'difficulty', image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=300&fit=crop' },
-    { id: 13, text: t.q13, type: 'difficulty', image: 'https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=400&h=300&fit=crop' },
-    { id: 14, text: t.q14, type: 'difficulty', image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop' },
-    { id: 15, text: t.q15, type: 'difficulty', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=300&fit=crop' },
+    { id: 11, text: t.q11, type: 'difficulty', image: 'https://images.pexels.com/photos/5905895/pexels-photo-5905895.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q11: Sounding out words phonetically (phonics/decoding)
+    { id: 12, text: t.q12, type: 'difficulty', image: 'https://images.pexels.com/photos/6693133/pexels-photo-6693133.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q12: Organizing written work on page (messy vs neat notes)
+    { id: 13, text: t.q13, type: 'difficulty', image: 'https://images.pexels.com/photos/164684/chair-furniture-interior-design-table-164684.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q13: Math facts memorization (multiplication table/grid)
+    { id: 14, text: t.q14, type: 'difficulty', image: 'https://images.pexels.com/photos/5905708/pexels-photo-5905708.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q14: Alphabetical ordering (alphabet sequence/writing)
+    { id: 15, text: t.q15, type: 'difficulty', image: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=600' }, // Q15: Reading aloud fluency (oral reading practice)
   ];
 
   const calculateScore = (questionId: number, answerIndex: number): number => {

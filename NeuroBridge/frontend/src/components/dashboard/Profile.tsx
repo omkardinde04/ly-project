@@ -22,9 +22,9 @@ export function Profile() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl ">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 text-center">
         <h1 className="text-3xl font-black text-gray-800 mb-2">Your Profile</h1>
         <p className="text-gray-600 font-medium">Complete your profile to personalize your experience</p>
       </div>
@@ -35,13 +35,13 @@ export function Profile() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-linear-to-r from-blue-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white"
       >
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center justify-center gap-4 mb-4">
           <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
             <span className="text-4xl font-bold">U</span>
           </div>
-          <div>
+          <div className="text-center">
             <h2 className="text-2xl font-black mb-1">User Profile</h2>
-            <div className="flex items-center gap-3 text-sm font-medium">
+            <div className="flex items-center gap-3 text-sm font-medium justify-center flex-wrap">
               <span>📊 Assessment Score: {testScore}</span>
               <span>•</span>
               <span>🎯 Level: {dyslexiaLevel}</span>
@@ -49,7 +49,7 @@ export function Profile() {
           </div>
         </div>
         
-        <div className="mt-4 flex w-fit bg-white/10 rounded-full shadow-inner p-1 backdrop-blur-xs border border-white/20">
+        <div className="mt-4 flex justify-center bg-white/10 rounded-full shadow-inner p-1 backdrop-blur-xs border border-white/20">
           <AudioControl 
             text={`Your profile shows your dyslexia level as ${dyslexiaLevel} with a score of ${testScore}. Complete the form below to personalize your experience.`} 
             showControls={true} 

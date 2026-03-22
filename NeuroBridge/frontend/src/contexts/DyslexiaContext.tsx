@@ -3,6 +3,16 @@ import type { ReactNode } from 'react';
 
 export type Language = 'en' | 'hi' | 'mr';
 export type DyslexiaLevel = 'none' | 'mild' | 'moderate' | 'severe';
+export type CognitiveDimension = 'phonological' | 'visual' | 'workingMemory' | 'processingSpeed' | 'orthographic' | 'executive';
+
+interface CognitiveProfile {
+  phonological: number; // 0-100
+  visual: number;
+  workingMemory: number;
+  processingSpeed: number;
+  orthographic: number;
+  executive: number;
+}
 
 interface DyslexiaSettings {
   isDyslexiaMode: boolean;
@@ -12,8 +22,9 @@ interface DyslexiaSettings {
   dyslexiaLevel: DyslexiaLevel;
   isTestCompleted: boolean;
   testScore: number | null;
-  completedQuizzes: number;
-  quizScores: number[];
+  cognitiveProfile: CognitiveProfile | null;
+  partACompleted: boolean;
+  partBCompleted: boolean;
 }
 
 interface DyslexiaContextType extends DyslexiaSettings {
@@ -23,8 +34,8 @@ interface DyslexiaContextType extends DyslexiaSettings {
   setFontSize: (size: number) => void;
   setDyslexiaLevel: (level: DyslexiaLevel) => void;
   markTestCompleted: (score: number) => void;
+  completeCognitiveTasks: (profile: CognitiveProfile) => void;
   resetTest: () => void;
-  completeQuiz: (score: number) => void;
 }
 
 const defaultSettings: DyslexiaSettings = {
@@ -35,8 +46,9 @@ const defaultSettings: DyslexiaSettings = {
   dyslexiaLevel: 'none',
   isTestCompleted: false,
   testScore: null,
-  completedQuizzes: 0,
-  quizScores: [],
+  cognitiveProfile: null,
+  partACompleted: false,
+  partBCompleted: false,
 };
 
 const DyslexiaContext = createContext<DyslexiaContextType | undefined>(undefined);
@@ -74,9 +86,21 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
   const markTestCompleted = (score: number) => {
     setSettings(prev => ({ 
       ...prev, 
-      isTestCompleted: true, 
-      testScore: score,
-      dyslexiaLevel: calculateDyslexiaLevel(score)
+      partACompleted: true,
+      testScore: score
+    }));
+  };
+
+  const completeCognitiveTasks = (profile: CognitiveProfile) => {
+    const totalScore = Object.values(profile).reduce((sum, val) => sum + val, 0);
+    const avgScore = totalScore / 6;
+    
+    setSettings(prev => ({
+      ...prev,
+      partBCompleted: true,
+      isTestCompleted: true,
+      cognitiveProfile: profile,
+      dyslexiaLevel: calculateDyslexiaLevelFromProfile(avgScore)
     }));
   };
 
@@ -86,16 +110,9 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       isTestCompleted: false, 
       testScore: null,
       dyslexiaLevel: 'none',
-      completedQuizzes: 0,
-      quizScores: []
-    }));
-  };
-
-  const completeQuiz = (score: number) => {
-    setSettings(prev => ({
-      ...prev,
-      completedQuizzes: prev.completedQuizzes + 1,
-      quizScores: [...prev.quizScores, score]
+      cognitiveProfile: null,
+      partACompleted: false,
+      partBCompleted: false
     }));
   };
 
@@ -103,6 +120,13 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     if (score < 45) return 'none';
     if (score <= 60) return 'mild';
     if (score <= 80) return 'moderate';
+    return 'severe';
+  };
+
+  const calculateDyslexiaLevelFromProfile = (avgScore: number): DyslexiaLevel => {
+    if (avgScore < 40) return 'none';
+    if (avgScore <= 60) return 'mild';
+    if (avgScore <= 75) return 'moderate';
     return 'severe';
   };
 
@@ -115,8 +139,8 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       setFontSize,
       setDyslexiaLevel,
       markTestCompleted,
+      completeCognitiveTasks,
       resetTest,
-      completeQuiz,
     }}>
       {children}
     </DyslexiaContext.Provider>

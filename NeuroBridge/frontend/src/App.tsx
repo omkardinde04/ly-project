@@ -7,6 +7,10 @@ import { Login } from './components/pages/Login'
 import { Footer } from './components/layout/Footer'
 import { AssessmentPage } from './components/pages/Assessment'
 import { Dashboard } from './components/pages/Dashboard'
+import { Learn } from './components/pages/Learn'
+import { OpportunitiesPage } from './components/pages/OpportunitiesPage'
+import { CommunityPage } from './components/pages/CommunityPage'
+import { AboutPage } from './components/pages/AboutPage'
 
 function Layout({ children }: { children: ReactNode }) {
   const { isDyslexiaMode, dyslexiaLevel } = useDyslexia();
@@ -37,6 +41,10 @@ function AppContent() {
         <main className={`flex-1 ${isDashboard ? "" : "max-w-7xl mx-auto py-6 w-full sm:px-6 lg:px-8"}`}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/opportunities" element={<OpportunitiesPage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/dashboard" element={<Dashboard />} />

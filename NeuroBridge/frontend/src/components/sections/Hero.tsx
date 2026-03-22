@@ -114,8 +114,8 @@ export function Hero() {
         >
           <div className="relative w-full max-w-md lg:max-w-[480px] group">
             <img 
-              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-              alt="Student learning confidently"
+              src="https://images.pexels.com/photos/5905708/pexels-photo-5905708.jpeg?auto=compress&cs=tinysrgb&w=800"
+              alt="Student learning with focus using technology"
               className="w-full h-auto relative z-10 transition-all duration-500 rounded-2xl shadow-lg"
             />
           </div>

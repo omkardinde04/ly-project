@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
@@ -7,7 +6,9 @@ import { AudioControl } from '../ui/AudioControl';
 import { DashboardSidebar } from '../dashboard/DashboardSidebar';
 import { MyLearning } from '../dashboard/MyLearning';
 import { ProgressTracking } from '../dashboard/ProgressTracking';
-import { Quizzes } from '../dashboard/Quizzes';
+import { Opportunities } from '../dashboard/Opportunities';
+import { NotebookLLM } from '../dashboard/NotebookLLM';
+import { Community } from '../dashboard/Community';
 import { Profile } from '../dashboard/Profile';
 import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
 
@@ -34,12 +35,16 @@ export function Dashboard() {
         return <MyLearning />;
       case 'progress':
         return <ProgressTracking />;
-      case 'quizzes':
-        return <Quizzes />;
-      case 'profile':
-        return <Profile />;
+      case 'opportunities':
+        return <Opportunities />;
+      case 'notebook':
+        return <NotebookLLM />;
+      case 'community':
+        return <Community />;
       case 'accessibility':
         return <AccessibilitySettings />;
+      case 'profile':
+        return <Profile />;
       default:
         return <HomeDashboard onNavigate={setActiveTab} />;
     }
@@ -137,6 +142,43 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
             <div className="text-sm font-semibold text-purple-600 mb-2">Accessibility Mode</div>
             <div className="text-lg font-bold text-purple-700">Active ✓</div>
           </div>
+        </div>
+      </motion.div>
+
+      {/* Cognitive Profile Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-3xl shadow-xl p-8 border-2 border-purple-100"
+      >
+        <h2 className="text-3xl font-black text-gray-800 mb-6 flex items-center gap-3">
+          <span className="text-4xl">🧠</span>
+          Your Cognitive Strengths
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { name: 'Phonological', icon: '🔊', level: 75 },
+            { name: 'Visual Attention', icon: '👁️', level: 85 },
+            { name: 'Working Memory', icon: '🧠', level: 70 },
+            { name: 'Processing Speed', icon: '⚡', level: 80 },
+            { name: 'Word Recognition', icon: '📝', level: 65 },
+            { name: 'Executive Function', icon: '⏱️', level: 90 },
+          ].map((dim, idx) => (
+            <div key={idx} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">{dim.icon}</span>
+                <span className="font-bold text-gray-800 text-sm">{dim.name}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-400 to-purple-500 rounded-full transition-all"
+                  style={{ width: `${dim.level}%` }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </motion.div>
 

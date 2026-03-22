@@ -26,8 +26,10 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
   const menuItems = [
     { id: 'home', label: t.navHome, icon: '🏠' },
     { id: 'learning', label: t.navLearning, icon: '📚' },
-    { id: 'quizzes', label: t.navQuizzes, icon: '📝' },
     { id: 'progress', label: t.navProgress, icon: '📊' },
+    { id: 'opportunities', label: 'Opportunities', icon: '💼' },
+    { id: 'notebook', label: 'Notebook LLM', icon: '🤖' },
+    { id: 'community', label: 'Community', icon: '👥' },
     { id: 'accessibility', label: t.navSettings, icon: '⚙️' },
     { id: 'profile', label: 'Profile', icon: '👤' },
   ];

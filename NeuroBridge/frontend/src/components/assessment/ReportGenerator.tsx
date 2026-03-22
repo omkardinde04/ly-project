@@ -159,6 +159,52 @@ export function ReportGenerator({ score, onRetake, onContinue }: ReportGenerator
         </div>
       </motion.div>
 
+      {/* Cognitive Profile Dimensions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-2 border-purple-100"
+      >
+        <h2 className="text-3xl font-black text-gray-800 mb-6 text-center">🧠 Your Cognitive Profile</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { name: 'Phonological Awareness', icon: '🔊', desc: 'Sound processing & blending', level: 'Medium' },
+            { name: 'Visual Attention', icon: '👁️', desc: 'Visual span & recall', level: 'High' },
+            { name: 'Working Memory', icon: '🧠', desc: 'Sequential memory', level: 'Medium' },
+            { name: 'Processing Speed', icon: '⚡', desc: 'Pattern recognition speed', level: 'High' },
+            { name: 'Orthographic Processing', icon: '📝', desc: 'Word recognition', level: 'Medium' },
+            { name: 'Executive Function', icon: '⏱️', desc: 'Timed task performance', level: 'High' },
+          ].map((dimension, idx) => (
+            <div key={idx} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-4xl">{dimension.icon}</span>
+                <div>
+                  <h3 className="font-bold text-gray-800">{dimension.name}</h3>
+                  <p className="text-xs text-gray-600">{dimension.desc}</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium text-gray-700">Performance</span>
+                  <span className={`font-bold ${
+                    dimension.level === 'High' ? 'text-green-600' :
+                    dimension.level === 'Medium' ? 'text-yellow-600' : 'text-red-600'
+                  }`}>{dimension.level}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${
+                    dimension.level === 'High' ? 'bg-green-500 w-[80%]' :
+                    dimension.level === 'Medium' ? 'bg-yellow-500 w-[60%]' : 'bg-red-500 w-[40%]'
+                  }`} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Recommendations Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* UI Settings */}

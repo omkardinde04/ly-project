@@ -1,28 +1,34 @@
 import { useState } from 'react';
 import { AssessmentTest } from '../assessment/AssessmentTest';
 import { ReportGenerator } from '../assessment/ReportGenerator';
+import { CognitiveTaskAssessment } from '../assessment/CognitiveTaskAssessment';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 
 export function AssessmentPage() {
-  const { language } = useDyslexia();
+  const { language, completeCognitiveTasks } = useDyslexia();
   const t = getTranslation(language);
-  const [testState, setTestState] = useState<'intro' | 'test' | 'report'>('intro');
+  const [testState, setTestState] = useState<'intro' | 'partA' | 'partB' | 'report'>('intro');
   const [finalScore, setFinalScore] = useState<number>(0);
 
   const handleStartTest = () => {
-    setTestState('test');
+    setTestState('partA');
   };
 
-  const handleTestComplete = (score: number) => {
+  const handlePartAComplete = (score: number) => {
     setFinalScore(score);
+    setTestState('partB');
+  };
+
+  const handlePartBComplete = (profile: any) => {
+    completeCognitiveTasks(profile);
     setTestState('report');
   };
 
   const handleRetake = () => {
-    setTestState('test');
+    setTestState('partA');
   };
 
   const handleContinue = () => {
@@ -30,8 +36,12 @@ export function AssessmentPage() {
     window.location.href = '/dashboard';
   };
 
-  if (testState === 'test') {
-    return <AssessmentTest onComplete={handleTestComplete} />;
+  if (testState === 'partA') {
+    return <AssessmentTest onComplete={handlePartAComplete} />;
+  }
+
+  if (testState === 'partB') {
+    return <CognitiveTaskAssessment onComplete={handlePartBComplete} />;
   }
 
   if (testState === 'report') {

@@ -1,9 +1,23 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import brain from "../assets/brain.png";
 
 export function Navbar({ links = [], showLogin = true }: { links?: string[], showLogin?: boolean }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const isLoginPage = location.pathname === '/login';
+
+  const handleNavigation = (link: string) => {
+    const routeMap: Record<string, string> = {
+      'Home': '/',
+      'Learn': '/learn',
+      'Opportunities': '/opportunities',
+      'Community': '/community',
+      'About': '/about'
+    };
+    if (routeMap[link]) {
+      navigate(routeMap[link]);
+    }
+  };
 
   return (
     <nav className={`${isLoginPage ? 'bg-white' : 'bg-white'} shadow`}>
@@ -28,9 +42,13 @@ export function Navbar({ links = [], showLogin = true }: { links?: string[], sho
           {!isLoginPage && (
             <div className="hidden sm:flex items-center absolute left-1/2 transform -translate-x-1/2 gap-8">
               {links.map((link, index) => (
-                <a key={index} href="#" className="text-gray-700 hover:text-black font-medium transition-colors">
+                <button
+                  key={index}
+                  onClick={() => handleNavigation(link)}
+                  className="text-gray-700 hover:text-black font-medium transition-colors cursor-pointer"
+                >
                   {link}
-                </a>
+                </button>
               ))}
             </div>
           )}
