@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { DyslexiaProvider, useDyslexia } from './contexts/DyslexiaContext';
+import { AssistantProvider } from './contexts/AssistantContext';
+import { AIAssistant } from './components/assistant/AIAssistant';
 import { Navbar } from './components/layout/Navbar'
 import Index from './components/pages/Index'
 import { Login } from './components/pages/Login'
@@ -51,6 +53,7 @@ function AppContent() {
           </Routes>
         </main>
         {!isDashboard && <Footer />}
+        <AIAssistant autoStart={true} />
       </div>
     </Layout>
   );
@@ -59,9 +62,11 @@ function AppContent() {
 function App() {
   return (
     <DyslexiaProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <AssistantProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AssistantProvider>
     </DyslexiaProvider>
   )
 }
