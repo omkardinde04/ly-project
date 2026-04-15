@@ -1,46 +1,277 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700&family=Open+Dyslexic&display=swap');
 
-@theme {
-  --color-primary: #3b82f6;
-  --color-secondary: #8b5cf6;
+/* ─────────────────────────────────────────────────────────────────────────────
+   DESIGN TOKEN SYSTEM
+   All values live as CSS variables so toggling .dyslexia-mode on <body>
+   is the ONLY thing needed to switch the entire site instantly.
+───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Typography ── */
+  --font-body:        'Outfit', 'Lexend', Arial, sans-serif;
+  --font-heading:     'Outfit', 'Lexend', Arial, sans-serif;
+
+  --text-xs:     0.75rem;
+  --text-sm:     0.875rem;
+  --text-base:   1rem;         /* 16px */
+  --text-lg:     1.125rem;
+  --text-xl:     1.25rem;
+  --text-2xl:    1.5rem;
+  --text-3xl:    1.875rem;
+  --text-4xl:    2.25rem;
+
+  --line-height-body:    1.55;
+  --line-height-heading: 1.25;
+  --letter-spacing-body: 0.015em;
+  --word-spacing-body:   normal;
+  --paragraph-spacing:   0.75rem;
+  --max-prose-width:     800px;
+
+  /* ── Colors ── */
+  --color-bg:          #F4F8FF;
+  --color-surface:     #FFFFFF;
+  --color-surface-2:   #F0F5FF;
+  --color-text:        #1F2937;
+  --color-text-muted:  #4B5563;
+  --color-accent:      #3B82F6;
+  --color-accent-soft: #DCEEFF;
+  --color-border:      #E2E8F0;
+
+  /* ── Spacing & sizing ── */
+  --btn-height:      40px;
+  --btn-padding:     0.5rem 1rem;
+  --btn-font-size:   0.875rem;
+  --card-gap:        1rem;
+  --section-gap:     2rem;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   DYSLEXIA-FRIENDLY MODE — all token overrides in one place
+───────────────────────────────────────────────────────────────────────────── */
+
+body.dyslexia-mode {
+  /* ── Font switch — Lexend is research-backed for dyslexia ── */
+  --font-body:    'Lexend', 'Atkinson Hyperlegible', Arial, sans-serif;
+  --font-heading: 'Lexend', 'Atkinson Hyperlegible', Arial, sans-serif;
+
+  /* ── Size increase ~20% ── */
+  --text-xs:     0.85rem;
+  --text-sm:     1rem;
+  --text-base:   1.15rem;     /* ≈18.4px */
+  --text-lg:     1.3rem;
+  --text-xl:     1.45rem;
+  --text-2xl:    1.7rem;
+  --text-3xl:    2.1rem;
+  --text-4xl:    2.6rem;
+
+  /* ── Spacing — research shows 1.8× line height maximises legibility ── */
+  --line-height-body:    1.85;
+  --line-height-heading: 1.4;
+  --letter-spacing-body: 0.05em;
+  --word-spacing-body:   0.12em;
+  --paragraph-spacing:   1rem;
+  --max-prose-width:     640px;
+
+  /* ── Soft tinted background — avoids harsh white glare ── */
+  --color-bg:          #EEF4FF;
+  --color-surface:     #FAFCFF;
+  --color-surface-2:   #E6EFFF;
+  --color-text:        #1A1A2E;
+  --color-text-muted:  #3D4466;
+  --color-accent:      #2563EB;
+  --color-accent-soft: #D4E5FF;
+  --color-border:      #C7D9F0;
+
+  /* ── Larger buttons — easier to tap / click ── */
+  --btn-height:      52px;
+  --btn-padding:     0.75rem 1.25rem;
+  --btn-font-size:   1rem;
+  --card-gap:        1.5rem;
+  --section-gap:     2.5rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BASE STYLES — use token variables throughout
+───────────────────────────────────────────────────────────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+}
 @layer base {
   body {
-    background-color: var(--color-gray-50);
-    color: var(--color-gray-900);
-    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--line-height-body);
+    letter-spacing: var(--letter-spacing-body);
+    word-spacing: var(--word-spacing-body);
+    text-align: left;
+    -webkit-font-smoothing: antialiased;
+    /* Space for floating GlobalReader bar */
+    padding-bottom: 5rem;
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease,
+      font-size 0.35s ease,
+      line-height 0.35s ease,
+      letter-spacing 0.35s ease;
   }
 }
 
-/* Dyslexia-Friendly Styles */
-.dyslexia-mode {
-  font-family: 'Lexend', 'Comic Sans MS', sans-serif !important;
-  font-size: 18px !important;
-  line-height: 2 !important;
-  letter-spacing: 0.12em !important;
-  word-spacing: 0.15em !important;
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: var(--line-height-heading);
+  color: var(--color-text);
+  text-align: left;
 }
 
-.dyslexia-mode * {
-  font-family: 'Lexend', 'Comic Sans MS', sans-serif !important;
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+p {
+  margin-bottom: var(--paragraph-spacing);
+  max-width: var(--max-prose-width);
+  font-size: var(--text-base);
 }
+
+/* ── ALL text elements respond to the token switch ── */
+body.dyslexia-mode *:not(svg):not(path):not(circle):not(rect):not(line):not(polygon):not(g) {
+  font-family: var(--font-body) !important;
+  letter-spacing: var(--letter-spacing-body);
+  word-spacing: var(--word-spacing-body);
+  /* No italic in dyslexia mode — harder to read */
+  font-style: normal;
+}
+
+body.dyslexia-mode h1, body.dyslexia-mode h2,
+body.dyslexia-mode h3, body.dyslexia-mode h4,
+body.dyslexia-mode h5, body.dyslexia-mode h6 {
+  font-family: var(--font-heading) !important;
+  line-height: var(--line-height-heading) !important;
+}
+
+body.dyslexia-mode p,
+body.dyslexia-mode span,
+body.dyslexia-mode li,
+body.dyslexia-mode a,
+body.dyslexia-mode button,
+body.dyslexia-mode label,
+body.dyslexia-mode td,
+body.dyslexia-mode th {
+  line-height: var(--line-height-body) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILITY CLASSES — driven by tokens
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Surface cards */
+.nb-surface {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.nb-surface-2 {
+  background-color: var(--color-surface-2);
+}
+
+/* Prose text block */
+.nb-prose {
+  max-width: var(--max-prose-width);
+  line-height: var(--line-height-body);
+  font-size: var(--text-base);
+}
+
+/* Standard buttons */
+.nb-btn {
+  height: var(--btn-height);
+  padding: var(--btn-padding);
+  font-size: var(--btn-font-size);
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.nb-btn-primary {
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border: 2px solid transparent;
+}
+
+.nb-btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.nb-btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+}
+
+/* Card gap system */
+.nb-grid-cards {
+  display: grid;
+  gap: var(--card-gap);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DYSLEXIA MODE — LAYOUT ADJUSTMENTS
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Reduce multi-column density */
+body.dyslexia-mode .dx-reduce-cols {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+body.dyslexia-mode .dx-single-col {
+  grid-template-columns: 1fr !important;
+}
+
+/* Increase padding on cards */
+body.dyslexia-mode .nb-surface,
+body.dyslexia-mode [class*="rounded-2xl"],
+body.dyslexia-mode [class*="rounded-xl"] {
+  padding: 1.5rem !important;
+}
+
+/* Larger spacing between sections */
+body.dyslexia-mode .nb-section {
+  margin-bottom: var(--section-gap);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LEGACY CLASSES — kept for backward compat
+───────────────────────────────────────────────────────────────────────────── */
 
 .mild-dyslexia {
-  font-family: 'Lexend', sans-serif !important;
-  font-size: 17px !important;
-  line-height: 1.8 !important;
+  --font-body:           'Lexend', Arial, sans-serif;
+  --line-height-body:    1.7;
+  --letter-spacing-body: 0.03em;
 }
 
 .high-contrast {
-  background-color: #FEF9E7 !important;
-  color: #1a1a1a !important;
+  --color-bg:      #FEF9E7 !important;
+  --color-text:    #111111 !important;
+  --color-surface: #FFFEF5 !important;
 }
 
 .text-highlight {
-  background-color: rgba(255, 255, 0, 0.3) !important;
-  padding: 2px 4px !important;
+  background-color: rgba(255, 238, 0, 0.35) !important;
+  padding: 2px 5px !important;
   border-radius: 4px !important;
 }
 
@@ -53,14 +284,53 @@
   position: absolute;
   top: 0;
   left: -100vw;
-  width: 100vw;
+  width: 200vw;
   height: 2em;
-  background-color: rgba(255, 255, 0, 0.15);
+  background-color: rgba(255, 240, 0, 0.12);
   pointer-events: none;
   z-index: 10;
 }
 
-/* Smooth transitions */
-* {
-  transition: font-family 0.3s ease, font-size 0.3s ease, line-height 0.3s ease;
+/* ─────────────────────────────────────────────────────────────────────────────
+   MOTION — reduce aggressive animations always, more so in dyslexia mode
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Smooth global transitions */
+*, *::before, *::after {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    opacity 0.2s ease;
+}
+
+/* Honour prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body.dyslexia-mode * {
+  animation-duration: 0.4s !important;
+  transition-duration: 0.3s !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLLBAR STYLING
+───────────────────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TAILWIND @theme override
+───────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  --color-primary:   #3b82f6;
+  --color-secondary: #8b5cf6;
+  --font-sans: 'Outfit', 'Lexend', ui-sans-serif, system-ui, sans-serif;
 }

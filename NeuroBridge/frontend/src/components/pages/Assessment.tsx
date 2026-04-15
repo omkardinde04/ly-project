@@ -12,13 +12,15 @@ export function AssessmentPage() {
   const t = getTranslation(language);
   const [testState, setTestState] = useState<'intro' | 'partA' | 'partB' | 'report'>('intro');
   const [finalScore, setFinalScore] = useState<number>(0);
+  const [assessmentMetrics, setAssessmentMetrics] = useState<any>(null);
 
   const handleStartTest = () => {
     setTestState('partA');
   };
 
-  const handlePartAComplete = (score: number) => {
+  const handlePartAComplete = (score: number, metrics: any) => {
     setFinalScore(score);
+    setAssessmentMetrics(metrics);
     setTestState('partB');
   };
 
@@ -48,6 +50,7 @@ export function AssessmentPage() {
     return (
       <ReportGenerator
         score={finalScore}
+        metrics={assessmentMetrics}
         onRetake={handleRetake}
         onContinue={handleContinue}
       />

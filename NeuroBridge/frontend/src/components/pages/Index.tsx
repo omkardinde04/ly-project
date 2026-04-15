@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
-import { AudioControl } from '../ui/AudioControl';
 import { Hero } from '../sections/Hero';
 import { HowItWorks } from '../sections/HowItWorks';
 import { Features } from '../sections/Features';
 import { GreatCompany } from '../sections/GreatCompany';
+import { CommunitySectionPreview } from '../sections/CommunitySectionPreview';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -40,12 +40,6 @@ export default function Index() {
     <div className="py-2 pb-10 space-y-6">
       {/* Accessibility Bar */}
       <div className="mx-auto max-w-7xl flex flex-col sm:flex-row justify-between items-center gap-4 px-4 lg:px-0">
-        {/* Left: Text to Speech */}
-        <div className="shrink-0 w-full sm:w-auto flex justify-center sm:justify-start">
-          <AudioControl text={pageContent} showControls={true} />
-        </div>
-
-        {/* Right: Language Selector and Dyslexia Toggle */}
         <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-end">
           <select
             value={language}
@@ -92,6 +86,9 @@ export default function Index() {
           <Features />
           <GreatCompany />
         </div>
+
+        {/* Community Preview Section */}
+        <CommunitySectionPreview />
 
         {/* CTA Section */}
 

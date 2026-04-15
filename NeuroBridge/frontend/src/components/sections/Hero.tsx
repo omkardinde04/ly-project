@@ -105,23 +105,19 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Right Content - Single Image */}
-        <motion.div 
-          className="flex justify-center lg:justify-end relative pl-4 lg:pl-0 pt-8 lg:pt-0"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <div className="relative w-full max-w-md lg:max-w-[480px] group">
-            <img 
-              src="https://images.pexels.com/photos/5905708/pexels-photo-5905708.jpeg?auto=compress&cs=tinysrgb&w=800"
-              alt="Student learning with focus using technology"
-              className="w-full h-auto relative z-10 transition-all duration-500 rounded-2xl shadow-lg"
+          <div className="w-full flex items-center justify-center">
+            <motion.img
+              src="/images/hero_professional.png"
+              alt="Professional adult working on laptop in a calm modern workspace"
+              className="w-full h-auto object-contain"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
             />
           </div>
-        </motion.div>
 
       </div>
     </div>
   );
 }
+

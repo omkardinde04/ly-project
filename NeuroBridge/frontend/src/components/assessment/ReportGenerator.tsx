@@ -4,13 +4,23 @@ import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext'
 import { getTranslation, type Translation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
 
+interface AssessmentMetrics {
+  totalTime: number;
+  averageTimePerQuestion: number;
+  confusionCount: number;
+  backtrackCount: number;
+  audioReplayCount: number;
+  questionMetrics: any[];
+}
+
 interface ReportGeneratorProps {
   score: number;
+  metrics?: AssessmentMetrics;
   onRetake: () => void;
   onContinue: () => void;
 }
 
-export function ReportGenerator({ score, onRetake, onContinue }: ReportGeneratorProps) {
+export function ReportGenerator({ score, metrics, onRetake, onContinue }: ReportGeneratorProps) {
   const { language, setDyslexiaLevel, markTestCompleted } = useDyslexia();
   const t = getTranslation(language);
 
@@ -158,6 +168,79 @@ export function ReportGenerator({ score, onRetake, onContinue }: ReportGenerator
           </div>
         </div>
       </motion.div>
+
+      {/* Behavior Metrics (if available) */}
+      {metrics && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl shadow-xl p-8 mb-6 border-2 border-purple-100"
+        >
+          <h2 className="text-3xl font-black text-gray-800 mb-6 text-center flex items-center justify-center gap-3">
+            <span className="text-4xl">📈</span>
+            Your Activity Insights
+          </h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl p-6 text-center border border-purple-100">
+              <div className="text-4xl mb-2">⏱️</div>
+              <div className="text-3xl font-black text-purple-600 mb-1">
+                {Math.round(metrics.totalTime)}s
+              </div>
+              <div className="text-sm font-bold text-gray-600">Total Time</div>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 text-center border border-blue-100">
+              <div className="text-4xl mb-2">🎯</div>
+              <div className="text-3xl font-black text-blue-600 mb-1">
+                {Math.round(metrics.averageTimePerQuestion)}s
+              </div>
+              <div className="text-sm font-bold text-gray-600">Avg per Activity</div>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 text-center border border-yellow-100">
+              <div className="text-4xl mb-2">🤔</div>
+              <div className="text-3xl font-black text-yellow-600 mb-1">
+                {metrics.confusionCount}
+              </div>
+              <div className="text-sm font-bold text-gray-600">Mind Changes</div>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-6 text-center border border-green-100">
+              <div className="text-4xl mb-2">🔊</div>
+              <div className="text-3xl font-black text-green-600 mb-1">
+                {metrics.audioReplayCount}
+              </div>
+              <div className="text-sm font-bold text-gray-600">Audio Replays</div>
+            </div>
+          </div>
+
+          {metrics.confusionCount > 3 && (
+            <div className="mt-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
+              <p className="text-sm text-gray-700 font-medium flex items-start gap-2">
+                <span className="text-xl">💡</span>
+                <span>
+                  <strong>Insight:</strong> You changed your answer several times. This might mean you were carefully 
+                  thinking through options - that's great! Some activities might benefit from extra audio support.
+                </span>
+              </p>
+            </div>
+          )}
+
+          {metrics.audioReplayCount > 5 && (
+            <div className="mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+              <p className="text-sm text-gray-700 font-medium flex items-start gap-2">
+                <span className="text-xl">🎧</span>
+                <span>
+                  <strong>Audio Preference Detected:</strong> You listened to instructions multiple times. 
+                  Audio-first learning might work best for you!
+                </span>
+              </p>
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* Cognitive Profile Dimensions */}
       <motion.div

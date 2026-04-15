@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
-import { AudioControl } from '../ui/AudioControl';
 import { DashboardSidebar } from '../dashboard/DashboardSidebar';
 import { MyLearning } from '../dashboard/MyLearning';
 import { ProgressTracking } from '../dashboard/ProgressTracking';
@@ -121,7 +120,6 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
             </h1>
             <p className="text-lg text-gray-600 font-medium">{t.yourPersonalizedDashboard}</p>
           </div>
-          <AudioControl text={dashboardText} />
         </div>
 
         {/* Profile Summary */}
