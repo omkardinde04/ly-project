@@ -101,24 +101,27 @@ function ruleBasedSimplify(raw: RawOpportunity): SimplifiedOpportunity {
 // ─── Optional: Real LLM call (used only when OPENAI_API_KEY is set) ───────────
 
 async function llmSimplify(raw: RawOpportunity): Promise<SimplifiedOpportunity | null> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
+  const apiKey = process.env.GEMINI_API_KEY;
 
-  try {
-    const axios = (await import("axios")).default;
-    const prompt = `
+  if (!apiKey) {
+    console.warn('⚠️  [AI Simplifier] No GEMINI_API_KEY found — using rule-based fallback.');
+    return null;
+  }
+
+  const axios = (await import('axios')).default;
+  const prompt = `
 You are an AI assistant for dyslexic users. Simplify this opportunity.
 
 Title: ${raw.title}
-Company/Org: ${raw.company || raw.organization || ""}
-Location: ${raw.location || ""}
-Type: ${raw.type || ""}
-Deadline: ${raw.deadline || "Not specified"}
-Prize: ${raw.prize || "Not applicable"}
+Company/Org: ${raw.company || raw.organization || ''}
+Location: ${raw.location || ''}
+Type: ${raw.type || ''}
+Deadline: ${raw.deadline || 'Not specified'}
+Prize: ${raw.prize || 'Not applicable'}
 Description: ${raw.description}
 Eligibility: ${raw.eligibility}
 
-Return ONLY valid JSON matching this structure:
+Return ONLY valid JSON matching this structure exactly:
 {
   "title": "...",
   "company": "...",
@@ -131,33 +134,67 @@ Return ONLY valid JSON matching this structure:
 }
 
 Rules:
-- Use grade 5–7 English
+- Use grade 5-7 English
 - Max 3 bullets for whatYouWillDo
 - Short sentences only
 - No jargon`;
 
-    const res = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-      },
-      { headers: { Authorization: `Bearer ${apiKey}` } }
-    );
+  const candidateModels = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
 
-    const content = res.data.choices[0].message.content;
-    return JSON.parse(content);
-  } catch (e: any) {
-    console.error("LLM simplify failed:", e.message);
-    return null;
+  for (const modelName of candidateModels) {
+    console.log(`\n🤖 [Gemini] Trying model ${modelName} to simplify: "${raw.title}"`);
+
+    try {
+      const res = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 1024,
+            responseMimeType: 'application/json',
+          },
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const content = res.data?.candidates?.[0]?.content?.parts?.[0]?.text
+        || res.data?.candidates?.[0]?.content?.[0]?.text
+        || res.data?.candidates?.[0]?.output
+        || res.data?.candidates?.[0]?.text;
+
+      if (!content) {
+        throw new Error('Empty response from Gemini');
+      }
+
+      console.log(`✅ [Gemini] Response received from ${modelName} for "${raw.title}"`);
+      console.log(`   Preview: ${content.substring(0, 120).replace(/\n/g, ' ')}...\n`);
+
+      return JSON.parse(content);
+    } catch (e: any) {
+      const message = e.response?.data?.error?.message || e.message;
+      console.error(`❌ [Gemini] ${modelName} failed for "${raw.title}":`, message);
+      if (!/requested entity was not found|model .* is not found/i.test(message)) {
+        break;
+      }
+    }
   }
+
+  return null;
 }
 
 // ─── Public export ────────────────────────────────────────────────────────────
 
 export async function simplifyOpportunity(raw: RawOpportunity): Promise<SimplifiedOpportunity> {
   const llmResult = await llmSimplify(raw);
-  if (llmResult) return llmResult;
+  if (llmResult) {
+    console.log(`✨ [AI Simplifier] GPT result used for "${raw.title}"`);
+    return llmResult;
+  }
+  console.log(`📐 [AI Simplifier] Rule-based fallback used for "${raw.title}"`);
   return ruleBasedSimplify(raw);
 }

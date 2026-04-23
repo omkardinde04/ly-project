@@ -5,6 +5,21 @@ import { simplifyOpportunity } from '../services/aiSimplifier';
 
 export const jobsRouter = Router();
 
+// ─── On-demand simplify (called directly from frontend card/modal) ─────────────
+jobsRouter.post('/simplify', async (req: Request, res: Response) => {
+  const raw = req.body;
+  if (!raw || !raw.title || !raw.description) {
+    return res.status(400).json({ error: 'title and description are required.' });
+  }
+  try {
+    const result = await simplifyOpportunity(raw);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Simplify error:', error.message);
+    res.status(500).json({ error: 'Simplification failed.' });
+  }
+});
+
 // ─── Connect accounts ─────────────────────────────────────────────────────────
 jobsRouter.post('/connect/:platform', async (req: Request, res: Response) => {
   const { platform } = req.params;
@@ -29,25 +44,8 @@ jobsRouter.get('/:platform/jobs', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Unknown platform' });
     }
 
-    // Run every card through the AI Simplifier pipeline
-    const simplified = await Promise.all(
-      rawData.map(async (item) => ({
-        ...item,
-        simplified: await simplifyOpportunity({
-          title: item.title,
-          company: item.company,
-          organization: item.organization,
-          location: item.location,
-          deadline: item.deadline,
-          prize: item.prize,
-          description: item.description,
-          eligibility: item.eligibility || '',
-          type: item.type,
-        }),
-      }))
-    );
-
-    res.json(simplified);
+    // Return the raw data directly — frontend will handle the "Simplify with AI" click
+    res.json(rawData);
   } catch (error: any) {
     console.error(`Failed to fetch ${platform} jobs:`, error.message);
     res.status(500).json({ error: 'Failed to fetch opportunities' });
