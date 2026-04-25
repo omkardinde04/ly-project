@@ -34,7 +34,6 @@ export function AssessmentPage() {
   };
 
   const handleContinue = () => {
-    // Navigate to dashboard
     window.location.href = '/dashboard';
   };
 
@@ -56,6 +55,7 @@ export function AssessmentPage() {
       />
     );
   }
+
 
   // Intro Screen
   return (

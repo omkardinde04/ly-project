@@ -78,6 +78,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
     } else {
       const endTime = Date.now();
       const totalTime = (endTime - startTime) / 1000;
+
       const questionMetrics: QuestionMetric[] = answers.map((answer, index) => ({
         questionId: partAQuestions[index].id,
         timeTaken: 10,
@@ -86,8 +87,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         optionChanges: optionChanges[index] || 0,
         audioReplays: audioReplays[index] || 0,
       }));
+
       const confusionCount = optionChanges.reduce((s, c) => s + (c || 0), 0);
       const totalAudioReplays = audioReplays.reduce((s, r) => s + (r || 0), 0);
+
       const metrics: AssessmentMetrics = {
         totalTime,
         averageTimePerQuestion: totalTime / partAQuestions.length,
@@ -96,12 +99,17 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         audioReplayCount: totalAudioReplays,
         questionMetrics,
       };
+
+      // Score based on frequency weights (higher weight = more difficulty indicators)
+      // Max weight per question = 3; total possible = 15 * 3 = 45
       const totalPossibleScore = partAQuestions.length * 3;
-      const userScore = answers.reduce((acc, answer, index) => {
+      const userWeightTotal = answers.reduce((acc, answer, index) => {
         const weight = partAQuestions[index].options[answer]?.weight ?? 0;
         return acc + weight;
       }, 0);
-      const score = Math.round((userScore / totalPossibleScore) * 100);
+      // Invert: lower frequency (lower weight) = higher performance score
+      const score = Math.round(((totalPossibleScore - userWeightTotal) / totalPossibleScore) * 100);
+
       onComplete(score, metrics);
     }
   };
@@ -114,12 +122,12 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const isAnswered = answers[currentQuestion] !== -1;
 
   return (
-    // ── Outer shell: fixed viewport height, no scroll ──
+    // Outer shell: fixed viewport height, no scroll
     <div
       className="w-full max-w-3xl mx-auto flex flex-col overflow-hidden"
       style={{ height: '88vh', maxHeight: '860px', minHeight: '500px' }}
     >
-      {/* ── TOP BAR: progress ── */}
+      {/* TOP BAR: progress */}
       <div className="flex-none pb-2">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-semibold text-gray-400 tracking-widest uppercase">
@@ -147,7 +155,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         </div>
       </div>
 
-      {/* ── ANIMATED CARD ── */}
+      {/* ANIMATED CARD */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentQuestion}
@@ -157,14 +165,13 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
           transition={{ duration: 0.22, ease: 'easeInOut' }}
           className="flex-1 min-h-0 flex flex-col bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
         >
-          {/* ── QUESTION TEXT (fixed height) ── */}
+          {/* QUESTION TEXT */}
           <div className="flex-none px-5 pt-4 pb-3 border-b border-slate-100">
             <p
               className="font-semibold text-gray-800"
               style={{
                 fontSize: 'clamp(0.875rem, 1.6vw, 1.05rem)',
                 lineHeight: 1.4,
-                // Hard cap at 3 lines
                 display: '-webkit-box',
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
@@ -180,7 +187,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             )}
           </div>
 
-          {/* ── ILLUSTRATION (flex-1 — takes remaining space) ── */}
+          {/* ILLUSTRATION */}
           <div className="flex-1 min-h-0 relative bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden">
             {/* Difficulty badge */}
             <span className={`absolute top-2 right-2 z-10 px-2.5 py-0.5 rounded-full text-xs font-bold ${
@@ -205,7 +212,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             )}
           </div>
 
-          {/* ── ANSWER OPTIONS (fixed height) ── */}
+          {/* ANSWER OPTIONS — 4 frequency buttons */}
           <div className="flex-none px-4 pt-3 pb-2 border-t border-slate-100 bg-white">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {currentQ.options.map((option, index) => {
@@ -238,7 +245,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             </div>
           </div>
 
-          {/* ── NAVIGATION (pinned to bottom) ── */}
+          {/* NAVIGATION */}
           <div className="flex-none px-4 py-3 bg-white flex items-center justify-between gap-2 border-t border-slate-100">
             <button
               onClick={handlePrevious}

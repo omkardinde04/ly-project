@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
@@ -12,19 +12,7 @@ import { Profile } from '../dashboard/Profile';
 import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
 
 export function Dashboard() {
-  const { testScore, isTestCompleted } = useDyslexia();
   const [activeTab, setActiveTab] = useState('home');
-
-  // Redirect to assessment if not completed
-  useEffect(() => {
-    if (!isTestCompleted) {
-      window.location.href = '/assessment';
-    }
-  }, [isTestCompleted]);
-
-  if (!isTestCompleted || testScore === null) {
-    return null;
-  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -61,6 +49,7 @@ export function Dashboard() {
     </div>
   );
 }
+
 
 function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { dyslexiaLevel, testScore, language } = useDyslexia();
@@ -102,7 +91,6 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
   };
 
   const message = getDashboardMessage(dyslexiaLevel);
-  const dashboardText = `${message.title} ${message.subtitle}`;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -180,30 +168,183 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
         </div>
       </motion.div>
 
+
+      {/* Dashboard Action Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        {/* Assessment Card */}
+        <DashboardCard
+          icon="🧠"
+          title="Assessment"
+          description="Take a short cognitive assessment to personalise your learning experience."
+          buttonLabel="Start Assessment →"
+          buttonColor="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+          onClick={() => window.location.href = '/assessment'}
+          badge={testScore !== null ? `Score: ${testScore}` : 'Not taken yet'}
+          badgeColor={testScore !== null ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}
+          delay={0.1}
+        />
+
+        {/* Continue Learning Card */}
+        <DashboardCard
+          icon="📚"
+          title="Continue Learning"
+          description="Pick up where you left off with your personalised learning modules."
+          buttonLabel="Go to Learning →"
+          buttonColor="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
+          onClick={() => onNavigate('learning')}
+          delay={0.15}
+        />
+
+        {/* View Progress Card */}
+        <DashboardCard
+          icon="📊"
+          title="View Progress"
+          description="See how far you've come and celebrate your achievements."
+          buttonLabel="View Progress →"
+          buttonColor="bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600"
+          onClick={() => onNavigate('progress')}
+          delay={0.2}
+        />
+
+        {/* Connect LinkedIn Card */}
+        <DashboardCard
+          icon="💼"
+          title="Connect LinkedIn"
+          description="Sync your profile, skills and certifications with LinkedIn automatically."
+          buttonLabel="Connect LinkedIn →"
+          buttonColor="bg-[#0077B5] hover:bg-[#005fa3]"
+          onClick={() => onNavigate('profile')}
+          delay={0.25}
+        />
+      </motion.div>
+
       {/* Quick Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { id: 'learning', icon: '📚', title: 'My Learning', desc: 'Personalized courses' },
-          { id: 'quizzes', icon: '📝', title: 'Tests & Quizzes', desc: 'Interactive practice' },
-          { id: 'progress', icon: '📊', title: 'Track Progress', desc: 'See your growth' },
-          { id: 'accessibility', icon: '⚙️', title: 'Accessibility', desc: 'Customize experience' },
+          { id: 'notebook', icon: '📓', title: 'AI Notebook', desc: 'Smart learning assistant' },
+          { id: 'community', icon: '🌍', title: 'Community', desc: 'Connect with peers' },
+          { id: 'opportunities', icon: '🚀', title: 'Opportunities', desc: 'Jobs & scholarships' },
+          { id: 'accessibility', icon: '⚙️', title: 'Accessibility', desc: 'Customise experience' },
         ].map((item, index) => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 + index * 0.05 }}
+            transition={{ delay: 0.3 + index * 0.05 }}
             onClick={() => onNavigate(item.id)}
-            className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-50 hover:border-blue-300 transition-all cursor-pointer group"
+            className="bg-white rounded-2xl shadow-md p-5 border-2 border-blue-50 hover:border-blue-300 transition-all cursor-pointer group"
           >
-            <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <span className="text-2xl">{item.icon}</span>
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <span className="text-xl">{item.icon}</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{item.title}</h3>
-            <p className="text-gray-600 text-sm">{item.desc}</p>
+            <h3 className="text-base font-bold text-gray-800 mb-1">{item.title}</h3>
+            <p className="text-gray-500 text-xs font-medium">{item.desc}</p>
           </motion.div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Reusable Dashboard Card Component
+function DashboardCard({
+  icon, title, description, buttonLabel, buttonColor, onClick, badge, badgeColor, delay = 0,
+}: {
+  icon: string; title: string; description: string; buttonLabel: string;
+  buttonColor: string; onClick: () => void; badge?: string; badgeColor?: string; delay?: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-50 hover:shadow-xl transition-all flex flex-col gap-4"
+    >
+      <div className="flex items-start justify-between">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center text-3xl border border-blue-100">
+          {icon}
+        </div>
+        {badge && (
+          <span className={`text-xs font-bold px-3 py-1 rounded-full ${badgeColor}`}>{badge}</span>
+        )}
+      </div>
+      <div>
+        <h3 className="text-xl font-black text-gray-800 mb-1">{title}</h3>
+        <p className="text-gray-500 text-sm font-medium leading-relaxed">{description}</p>
+      </div>
+      <button
+        onClick={onClick}
+        className={`mt-auto w-full py-3 rounded-xl text-white font-bold text-sm transition-all shadow-sm ${buttonColor}`}
+      >
+        {buttonLabel}
+      </button>
+    </motion.div>
+  );
+}
+
+
+
+// Welcome screen for users who haven't taken assessment yet
+function DashboardWelcome({ onStartAssessment }: { onStartAssessment: () => void }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-8">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-12 text-center"
+      >
+        <div className="text-8xl mb-6">🧠</div>
+        <h1 className="text-5xl font-black text-gray-800 mb-4">
+          Welcome to NeuroBridge!
+        </h1>
+        <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+          Personalize your learning experience by taking our interactive assessment.
+          <br />
+          <span className="text-sm text-gray-500">It only takes 5-10 minutes and helps us customize everything for you.</span>
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-blue-50 rounded-2xl p-6">
+            <div className="text-4xl mb-3">🎯</div>
+            <h3 className="font-bold text-gray-800 mb-2">Personalized</h3>
+            <p className="text-sm text-gray-600">Tailored to your learning style</p>
+          </div>
+          <div className="bg-purple-50 rounded-2xl p-6">
+            <div className="text-4xl mb-3">🎮</div>
+            <h3 className="font-bold text-gray-800 mb-2">Interactive</h3>
+            <p className="text-sm text-gray-600">Fun activities, not boring tests</p>
+          </div>
+          <div className="bg-green-50 rounded-2xl p-6">
+            <div className="text-4xl mb-3">⚡</div>
+            <h3 className="font-bold text-gray-800 mb-2">Quick</h3>
+            <p className="text-sm text-gray-600">Complete in just 5-10 minutes</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            onClick={onStartAssessment}
+            className="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-bold text-lg hover:shadow-xl transition-all transform hover:scale-105"
+          >
+            Start Assessment →
+          </button>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-10 py-4 bg-gray-200 text-gray-700 rounded-full font-bold text-lg hover:bg-gray-300 transition-all"
+          >
+            Explore First
+          </button>
+        </div>
+
+        <p className="mt-8 text-sm text-gray-500">
+          💡 You can also take the assessment later from the dashboard
+        </p>
+      </motion.div>
     </div>
   );
 }

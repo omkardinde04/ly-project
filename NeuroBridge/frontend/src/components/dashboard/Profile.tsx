@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { AudioControl } from '../ui/AudioControl';
+import { LinkedInConnect } from './LinkedInConnect';
+
 
 export function Profile() {
   const { dyslexiaLevel, testScore } = useDyslexia();
@@ -29,7 +31,19 @@ export function Profile() {
         <p className="text-gray-600 font-medium">Complete your profile to personalize your experience</p>
       </div>
 
-      {/* Profile Summary Card */}
+      {/* LinkedIn Connect Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-2"
+      >
+        <h2 className="text-lg font-black text-gray-700 flex items-center gap-2">
+          <span>💼</span> Connected Accounts
+        </h2>
+        <LinkedInConnect />
+      </motion.div>
+
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

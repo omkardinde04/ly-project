@@ -34,8 +34,8 @@ export function Login() {
     };
 
     const handleLogin = () => {
-        // Simulate login - in real app, this would validate credentials
-        navigate('/assessment');
+        // Navigate to dashboard — users choose to start assessment from there
+        navigate('/dashboard');
     };
 
     return (

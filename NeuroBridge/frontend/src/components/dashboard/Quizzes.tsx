@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { AudioControl } from '../ui/AudioControl';
 
 // Mock Quiz Database
@@ -44,7 +43,6 @@ const QUIZZES = [
 ];
 
 export function Quizzes() {
-  const { completeQuiz } = useDyslexia();
   const [activeQuiz, setActiveQuiz] = useState<typeof QUIZZES[0] | null>(null);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -68,10 +66,7 @@ export function Quizzes() {
       setCurrentQuestionIdx(prev => prev + 1);
       setSelectedAnswer(null);
     } else {
-      // Finish Quiz
-      const finalScoreRaw = score + (selectedAnswer === activeQuiz?.questions[currentQuestionIdx].correct ? 1 : 0);
-      const percentageScore = Math.round((finalScoreRaw / (activeQuiz?.questions.length || 1)) * 100);
-      completeQuiz(percentageScore);
+      // Finish Quiz — just set finished state
       setIsFinished(true);
     }
   };
