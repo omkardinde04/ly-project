@@ -1,0 +1,10 @@
+◇ injected env (11) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  NeuroBridge Backend Starting…
+  Port        : 4000
+  Gemini Key  : ✅ Loaded (ends …wtz6ZI)
+  LinkedIn ID : ✅ Loaded
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Backend server running on http://localhost:4000

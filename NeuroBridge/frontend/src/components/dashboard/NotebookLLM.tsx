@@ -146,7 +146,7 @@ export function NotebookLLM() {
             <span className="text-base">📎</span> Upload a document (optional)
           </label>
           <div className="border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center hover:border-blue-300 transition-colors">
-            <input type="file" accept=".txt,.pdf,.doc,.docx" onChange={handleFileUpload}
+            <input type="file" accept=".txt,.pdf,.doc,.docx,audio/*,video/*" onChange={handleFileUpload}
               className="hidden" id="notebook-file" />
             {selectedFile ? (
               <div className="flex items-center justify-between bg-blue-50 rounded-xl p-3">
@@ -160,7 +160,7 @@ export function NotebookLLM() {
             ) : (
               <label htmlFor="notebook-file" className="cursor-pointer flex flex-col items-center gap-1">
                 <span className="text-2xl">📂</span>
-                <span className="text-sm text-gray-500 font-medium">Click to upload TXT, PDF, DOC</span>
+                <span className="text-sm text-gray-500 font-medium">Click to upload TXT, PDF, DOC, Audio, Video</span>
               </label>
             )}
           </div>
