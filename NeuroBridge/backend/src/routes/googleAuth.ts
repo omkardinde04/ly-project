@@ -7,10 +7,18 @@ import database from '../database';
 export const googleAuthRouter = Router();
 
 // Configure Google OAuth Strategy
+const googleClientID = process.env.GOOGLE_CLIENT_ID ?? '';
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? '';
+const googleCallbackURL = process.env.GOOGLE_REDIRECT_URI ?? 'http://localhost:4000/api/auth/google/callback';
+
+if (!googleClientID || !googleClientSecret) {
+  throw new Error('Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in backend .env');
+}
+
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID || 'DUMMY_CLIENT_ID',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'DUMMY_CLIENT_SECRET',
-  callbackURL: "http://localhost:4000/api/auth/google/callback"
+  clientID: googleClientID,
+  clientSecret: googleClientSecret,
+  callbackURL: googleCallbackURL
 }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
   try {
     // Extract user information from Google profile
@@ -69,7 +77,7 @@ passport.deserializeUser(async (id: number, done) => {
 // Google OAuth routes
 googleAuthRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
 
-googleAuthRouter.get('/google/callback', 
+googleAuthRouter.get('/callback', 
   passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5147'}?error=Authentication failed` }),
   async (req: Request, res: Response) => {
     try {
@@ -85,8 +93,9 @@ googleAuthRouter.get('/google/callback',
       // Determine redirect based on assessment completion
       const redirectUrl = user.assessment_completed ? '/dashboard' : '/assessment';
 
-      // Redirect to frontend with token and redirect URL
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5147'}?token=${token}&redirect=${redirectUrl}`);
+      // Redirect to frontend auth handler with token and redirect URL
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5147';
+      res.redirect(`${frontendUrl}/auth-redirect?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectUrl)}`);
       
     } catch (error) {
       console.error('Google auth callback error:', error);

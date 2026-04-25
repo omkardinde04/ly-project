@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -71,24 +71,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user]);
 
-  const login = (newToken: string) => {
+  const login = async (newToken: string): Promise<void> => {
     setToken(newToken);
+    setIsLoading(true);
     
-    // Fetch user data with the new token
-    fetch('http://localhost:4000/api/auth/google/me', {
-      headers: {
-        'Authorization': `Bearer ${newToken}`
-      }
-    })
-    .then(response => {
+    try {
+      // Fetch user data with the new token
+      const response = await fetch('http://localhost:4000/api/auth/google/me', {
+        headers: {
+          'Authorization': `Bearer ${newToken}`
+        }
+      });
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return response.json();
-    })
-    .then(userData => {
+      
+      let userData = await response.json();
       console.log('User data fetched:', userData);
-      setUser(userData);
       
       // Check for temporary assessment data and link it
       const tempAssessment = localStorage.getItem('temp_assessment');
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('Linking temporary assessment to user:', assessmentData);
         
         // Save assessment to database
-        fetch('http://localhost:4000/api/auth/google/assessment/complete', {
+        const assessmentResponse = await fetch('http://localhost:4000/api/auth/google/assessment/complete', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -107,35 +107,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             assessment_score: assessmentData.score,
             classification: assessmentData.classification
           })
-        })
-        .then(response => {
-          if (response && response.ok) {
-            console.log('Assessment linked successfully');
-            // Clear temporary assessment
-            localStorage.removeItem('temp_assessment');
-            // Update user data
-            return fetch('http://localhost:4000/api/auth/google/me', {
-              headers: {
-                'Authorization': `Bearer ${newToken}`
-              }
-            });
-          }
-        })
-        .then(response => response ? response.json() : null)
-        .then(updatedUserData => {
-          if (updatedUserData) {
-            setUser(updatedUserData);
-          }
-        })
-        .catch(error => {
-          console.error('Error linking assessment:', error);
         });
+        
+        if (assessmentResponse && assessmentResponse.ok) {
+          console.log('Assessment linked successfully');
+          // Clear temporary assessment
+          localStorage.removeItem('temp_assessment');
+          // Fetch updated user data
+          const updatedResponse = await fetch('http://localhost:4000/api/auth/google/me', {
+            headers: {
+              'Authorization': `Bearer ${newToken}`
+            }
+          });
+          const updatedUserData = await updatedResponse.json();
+          if (updatedUserData) {
+            userData = updatedUserData;
+          }
+        }
       }
-    })
-    .catch(error => {
+      
+      setUser(userData);
+    } catch (error) {
       console.error('Error fetching user data:', error);
       logout(); // Clear token if user data fetch fails
-    });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {

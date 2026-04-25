@@ -1,7 +1,10 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+import express from 'express';
+import cors from 'cors';
 import session from 'express-session';
 import passport from 'passport';
 import { jobsRouter } from './routes/jobs';
@@ -11,8 +14,6 @@ import { linkedinRouter } from './routes/linkedin';
 import { brainRouter } from './routes/brain';
 import { googleAuthRouter } from './routes/googleAuth';
 import { emailAuthRouter } from './routes/emailAuth';
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const PORT = process.env.PORT || 4000;
 const geminiKey = process.env.GEMINI_API_KEY;

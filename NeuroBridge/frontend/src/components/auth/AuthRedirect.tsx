@@ -13,14 +13,18 @@ export const AuthRedirect: React.FC = () => {
     const redirectPath = urlParams.get('redirect') || '/dashboard';
 
     if (token) {
-      // Login with the token
-      login(token);
+      const processLogin = async () => {
+        // Login with the token (awaits user profile fetch)
+        await login(token);
+        
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Redirect to appropriate page
+        navigate(redirectPath);
+      };
       
-      // Clear URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      // Redirect to appropriate page
-      navigate(redirectPath);
+      processLogin();
     } else {
       // No token found, redirect to login
       navigate('/login');
