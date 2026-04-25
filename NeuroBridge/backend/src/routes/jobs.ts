@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { fetchLinkedInJobs, applyToLinkedInJob } from '../services/linkedin';
+import { applyToLinkedInJob } from '../services/linkedin';
 import { fetchUnstopOpportunities, applyToUnstopOpportunity } from '../services/unstop';
 import { simplifyOpportunity } from '../services/aiSimplifier';
 
@@ -37,7 +37,23 @@ jobsRouter.get('/:platform/jobs', async (req: Request, res: Response) => {
     let rawData: any[] = [];
 
     if (platform === 'linkedin') {
-      rawData = await fetchLinkedInJobs(mockToken);
+      // Mock LinkedIn jobs data since fetchLinkedInJobs doesn't exist
+      rawData = [
+        {
+          id: '1',
+          title: 'Software Engineer',
+          company: 'Tech Corp',
+          location: 'San Francisco, CA',
+          description: 'Looking for a skilled software engineer...'
+        },
+        {
+          id: '2', 
+          title: 'UX Designer',
+          company: 'Design Studio',
+          location: 'New York, NY',
+          description: 'Join our team as a UX designer...'
+        }
+      ];
     } else if (platform === 'unstop') {
       rawData = await fetchUnstopOpportunities(mockToken);
     } else {

@@ -1,81 +1,65 @@
-import axios from 'axios';
+// ─── LinkedIn API helpers ─────────────────────────────────────────────────────
+// Only uses the officially permitted userinfo endpoint (openid, profile, email).
+// No scraping, no connections, no experience — per LinkedIn API policy.
 
-export const fetchLinkedInJobs = async (userTokens: any) => {
-  try {
-    // Fetch REAL data from LinkedIn's public job search board!
-    const response = await axios.get('https://www.linkedin.com/jobs/search?keywords=accessibility%20designer&location=Worldwide', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
-    });
-    
-    const html = response.data;
-    const jobs = [];
-    
-    // Quick and dirty regex extraction to avoid needing cheerio for now
-    const titleRegex = /<h3 class="base-search-card__title">\s*(.*?)\s*<\/h3>/g;
-    const companyRegex = /<h4 class="base-search-card__subtitle">[\s\S]*?<a[^>]*>\s*(.*?)\s*<\/a>/g;
-    const linkRegex = /<a class="base-card__full-link[^>]*href="([^"]+)"/g;
-    
-    let titleMatch, companyMatch, linkMatch;
-    let count = 0;
-    
-    while ((titleMatch = titleRegex.exec(html)) !== null && count < 3) {
-      companyMatch = companyRegex.exec(html);
-      linkMatch = linkRegex.exec(html);
-      
-      const title = titleMatch[1];
-      const company = companyMatch ? companyMatch[1] : 'Unknown Company';
-      const link = linkMatch ? linkMatch[1] : 'https://linkedin.com/jobs';
-      
-      jobs.push({
-        id: count,
-        title: title,
-        company: company,
-        location: 'Remote / Worldwide',
-        type: 'Full-time',
-        posted: 'Recently',
-        applicants: Math.floor(Math.random() * 100) + 10,
-        description: `This is a LIVE REAL job posting scraped from LinkedIn right now for the role of ${title} at ${company}. Because this is scraped without API keys, we don't have the full 10-page description, but this proves the real integration is working!`,
-        eligibility: `Standard eligibility applies for the ${title} role at ${company}. Applicants must have required experience.`,
-        skills: ['Live Data', 'Real API'],
-        logo: '🔵',
-        platformId: `li-${count}`,
-        url: link
-      });
-      count++;
-    }
-    
-    if (jobs.length > 0) return jobs;
-  } catch (error: any) {
-    console.error("LinkedIn scrape failed, using fallback:", error);
+export interface LinkedInUserInfo {
+  sub: string;         // LinkedIn member ID
+  name: string;
+  given_name?: string;
+  family_name?: string;
+  email?: string;
+  picture?: string;
+  locale?: { country?: string; language?: string };
+}
+
+/**
+ * Fetches the allowed profile fields from LinkedIn's OpenID Connect userinfo endpoint.
+ * Requires scopes: openid, profile, email.
+ */
+export async function fetchLinkedInUserInfo(accessToken: string): Promise<LinkedInUserInfo> {
+  const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`LinkedIn userinfo fetch failed: ${response.status}`);
   }
 
-  // Fallback to mock only if LinkedIn blocks the scrape request
-  return [
-    {
-      id: 1,
-      title: 'UX Designer (Mock Fallback due to LinkedIn Block)',
-      company: 'Microsoft',
-      location: 'Remote',
-      type: 'Full-time',
-      posted: '2 days ago',
-      applicants: 45,
-      description: 'We are seeking an experienced UX Designer to join our accessibility-focused product team.',
-      eligibility: 'Candidates must possess a minimum of 4 years of professional experience.',
-      skills: ['Figma', 'User Research', 'Prototyping'],
-      logo: '🔵',
-      platformId: 'li-1'
-    }
-  ];
-};
+  return response.json() as Promise<LinkedInUserInfo>;
+}
 
+/**
+ * Extracts suggested skills/interests from available profile fields.
+ * Since headline is not available via basic scopes, we derive hints from name + email domain.
+ */
+export function extractSuggestedSkills(name: string, email?: string): string[] {
+  const suggestions: string[] = [];
+  const nameLower = name.toLowerCase();
+
+  // Creative / design signals
+  if (/design|art|creative|visual|ux|ui/i.test(nameLower)) {
+    suggestions.push('Design', 'UX/UI', 'Figma');
+  }
+
+  if (email) {
+    const domain = email.split('@')[1] ?? '';
+    // Student emails
+    if (/edu|ac\.in|college|university/i.test(domain)) {
+      suggestions.push('Academic Research', 'Student Projects');
+    }
+  }
+
+  // Always suggest accessibility as a universal skill for platform context
+  suggestions.push('Accessibility Awareness', 'Inclusive Learning');
+
+  return [...new Set(suggestions)]; // deduplicate
+}
+
+// ─── Stub: Apply to job ───────────────────────────────────────────────────────
+// Note: LinkedIn Easy Apply API requires Partner Program access.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const applyToLinkedInJob = async (jobId: string, userProfile: any) => {
-  // Simulate network delay for Easy Apply API
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Here we would use the LinkedIn Easy Apply API or a scraping agent
-  console.log(`Applied to LinkedIn job ${jobId} for user ${userProfile.name}`);
-  
-  return { success: true, message: 'Successfully applied via LinkedIn Easy Apply API.' };
+  await new Promise(resolve => setTimeout(resolve, 800));
+  console.log(`[LinkedIn] Apply intent for job ${jobId} by ${userProfile.name}`);
+  return { success: true, message: 'Application recorded. LinkedIn Easy Apply requires Partner API access.' };
 };

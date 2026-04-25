@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
 import { DashboardSidebar } from '../dashboard/DashboardSidebar';
 import { MyLearning } from '../dashboard/MyLearning';
@@ -10,9 +12,46 @@ import { NotebookLLM } from '../dashboard/NotebookLLM';
 import { Community } from '../dashboard/Community';
 import { Profile } from '../dashboard/Profile';
 import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
+import { LinkedInConnect } from '../dashboard/LinkedInConnect';
+import { Brain } from '../dashboard/Brain';
 
 export function Dashboard() {
+  const { user, token, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('home');
+
+  // Auto-navigate to linkedin tab if returning from OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('linkedin_connected') || params.get('linkedin_error')) {
+      setActiveTab('linkedin');
+    }
+  }, []);
+
+  // Check if user is authenticated
+  if (!user || !token) {
+    console.log('Dashboard: No user or token found, showing mock dashboard for testing');
+    // Temporarily show mock dashboard for testing
+    return (
+      <div className="flex min-h-screen bg-[#DBEAF5]">
+        <div className="flex-1 p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">Mock Dashboard (Testing)</h1>
+          <p className="text-gray-600 mb-4">Please log in to access the full dashboard.</p>
+          <button 
+            onClick={() => navigate('/login')}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if assessment is completed
+  if (!user.assessment_completed) {
+    return <DashboardWelcome onStartAssessment={() => navigate('/assessment')} />;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -24,6 +63,10 @@ export function Dashboard() {
         return <ProgressTracking />;
       case 'opportunities':
         return <Opportunities />;
+      case 'linkedin':
+        return <LinkedInConnect />;
+      case 'brain':
+        return <Brain />;
       case 'notebook':
         return <NotebookLLM />;
       case 'community':
@@ -51,9 +94,45 @@ export function Dashboard() {
 }
 
 
+
 function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const { dyslexiaLevel, testScore, language } = useDyslexia();
+  const { user, token, updateUser } = useAuth();
+  const navigate = useNavigate();
   const t = getTranslation(language);
+  const [isRetaking, setIsRetaking] = useState(false);
+
+  const handleRetakeAssessment = async () => {
+    if (!token || !user) return;
+    
+    setIsRetaking(true);
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/google/assessment/retake', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        // Update local user state
+        updateUser({
+          assessment_completed: false,
+          assessment_score: undefined,
+          assessment_type: undefined
+        });
+        
+        // Navigate to assessment
+        navigate('/assessment');
+      } else {
+        console.error('Failed to retake assessment');
+      }
+    } catch (error) {
+      console.error('Error retaking assessment:', error);
+    } finally {
+      setIsRetaking(false);
+    }
+  };
 
   const getLevelColor = (level: DyslexiaLevel) => {
     switch (level) {
@@ -112,24 +191,25 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
 
         {/* Profile Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
             <div className="text-sm font-semibold text-blue-600 mb-2">Your Level</div>
             <div className={`inline-block px-4 py-2 rounded-full font-bold ${getLevelColor(dyslexiaLevel)}`}>
               {dyslexiaLevel === 'none' ? 'Standard' : dyslexiaLevel === 'mild' ? 'Mild Support' : dyslexiaLevel === 'moderate' ? 'Moderate Support' : 'Enhanced Support'}
             </div>
           </div>
           
-          <div className="bg-linear-to-br from-green-50 to-green-100 rounded-2xl p-6">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6">
             <div className="text-sm font-semibold text-green-600 mb-2">Assessment Score</div>
             <div className="text-3xl font-black text-green-700">{testScore}</div>
           </div>
           
-          <div className="bg-linear-to-br from-purple-50 to-purple-100 rounded-2xl p-6">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6">
             <div className="text-sm font-semibold text-purple-600 mb-2">Accessibility Mode</div>
             <div className="text-lg font-bold text-purple-700">Active ✓</div>
           </div>
         </div>
       </motion.div>
+
 
       {/* Cognitive Profile Overview */}
       <motion.div
@@ -180,12 +260,12 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
         <DashboardCard
           icon="🧠"
           title="Assessment"
-          description="Take a short cognitive assessment to personalise your learning experience."
-          buttonLabel="Start Assessment →"
-          buttonColor="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-          onClick={() => window.location.href = '/assessment'}
-          badge={testScore !== null ? `Score: ${testScore}` : 'Not taken yet'}
-          badgeColor={testScore !== null ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}
+          description={user?.assessment_completed ? "Retake the assessment to update your learning profile." : "Take a short cognitive assessment to personalise your learning experience."}
+          buttonLabel={user?.assessment_completed ? (isRetaking ? "Retaking..." : "Retake Assessment →") : "Start Assessment →"}
+          buttonColor={user?.assessment_completed ? "bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700" : "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"}
+          onClick={user?.assessment_completed ? (isRetaking ? () => {} : handleRetakeAssessment) : () => navigate('/assessment')}
+          badge={user?.assessment_score ? `Score: ${user.assessment_score}` : 'Not taken yet'}
+          badgeColor={user?.assessment_score ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}
           delay={0.1}
         />
 
@@ -211,16 +291,8 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
           delay={0.2}
         />
 
-        {/* Connect LinkedIn Card */}
-        <DashboardCard
-          icon="💼"
-          title="Connect LinkedIn"
-          description="Sync your profile, skills and certifications with LinkedIn automatically."
-          buttonLabel="Connect LinkedIn →"
-          buttonColor="bg-[#0077B5] hover:bg-[#005fa3]"
-          onClick={() => onNavigate('profile')}
-          delay={0.25}
-        />
+        {/* LinkedIn Promo Card */}
+        <LinkedInPromoCard onNavigate={onNavigate} />
       </motion.div>
 
       {/* Quick Navigation Cards */}
@@ -348,3 +420,50 @@ function DashboardWelcome({ onStartAssessment }: { onStartAssessment: () => void
     </div>
   );
 }
+
+function LinkedInPromoCard({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const [isConnected, setIsConnected] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('linkedin_profile');
+    if (saved) {
+      try {
+        const p = JSON.parse(saved);
+        setProfile(p);
+        setIsConnected(true);
+      } catch (e) {
+        console.error('Failed to parse linkedin profile', e);
+      }
+    }
+  }, []);
+
+  if (isConnected && profile) {
+    return (
+      <DashboardCard
+        icon="🚀"
+        title="LinkedIn Integrated"
+        description={`Connected as ${profile.name}. Explore your AI-generated career paths and learning roadmap.`}
+        buttonLabel="Open My Plan →"
+        buttonColor="bg-gradient-to-r from-[#0077B5] to-[#00a0dc] hover:from-[#005fa3] hover:to-[#0088cc]"
+        onClick={() => onNavigate('linkedin')}
+        delay={0.25}
+        badge="Active"
+        badgeColor="bg-blue-100 text-[#0077B5]"
+      />
+    );
+  }
+
+  return (
+    <DashboardCard
+      icon="💼"
+      title="Connect LinkedIn"
+      description="Sync your career profile to unlock personalized opportunity matching and skill roadmaps."
+      buttonLabel="Connect LinkedIn →"
+      buttonColor="bg-[#0077B5] hover:bg-[#005fa3]"
+      onClick={() => onNavigate('linkedin')}
+      delay={0.25}
+    />
+  );
+}
+

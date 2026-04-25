@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+requests
+faiss-cpu
+sentence-transformers
+pypdf
+python-docx
+pandas
+torch

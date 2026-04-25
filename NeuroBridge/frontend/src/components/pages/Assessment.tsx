@@ -1,18 +1,23 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AssessmentTest } from '../assessment/AssessmentTest';
 import { ReportGenerator } from '../assessment/ReportGenerator';
 import { CognitiveTaskAssessment } from '../assessment/CognitiveTaskAssessment';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 
 export function AssessmentPage() {
   const { language, completeCognitiveTasks } = useDyslexia();
+  const { user, token, updateUser } = useAuth();
+  const navigate = useNavigate();
   const t = getTranslation(language);
   const [testState, setTestState] = useState<'intro' | 'partA' | 'partB' | 'report'>('intro');
   const [finalScore, setFinalScore] = useState<number>(0);
   const [assessmentMetrics, setAssessmentMetrics] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleStartTest = () => {
     setTestState('partA');
@@ -24,9 +29,70 @@ export function AssessmentPage() {
     setTestState('partB');
   };
 
-  const handlePartBComplete = (profile: any) => {
+  const handlePartBComplete = async (profile: any) => {
     completeCognitiveTasks(profile);
     setTestState('report');
+    
+    // Save assessment completion to database
+    if (user && token) {
+      await saveAssessmentResults(finalScore, assessmentMetrics);
+    }
+  };
+
+  const saveAssessmentResults = async (score: number, metrics: any) => {
+    // Determine assessment type based on score
+    let assessmentType = "No Dyslexia Indicators";
+    if (score >= 70) {
+      assessmentType = "Severe Dyslexia Indicators";
+    } else if (score >= 40) {
+      assessmentType = "Moderate Dyslexia Indicators";
+    } else if (score >= 20) {
+      assessmentType = "Mild Dyslexia Indicators";
+    }
+
+    // Save to localStorage temporarily
+    const tempAssessment = {
+      score,
+      classification: assessmentType,
+      metrics,
+      completed_at: new Date().toISOString()
+    };
+    localStorage.setItem('temp_assessment', JSON.stringify(tempAssessment));
+
+    // If user is logged in, save to database immediately
+    if (token && user) {
+      setIsSaving(true);
+      try {
+        const response = await fetch('http://localhost:4000/api/auth/google/assessment/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            assessment_score: score,
+            classification: assessmentType
+          })
+        });
+
+        if (response.ok) {
+          // Update local user state
+          updateUser({
+            assessment_completed: true,
+            assessment_score: score,
+            classification: assessmentType
+          });
+          // Clear temporary assessment after saving
+          localStorage.removeItem('temp_assessment');
+        } else {
+          console.error('Failed to save assessment results');
+        }
+      } catch (error) {
+        console.error('Error saving assessment results:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    }
   };
 
   const handleRetake = () => {
@@ -34,7 +100,11 @@ export function AssessmentPage() {
   };
 
   const handleContinue = () => {
-    window.location.href = '/dashboard';
+    if (!user || !token) {
+      navigate('/login', { state: { createAccount: true } });
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   if (testState === 'partA') {

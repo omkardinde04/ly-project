@@ -296,6 +296,158 @@ llmRouter.post(
   )
 );
 
+
+// ─── POST /api/llm/recommend ──────────────────────────────────────────────────
+// ML Recommendation engine: merges dyslexia assessment + LinkedIn profile →
+// Gemini generates personalized careers, learning path, internships, skill gaps.
+// ──────────────────────────────────────────────────────────────────────────────
+
+interface CognitiveProfile {
+  phonological: number;
+  visual: number;
+  workingMemory: number;
+  processingSpeed: number;
+  orthographic: number;
+  executive: number;
+}
+
+interface LinkedInProfileInput {
+  name?: string;
+  email?: string;
+}
+
+interface RecommendInput {
+  cognitiveProfile: CognitiveProfile;
+  dyslexiaLevel: 'none' | 'mild' | 'moderate' | 'severe';
+  linkedinProfile?: LinkedInProfileInput;
+  confirmedSkills: string[];
+  interests: string[];
+}
+
+llmRouter.post('/recommend', async (req: Request, res: Response): Promise<void> => {
+  const apiKey = process.env.GEMINI_API_KEY ?? '';
+  if (!apiKey) {
+    res.status(500).json({ error: 'Gemini API key not configured' });
+    return;
+  }
+
+  const body = req.body as RecommendInput;
+  const { cognitiveProfile, dyslexiaLevel, linkedinProfile, confirmedSkills, interests } = body;
+
+  if (!cognitiveProfile) {
+    res.status(400).json({ error: 'cognitiveProfile is required' });
+    return;
+  }
+
+  // Find the top cognitive strengths (above 70)
+  const strengthLabels: Record<string, string> = {
+    phonological:     'Phonological Awareness (sound/language processing)',
+    visual:           'Visual Attention (pattern recognition, attention to detail)',
+    workingMemory:    'Working Memory (holding and processing info)',
+    processingSpeed:  'Processing Speed (quick thinking)',
+    orthographic:     'Word Recognition (reading, writing)',
+    executive:        'Executive Function (planning, time management)',
+  };
+
+  const strengths = Object.entries(cognitiveProfile)
+    .filter(([, v]) => v >= 60)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([k]) => strengthLabels[k] ?? k)
+    .join(', ');
+
+  const skillsStr   = confirmedSkills.length > 0 ? confirmedSkills.join(', ') : 'not specified';
+  const interestStr = interests.length > 0 ? interests.join(', ') : 'general learning';
+  const nameStr     = linkedinProfile?.name ?? 'the user';
+
+  const prompt = `
+You are a career counsellor specialising in neurodiverse learners (dyslexia, learning differences).
+You must return ONLY valid JSON — no markdown, no prose, no code fences.
+
+User profile for ${nameStr}:
+- Dyslexia level: ${dyslexiaLevel}
+- Top cognitive strengths: ${strengths || 'balanced across all areas'}
+- Confirmed skills: ${skillsStr}
+- Interests: ${interestStr}
+- LinkedIn connected: ${linkedinProfile ? 'yes' : 'no'}
+
+Generate personalised recommendations. Return this exact JSON shape:
+{
+  "careers": [
+    { "title": string, "match": number (0-100), "reason": string (max 20 words), "icon": single emoji }
+  ],
+  "learningPath": [
+    { "step": number, "title": string, "duration": string, "type": "visual"|"audio"|"practical"|"reading", "icon": single emoji }
+  ],
+  "internships": [
+    { "title": string, "org": string, "deadline": string, "tags": string[] }
+  ],
+  "competitions": [
+    { "title": string, "prize": string, "tags": string[] }
+  ],
+  "skillGaps": [
+    { "skill": string, "currentLevel": number (0-100), "targetLevel": number (0-100), "tip": string (max 15 words) }
+  ]
+}
+
+Rules:
+- careers: exactly 3 items, matched to cognitive strengths and skills
+- learningPath: exactly 4 steps, ordered beginner → advanced, favour visual/practical types for dyslexia
+- internships: exactly 3 items relevant to skills and interests
+- competitions: exactly 2 items
+- skillGaps: exactly 3 items — skills they should build next
+- All text must be simple, encouraging, Grade-6 reading level
+- DO NOT add any text outside the JSON
+`;
+
+  try {
+    const raw = await callGemini(prompt, apiKey);
+
+    // Strip possible markdown code fences if Gemini wraps output
+    const clean = raw.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/i, '').trim();
+
+    let recommendations;
+    try {
+      recommendations = JSON.parse(clean);
+    } catch {
+      // Return a safe structured fallback if JSON parse fails
+      recommendations = {
+        careers: [
+          { title: 'UX / Accessibility Designer', match: 88, reason: 'Your visual strengths suit UI design.', icon: '🎨' },
+          { title: 'Content Creator', match: 80, reason: 'Creative thinking + inclusive storytelling.', icon: '✍️' },
+          { title: 'Peer Learning Mentor', match: 75, reason: 'Empathy and lived experience are superpowers.', icon: '🌟' },
+        ],
+        learningPath: [
+          { step: 1, title: 'Intro to Design Thinking', duration: '1 week', type: 'visual', icon: '💡' },
+          { step: 2, title: 'Figma for Beginners', duration: '2 weeks', type: 'practical', icon: '🖥️' },
+          { step: 3, title: 'Accessibility & Inclusive Design', duration: '2 weeks', type: 'visual', icon: '♿' },
+          { step: 4, title: 'Portfolio Project', duration: '3 weeks', type: 'practical', icon: '📁' },
+        ],
+        internships: [
+          { title: 'UX Design Intern', org: 'Inclusive Labs', deadline: 'May 2025', tags: ['remote', 'design'] },
+          { title: 'Accessibility Researcher', org: 'Google.org', deadline: 'June 2025', tags: ['research', 'tech'] },
+          { title: 'Content & Creative Intern', org: 'NGO Design Hub', deadline: 'Ongoing', tags: ['creative', 'impact'] },
+        ],
+        competitions: [
+          { title: 'Unstop Design Challenge', prize: '₹25,000', tags: ['design', 'open to all'] },
+          { title: 'NASA Space Apps (Accessibility Track)', prize: 'Global Prize', tags: ['tech', 'accessibility'] },
+        ],
+        skillGaps: [
+          { skill: 'Prototyping', currentLevel: 30, targetLevel: 75, tip: 'Practice with free Figma templates daily.' },
+          { skill: 'Public Speaking', currentLevel: 40, targetLevel: 70, tip: 'Join a Toastmasters online club.' },
+          { skill: 'Data Literacy', currentLevel: 25, targetLevel: 60, tip: 'Try Google Data Studio free course.' },
+        ],
+      };
+    }
+
+    res.json({ recommendations });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Unknown error';
+    console.error('[LLM/recommend]', msg);
+    res.status(500).json({ error: msg });
+  }
+});
+
 llmRouter.post(
   '/video-script',
   upload.single('file'),

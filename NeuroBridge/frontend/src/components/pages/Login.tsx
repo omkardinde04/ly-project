@@ -1,18 +1,57 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff, Palette } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
 import { speakText, stopSpeech, changeSpeechSpeed } from '../../utils/textToSpeech';
+import { GoogleLogin } from '../auth/GoogleLogin';
 
 export function Login() {
-    const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+    const [activeTab, setActiveTab] = useState<'login' | 'register'>('register');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { isDyslexiaMode, toggleDyslexiaMode, language, setLanguage, audioSpeed, setAudioSpeed } = useDyslexia();
+    const { login } = useAuth();
     const t = getTranslation(language);
     const navigate = useNavigate();
+    const location = useLocation();
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+    });
+
+    // Check for URL parameters (Google OAuth errors or tokens)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const urlError = params.get('error');
+        const token = params.get('token');
+        
+        if (urlError) {
+            setError(decodeURIComponent(urlError));
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        if (token) {
+            // Handle successful Google OAuth
+            login(token);
+            const redirect = params.get('redirect') || '/dashboard';
+            navigate(redirect);
+        }
+    }, [location.search, login, navigate]);
+
+    useEffect(() => {
+        if (location.state?.createAccount) {
+            setActiveTab('register');
+        }
+    }, [location.state]);
 
     const speechText = activeTab === 'login' 
         ? `${t.loginTitle}. Login to continue your learning journey.` 
@@ -31,6 +70,87 @@ export function Login() {
     const handleSpeedChange = (newSpeed: number) => {
         setAudioSpeed(newSpeed);
         changeSpeechSpeed(newSpeed);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        setError('');
+        setSuccess('');
+    };
+
+    const handleEmailLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log('Login form submitted', { email: formData.email, password: formData.password });
+        setIsLoading(true);
+        setError('');
+        
+        try {
+            const response = await fetch('http://localhost:4000/api/auth/email/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password
+                })
+            });
+
+            console.log('Login response status:', response.status);
+            const data = await response.json();
+            console.log('Login response data:', data);
+            
+            if (data.success) {
+                console.log('Login successful, token:', data.token);
+                login(data.token);
+                navigate(data.redirect);
+            } else {
+                console.log('Login failed:', data.error);
+                setError(data.error || 'Login failed');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setError('Network error. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log('Register form submitted', { name: formData.name, email: formData.email, password: formData.password });
+        setIsLoading(true);
+        setError('');
+        
+        try {
+            const response = await fetch('http://localhost:4000/api/auth/email/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password
+                })
+            });
+
+            console.log('Register response status:', response.status);
+            const data = await response.json();
+            console.log('Register response data:', data);
+            
+            if (data.success) {
+                console.log('Registration successful');
+                setSuccess('Account created successfully. Please login.');
+                setActiveTab('login');
+                setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+            } else {
+                console.log('Registration failed:', data.error);
+                setError(data.error || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            setError('Network error. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleLogin = () => {
@@ -177,9 +297,41 @@ export function Login() {
                         </button>
                     </div>
 
+                    {/* Error/Success Messages */}
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+                            {error}
+                        </div>
+                    )}
+                    {success && (
+                        <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-700 text-sm">
+                            {success}
+                        </div>
+                    )}
+
                     {/* Form */}
-                    <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-                        {/* Email */}
+                    <form className="space-y-5" onSubmit={activeTab === 'login' ? handleEmailLogin : handleRegister}>
+                        {activeTab === 'register' && (
+                            <div>
+                                <label className="block text-sm font-bold text-[#2A3B4C] mb-2">Name</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <div className="bg-blue-100 p-1 rounded-full">
+                                            <User className="h-4 w-4 text-blue-500 stroke-[2.5]" />
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter your name"
+                                        className="w-full pl-14 pr-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div>
                             <label className="block text-sm font-bold text-[#2A3B4C] mb-2">{t.emailLabel}</label>
                             <div className="relative">
@@ -190,13 +342,15 @@ export function Login() {
                                 </div>
                                 <input
                                     type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
                                     placeholder={t.emailPlaceholder}
                                     className="w-full pl-14 pr-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
                                 />
                             </div>
                         </div>
 
-                        {/* Password */}
                         <div>
                             <label className="block text-sm font-bold text-[#2A3B4C] mb-2">{t.passwordLabel}</label>
                             <div className="relative">
@@ -207,6 +361,9 @@ export function Login() {
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
                                     placeholder={t.passwordPlaceholder}
                                     className="w-full pl-14 pr-12 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
                                 />
@@ -222,105 +379,39 @@ export function Login() {
                                     )}
                                 </button>
                             </div>
-                        </div>
-
-                        {activeTab === 'register' && (
-                            /* Re-Enter Password */
-                            <div>
-                                <label className="block text-sm font-bold text-[#2A3B4C] mb-2">Re-Enter Password</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <div className="bg-yellow-100 p-1 rounded-md">
-                                            <Lock className="h-4 w-4 text-yellow-600 stroke-[2.5]" />
-                                        </div>
-                                    </div>
-                                    <input
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        placeholder="Re-Enter Your Password"
-                                        className="w-full pl-14 pr-12 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
-                                    />
+                            {activeTab === 'login' && (
+                                <div className="mt-2 flex justify-end">
                                     <button
                                         type="button"
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer"
+                                        onClick={() => navigate('/forgot-password')}
+                                        className="text-sm font-bold text-[#2563EB] hover:text-blue-700 transition-colors cursor-pointer"
                                     >
-                                        {showConfirmPassword ? (
-                                            <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
-                                        ) : (
-                                            <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
-                                        )}
+                                        Forgot Password?
                                     </button>
                                 </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'login' && (
-                            /* Forgot Password */
-                            <div className="flex justify-end pt-1">
-                                <button type="button" className="text-[13px] font-bold text-[#2563EB] hover:text-blue-700 transition-colors">
-                                    Forgot Password?
-                                </button>
-                            </div>
-                        )}
-
-                        {activeTab === 'register' && (
-                            /* Terms Checkbox */
-                            <div className="flex items-start gap-3 mt-4 pt-1 px-1">
-                                <div className="flex items-center h-5 mt-0.5">
-                                    <input 
-                                        id="terms" 
-                                        type="checkbox" 
-                                        className="w-5 h-5 rounded border-gray-300 text-[#1D64D8] focus:ring-blue-500 cursor-pointer" 
-                                    />
-                                </div>
-                                <label htmlFor="terms" className="text-[13px] font-bold text-[#0F172A] leading-[1.6]">
-                                    I agree to the <a href="#" className="text-[#2563EB] hover:text-blue-700">Terms of Service</a> and <a href="#" className="text-[#2563EB] hover:text-blue-700">Privacy Policy</a>. I understand NeuroBridge is built to be inclusive for all learners.
-                                </label>
-                            </div>
-                        )}
-
-                        {/* Submit Button */}
-                        <div className="pt-2">
-                            <button 
-                                type="button" 
-                                onClick={handleLogin}
-                                className="w-full py-3.5 bg-[#1D64D8] hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
-                            >
-                                {activeTab === 'login' ? t.loginButton : 'Create My Account'}
-                            </button>
+                            )}
                         </div>
+
+                        <button 
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full py-3.5 bg-[#1D64D8] hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (activeTab === 'login' ? 'Logging in...' : 'Creating account...') : (activeTab === 'login' ? t.loginButton : 'Create My Account')}
+                        </button>
                     </form>
 
-                    {activeTab === 'login' && (
-                        <>
-                            {/* Divider */}
-                            <div className="mt-8 mb-6 relative flex items-center">
-                                <div className="grow border-t border-gray-200"></div>
-                                <span className="shrink-0 mx-4 text-[13px] font-bold text-[#94A3B8]">or continue with</span>
-                                <div className="grow border-t border-gray-200"></div>
-                            </div>
+                    {/* Divider */}
+                    <div className="mt-8 mb-6 relative flex items-center">
+                        <div className="grow border-t border-gray-200"></div>
+                        <span className="shrink-0 mx-4 text-[13px] font-bold text-[#94A3B8]">or continue with</span>
+                        <div className="grow border-t border-gray-200"></div>
+                    </div>
 
-                            {/* Social Buttons */}
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <button type="button" className="flex items-center justify-center gap-2 py-3 px-4 border border-[#E2E8F0] rounded-2xl bg-[#F8FAFC] hover:bg-gray-50 transition-colors">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M23.52 12.2727C23.52 11.4218 23.4436 10.6036 23.3018 9.81818H12V14.4545H18.4582C18.18 15.9491 17.34 17.2255 16.0364 18.0982V21.1091H19.9145C22.1836 19.0145 23.52 15.9273 23.52 12.2727Z" fill="#4285F4" />
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M12 24C15.24 24 17.9673 22.9255 20.0018 21.0273L16.0364 18.0982C14.9345 18.8345 13.5764 19.2764 12 19.2764C8.98364 19.2764 6.42545 17.2418 5.50909 14.5091H1.54909V17.5855C3.47455 21.4091 7.42909 24 12 24Z" fill="#34A853" />
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M5.50909 14.4273C5.27455 13.7127 5.14364 12.8727 5.14364 12C5.14364 11.1273 5.27455 10.2873 5.50909 9.57273V6.49636H1.54909C0.763636 8.06727 0.327273 9.97636 0.327273 12C0.327273 14.0236 0.763636 15.9327 1.54909 17.5036L5.50909 14.4273Z" fill="#FBBC05" />
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M12 4.72364C13.7618 4.72364 15.3436 5.32909 16.5873 6.51273L20.0891 3.01091C17.9618 1.03636 15.2345 0 12 0C7.42909 0 3.47455 2.59091 1.54909 6.49636L5.50909 9.57273C6.42545 6.75818 8.98364 4.72364 12 4.72364Z" fill="#EA4335" />
-                                    </svg>
-                                    <span className="text-[15px] font-bold text-[#475569]">Google</span>
-                                </button>
-
-                                <button type="button" className="flex items-center justify-center gap-2 py-3 px-4 border border-[#E2E8F0] rounded-2xl bg-[#F8FAFC] hover:bg-gray-50 transition-colors">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M24 12.073C24 5.405 18.627 0 12 0C5.373 0 0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24V15.563H7.078V12.073H10.125V9.414C10.125 6.388 11.916 4.715 14.657 4.715C15.97 4.715 17.348 4.95 17.348 4.95V7.925H15.832C14.339 7.925 13.875 8.854 13.875 9.805V12.073H17.203L16.671 15.563H13.875V24C19.612 23.094 24 18.101 24 12.073Z" fill="#1877F2" />
-                                    </svg>
-                                    <span className="text-[15px] font-bold text-[#475569]">Facebook</span>
-                                </button>
-                            </div>
-                        </>
-                    )}
+                    {/* Social Buttons */}
+                    <div className="mb-4">
+                        <GoogleLogin className="w-full" />
+                    </div>
 
                     {/* Footer */}
                     <div className="text-center pt-6">

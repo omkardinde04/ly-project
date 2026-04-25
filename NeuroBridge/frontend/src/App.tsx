@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { DyslexiaProvider, useDyslexia } from './contexts/DyslexiaContext';
 import { AssistantProvider } from './contexts/AssistantContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AIAssistant } from './components/assistant/AIAssistant';
 import { Navbar } from './components/layout/Navbar'
 import Index from './components/pages/Index'
@@ -14,7 +15,11 @@ import { Learn } from './components/pages/Learn'
 import { OpportunitiesPage } from './components/pages/OpportunitiesPage'
 import { CommunityPage } from './components/pages/CommunityPage'
 import { AboutPage } from './components/pages/AboutPage'
+import { ForgotPassword } from './components/pages/ForgotPassword'
+import { ResetPassword } from './components/pages/ResetPassword'
 import { GlobalReader } from './components/ui/GlobalReader'
+import { AuthRedirect } from './components/auth/AuthRedirect'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 function Layout({ children }: { children: ReactNode }) {
   const { isDyslexiaMode, dyslexiaLevel } = useDyslexia();
@@ -43,7 +48,22 @@ function Layout({ children }: { children: ReactNode }) {
 
 function AppContent() {
   const location = useLocation();
+  const { user, isLoading } = useAuth();
   const isDashboard = location.pathname.startsWith('/dashboard');
+
+  // Show loading screen while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg)' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg" style={{ color: 'var(--color-text)' }}>
+            Loading...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Layout>
@@ -52,13 +72,44 @@ function AppContent() {
         <main className={`flex-1 ${isDashboard ? "" : "max-w-7xl mx-auto py-6 w-full sm:px-6 lg:px-8"}`}>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/learn" element={<Learn />} />
-            <Route path="/opportunities" element={<OpportunitiesPage />} />
-            <Route path="/community" element={<CommunityPage />} />
-            <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<AssessmentPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/learn" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <Learn />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/opportunities" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <OpportunitiesPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/community" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <CommunityPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/auth-redirect" element={<AuthRedirect />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </main>
         {!isDashboard && <Footer />}
@@ -71,13 +122,15 @@ function AppContent() {
 
 function App() {
   return (
-    <DyslexiaProvider>
-      <AssistantProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AssistantProvider>
-    </DyslexiaProvider>
+    <AuthProvider>
+      <DyslexiaProvider>
+        <AssistantProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AssistantProvider>
+      </DyslexiaProvider>
+    </AuthProvider>
   )
 }
 
