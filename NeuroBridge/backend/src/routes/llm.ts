@@ -152,8 +152,15 @@ async function askOllama(prompt: string): Promise<string> {
 }
 
 async function callOllamaRAG(text: string, prompt: string): Promise<string> {
-  // 1. Chunking
-  const chunks = chunkText(text);
+  // FAST PATH: If the text is short enough to fit in the context window (~8000 chars),
+  // skip the extremely slow embedding/RAG process and just send it directly!
+  if (text.length < 8000) {
+    const finalPrompt = `Use the following context to complete the task.\n\nContext:\n${text}\n\nTask:\n${prompt}`;
+    return await askOllama(finalPrompt);
+  }
+
+  // 1. Chunking for large documents only
+  const chunks = chunkText(text, 2000, 400); // Larger chunks = fewer embedding API calls = faster
   if (chunks.length === 0) {
     return await askOllama(prompt);
   }
@@ -199,11 +206,15 @@ Keep your responses:
 // ─── Shared handler factory ───────────────────────────────────────────────────
 function makeLLMHandler(
   actionPrompt: string,
-  action: string
+  action: string,
+  isJson: boolean = false
 ) {
   return async (req: Request, res: Response): Promise<void> => {
     try {
-      const prompt = `${DYSLEXIA_NOTE}\n\nTask: ${actionPrompt}`;
+      let prompt = `${DYSLEXIA_NOTE}\n\nTask: ${actionPrompt}`;
+      if (isJson) {
+        prompt += "\n\nCRITICAL INSTRUCTION: You MUST return ONLY valid JSON. No markdown formatting, no code blocks, no backticks. Just the raw JSON array.";
+      }
 
       // Check if it's an audio/video file
       const isMedia = req.file && (req.file.mimetype.startsWith('audio/') || req.file.mimetype.startsWith('video/'));
@@ -282,5 +293,24 @@ llmRouter.post(
   makeLLMHandler(
     'Create exactly 3 simple multiple-choice quiz questions from this context. Format as:\n\nQ1: [question]\nA) [option]\nB) [option]\nC) [option]\nAnswer: [letter]\n\nKeep questions simple and friendly.',
     'quiz'
+  )
+);
+
+llmRouter.post(
+  '/video-script',
+  upload.single('file'),
+  makeLLMHandler(
+    `Read the context and create a dynamic, engaging video script explaining the core concepts. 
+Return EXACTLY a JSON array of 4-6 objects. 
+Each object must have:
+- "text": a short, simple spoken sentence (max 15 words) explaining a point.
+- "keyword": a single specific noun/word (no spaces) to use for fetching a background image (e.g. "brain", "plant", "ocean", "technology").
+
+Example:
+[{"text": "Photosynthesis is how plants make food.", "keyword": "leaf"}]
+
+Return ONLY the raw JSON array, nothing else.`,
+    'video-script',
+    true
   )
 );
