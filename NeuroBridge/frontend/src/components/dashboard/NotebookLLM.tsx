@@ -311,13 +311,10 @@ function DynamicVideoPlayer({ scenes, onClose }: { scenes: VideoScene[], onClose
   };
 
   useEffect(() => {
-    // Preload all images
+    // Preload all images so they don't pop in late
     scenes.forEach(scene => {
       const img = new Image();
-      const kw = encodeURIComponent(scene.keyword || 'abstract');
-      // Using a highly reliable, instant image service that uses the keyword as a seed
-      // to generate a consistent, beautiful photo that won't get blocked by adblockers.
-      img.src = `https://picsum.photos/seed/${kw}/800/600`;
+      img.src = `https://loremflickr.com/1280/720/${encodeURIComponent(scene.keyword || 'abstract')}`;
     });
     
     // Auto-start
@@ -344,8 +341,7 @@ function DynamicVideoPlayer({ scenes, onClose }: { scenes: VideoScene[], onClose
   };
 
   const currentScene = scenes[currentIndex];
-  const kw = encodeURIComponent(currentScene?.keyword || 'abstract');
-  const imageUrl = currentScene ? `https://picsum.photos/seed/${kw}/800/600` : '';
+  const imageUrl = currentScene ? `https://loremflickr.com/1280/720/${encodeURIComponent(currentScene.keyword || 'abstract')}` : '';
 
   return (
     <motion.div

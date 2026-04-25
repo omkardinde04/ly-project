@@ -8,8 +8,8 @@ export const googleAuthRouter = Router();
 
 // Configure Google OAuth Strategy
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID || '',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  clientID: process.env.GOOGLE_CLIENT_ID || 'DUMMY_CLIENT_ID',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'DUMMY_CLIENT_SECRET',
   callbackURL: "http://localhost:4000/api/auth/google/callback"
 }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
   try {
