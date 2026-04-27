@@ -17,6 +17,7 @@ import { CommunityPage } from './components/pages/CommunityPage'
 import { AboutPage } from './components/pages/AboutPage'
 import { ForgotPassword } from './components/pages/ForgotPassword'
 import { ResetPassword } from './components/pages/ResetPassword'
+import { VerifyEmail } from './components/pages/VerifyEmail'
 import { GlobalReader } from './components/ui/GlobalReader'
 import { AuthRedirect } from './components/auth/AuthRedirect'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
@@ -108,6 +109,7 @@ function AppContent() {
             />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/auth-redirect" element={<AuthRedirect />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>

@@ -43,13 +43,14 @@ passport.use(new GoogleStrategy({
         // User exists with email but not Google ID - link Google ID to existing account
         user = await database.updateUserWithGoogle(existingUser.id, googleId, profilePicture || '');
       } else {
-        // Create new user automatically
+        // Create new user automatically (email is verified via Google)
         user = await database.createUser({
           google_id: googleId,
           name,
           email,
           profile_picture: profilePicture || '',
-          assessment_completed: false
+          assessment_completed: false,
+          email_verified: true
         });
       }
     }

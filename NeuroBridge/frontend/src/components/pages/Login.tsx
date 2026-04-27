@@ -81,10 +81,9 @@ export function Login() {
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Login form submitted', { email: formData.email, password: formData.password });
         setIsLoading(true);
         setError('');
-        
+
         try {
             const response = await fetch('http://localhost:4000/api/auth/email/login', {
                 method: 'POST',
@@ -95,20 +94,47 @@ export function Login() {
                 })
             });
 
-            console.log('Login response status:', response.status);
             const data = await response.json();
-            console.log('Login response data:', data);
-            
+
             if (data.success) {
-                console.log('Login successful, token:', data.token);
-                login(data.token);
-                navigate(data.redirect);
+                await login(data.token);
+                navigate(data.redirect || '/dashboard');
             } else {
-                console.log('Login failed:', data.error);
-                setError(data.error || 'Login failed');
+                // If email not verified, show resend option in message
+                if (data.needsVerification) {
+                    setError(data.error + ' Click "Resend Verification" below if you need a new link.');
+                    setSuccess('');
+                } else {
+                    setError(data.error || 'Login failed');
+                }
             }
         } catch (error) {
-            console.error('Login error:', error);
+            setError('Network error. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResendVerification = async () => {
+        if (!formData.email) {
+            setError('Please enter your email address first.');
+            return;
+        }
+        setIsLoading(true);
+        setError('');
+        try {
+            const response = await fetch('http://localhost:4000/api/auth/email/resend-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: formData.email })
+            });
+            const data = await response.json();
+            if (data.success) {
+                setSuccess('Verification email resent! Please check your inbox.');
+            } else {
+                setError(data.error || 'Failed to resend verification email.');
+            }
+        } catch {
             setError('Network error. Please try again.');
         } finally {
             setIsLoading(false);
@@ -117,10 +143,16 @@ export function Login() {
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Register form submitted', { name: formData.name, email: formData.email, password: formData.password });
         setIsLoading(true);
         setError('');
-        
+        setSuccess('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match.');
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch('http://localhost:4000/api/auth/email/register', {
                 method: 'POST',
@@ -132,21 +164,28 @@ export function Login() {
                 })
             });
 
-            console.log('Register response status:', response.status);
             const data = await response.json();
-            console.log('Register response data:', data);
-            
+
             if (data.success) {
-                console.log('Registration successful');
-                setSuccess('Account created successfully. Please login.');
-                setActiveTab('login');
-                setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+                setFormData({ ...formData, password: '', confirmPassword: '' });
+
+                // Show dev verify link if email not configured
+                if (data.devVerifyLink) {
+                    setSuccess(
+                        `Account created! (Email not configured) Click to verify: ${data.devVerifyLink}`
+                    );
+                } else {
+                    setSuccess(data.message || 'Account created! Check your email to verify your account.');
+                }
+
+                setTimeout(() => {
+                    setActiveTab('login');
+                    setSuccess('');
+                }, 5000);
             } else {
-                console.log('Registration failed:', data.error);
                 setError(data.error || 'Registration failed');
             }
         } catch (error) {
-            console.error('Registration error:', error);
             setError('Network error. Please try again.');
         } finally {
             setIsLoading(false);
@@ -299,13 +338,30 @@ export function Login() {
 
                     {/* Error/Success Messages */}
                     {error && (
-                        <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
-                            {error}
+                        <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-xl text-red-700 text-sm">
+                            <p>{error}</p>
+                            {activeTab === 'login' && error.includes('Resend Verification') && (
+                                <button
+                                    type="button"
+                                    onClick={handleResendVerification}
+                                    className="mt-2 text-blue-600 font-bold underline text-sm"
+                                >
+                                    Resend Verification Email
+                                </button>
+                            )}
                         </div>
                     )}
                     {success && (
-                        <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-700 text-sm">
-                            {success}
+                        <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-xl text-green-700 text-sm">
+                            {success.includes('http') ? (
+                                <>
+                                    <p className="mb-1">Account created! Email not configured — use this link to verify:</p>
+                                    <a href={success.split('verify: ')[1]} target="_blank" rel="noreferrer"
+                                        className="text-blue-600 underline break-all text-xs">
+                                        {success.split('verify: ')[1]}
+                                    </a>
+                                </>
+                            ) : success}
                         </div>
                     )}
 
@@ -380,7 +436,14 @@ export function Login() {
                                 </button>
                             </div>
                             {activeTab === 'login' && (
-                                <div className="mt-2 flex justify-end">
+                                <div className="mt-2 flex justify-between items-center">
+                                    <button
+                                        type="button"
+                                        onClick={handleResendVerification}
+                                        className="text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                                    >
+                                        Resend Verification
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/forgot-password')}
@@ -391,6 +454,39 @@ export function Login() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Confirm Password — register only */}
+                        {activeTab === 'register' && (
+                            <div>
+                                <label className="block text-sm font-bold text-[#2A3B4C] mb-2">Confirm Password</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <div className="bg-yellow-100 p-1 rounded-md">
+                                            <Lock className="h-4 w-4 text-yellow-600 stroke-[2.5]" />
+                                        </div>
+                                    </div>
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleInputChange}
+                                        placeholder="Re-enter your password"
+                                        className="w-full pl-14 pr-12 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer"
+                                    >
+                                        {showConfirmPassword ? (
+                                            <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                                        ) : (
+                                            <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         <button 
                             type="submit"

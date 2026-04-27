@@ -3,13 +3,14 @@ import type { ReactNode } from 'react';
 
 interface User {
   id: number;
-  google_id: string;
+  google_id?: string;
   name: string;
   email: string;
-  profile_picture: string;
+  profile_picture?: string;
   assessment_completed: boolean;
   assessment_score?: number;
   classification?: string;
+  email_verified: boolean;
   created_at: string;
 }
 
@@ -74,61 +75,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (newToken: string): Promise<void> => {
     setToken(newToken);
     setIsLoading(true);
-    
+
     try {
-      // Fetch user data with the new token
-      const response = await fetch('http://localhost:4000/api/auth/google/me', {
-        headers: {
-          'Authorization': `Bearer ${newToken}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Both email-auth and Google-auth users use the same JWT format.
+      // We try /api/auth/email/me first (works for all users), fall back to /google/me.
+      let userData = null;
+
+      const tryFetch = async (url: string) => {
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${newToken}` },
+        });
+        if (res.ok) return res.json();
+        return null;
+      };
+
+      userData = await tryFetch('http://localhost:4000/api/auth/email/me');
+      if (!userData) {
+        userData = await tryFetch('http://localhost:4000/api/auth/google/me');
       }
-      
-      let userData = await response.json();
-      console.log('User data fetched:', userData);
-      
-      // Check for temporary assessment data and link it
+
+      if (!userData) {
+        throw new Error('Could not load user profile. Please log in again.');
+      }
+
+      console.log('✅ User profile loaded:', userData.email);
+
+      // Link any pre-login (anonymous) assessment to this account
       const tempAssessment = localStorage.getItem('temp_assessment');
       if (tempAssessment && !userData.assessment_completed) {
         const assessmentData = JSON.parse(tempAssessment);
-        console.log('Linking temporary assessment to user:', assessmentData);
-        
-        // Save assessment to database
         const assessmentResponse = await fetch('http://localhost:4000/api/auth/google/assessment/complete', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${newToken}`
+            'Authorization': `Bearer ${newToken}`,
           },
           body: JSON.stringify({
             assessment_score: assessmentData.score,
-            classification: assessmentData.classification
-          })
+            classification: assessmentData.classification,
+          }),
         });
-        
-        if (assessmentResponse && assessmentResponse.ok) {
-          console.log('Assessment linked successfully');
-          // Clear temporary assessment
+
+        if (assessmentResponse.ok) {
           localStorage.removeItem('temp_assessment');
-          // Fetch updated user data
-          const updatedResponse = await fetch('http://localhost:4000/api/auth/google/me', {
-            headers: {
-              'Authorization': `Bearer ${newToken}`
-            }
-          });
-          const updatedUserData = await updatedResponse.json();
-          if (updatedUserData) {
-            userData = updatedUserData;
-          }
+          const updatedData = await tryFetch('http://localhost:4000/api/auth/email/me');
+          if (updatedData) userData = updatedData;
         }
       }
-      
+
       setUser(userData);
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('Error loading user profile:', error);
       logout(); // Clear token if user data fetch fails
     } finally {
       setIsLoading(false);
@@ -138,8 +135,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    // Clear all localStorage entries
+    localStorage.clear();
   };
 
   const updateUser = (userData: Partial<User>) => {

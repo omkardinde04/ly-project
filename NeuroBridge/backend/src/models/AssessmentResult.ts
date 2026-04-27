@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IAssessmentResult extends Document {
-  userId: number;
+  userId: string;
   googleId?: string;
   score: number;
   classification: string;
@@ -10,7 +10,7 @@ export interface IAssessmentResult extends Document {
 }
 
 const AssessmentResultSchema: Schema = new Schema({
-  userId: { type: Number, required: true },
+  userId: { type: String, required: true },
   googleId: { type: String },
   score: { type: Number, required: true },
   classification: { type: String, required: true },

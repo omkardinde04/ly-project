@@ -4,7 +4,7 @@ import { User } from './database';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export interface JWTPayload {
-  userId: number;
+  userId: string | number;
   googleId?: string;
   email: string;
   assessmentCompleted: boolean;

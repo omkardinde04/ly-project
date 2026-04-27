@@ -1,8 +1,7 @@
-import sqlite3 from 'sqlite3';
-import { Database } from 'sqlite3';
+import UserModel, { IUser } from './models/User';
 
 export interface User {
-  id?: number;
+  id?: string | number; // Support string for MongoDB ObjectID
   google_id?: string;
   name: string;
   email: string;
@@ -12,242 +11,127 @@ export interface User {
   assessment_score?: number;
   classification?: string;
   assessment_metrics?: string;
-  created_at: string;
+  email_verified: boolean;
+  verification_token?: string;
+  verification_token_expiry?: string | Date;
+  reset_token?: string;
+  reset_token_expiry?: string | Date;
+  created_at: string | Date;
 }
 
+// Helper to transform mongoose document to plain object
+const toUser = (doc: IUser | null): User | null => {
+  if (!doc) return null;
+  const obj = doc.toObject();
+  return { ...obj, id: obj._id.toString() } as User;
+};
+
 class DatabaseService {
-  private db: Database;
-
   constructor() {
-    this.db = new sqlite3.Database('./neurobridge.db');
-    this.initTables();
-  }
-
-  private initTables(): void {
-    const createUsersTable = `
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        google_id TEXT UNIQUE,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT,
-        profile_picture TEXT,
-        assessment_completed BOOLEAN DEFAULT 0,
-        assessment_score INTEGER,
-        classification TEXT,
-        assessment_metrics TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    this.db.run(createUsersTable, (err) => {
-      if (err) {
-        console.error('Error creating users table:', err);
-      } else {
-        console.log('Users table initialized successfully');
-        // Ensure assessment_metrics exists on older schema
-        this.db.run('ALTER TABLE users ADD COLUMN assessment_metrics TEXT', () => {});
-      }
-    });
+    console.log('DatabaseService initialized with MongoDB (Mongoose)');
   }
 
   // Find user by Google ID
-  findUserByGoogleId(googleId: string): Promise<User | null> {
-    return new Promise((resolve, reject) => {
-      this.db.get(
-        'SELECT * FROM users WHERE google_id = ?',
-        [googleId],
-        (err, row: User) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(row || null);
-          }
-        }
-      );
-    });
+  async findUserByGoogleId(googleId: string): Promise<User | null> {
+    const user = await UserModel.findOne({ google_id: googleId });
+    return toUser(user);
   }
 
   // Find user by email
-  findUserByEmail(email: string): Promise<User | null> {
-    return new Promise((resolve, reject) => {
-      this.db.get(
-        'SELECT * FROM users WHERE email = ?',
-        [email],
-        (err, row: User) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(row || null);
-          }
-        }
-      );
-    });
+  async findUserByEmail(email: string): Promise<User | null> {
+    const user = await UserModel.findOne({ email });
+    return toUser(user);
   }
 
-  // Create new user
-  createUser(user: Omit<User, 'id' | 'created_at'>): Promise<User> {
-    return new Promise((resolve, reject) => {
-      const { google_id, name, email, profile_picture, assessment_completed = false, assessment_score, classification } = user;
-      
-      this.db.run(
-        'INSERT INTO users (google_id, name, email, profile_picture, assessment_completed, assessment_score, classification) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [google_id, name, email, profile_picture, assessment_completed, assessment_score, classification],
-        function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({
-              id: this.lastID,
-              google_id,
-              name,
-              email,
-              profile_picture,
-              assessment_completed,
-              assessment_score,
-              classification,
-              created_at: new Date().toISOString()
-            });
-          }
-        }
-      );
-    });
+  // Create new user (Google)
+  async createUser(userData: Omit<User, 'id' | 'created_at'>): Promise<User> {
+    const user = new UserModel(userData);
+    await user.save();
+    return toUser(user)!;
   }
 
   // Update user assessment data
-  updateUserAssessment(userId: number, assessmentData: { assessment_completed: boolean; assessment_score?: number; classification?: string; assessment_metrics?: string }): Promise<User> {
-    return new Promise((resolve, reject) => {
-      const { assessment_completed, assessment_score, classification, assessment_metrics } = assessmentData;
-      
-      this.db.run(
-        'UPDATE users SET assessment_completed = ?, assessment_score = ?, classification = ?, assessment_metrics = ? WHERE id = ?',
-        [assessment_completed, assessment_score, classification, assessment_metrics, userId],
-        function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            // Return updated user
-            resolve({
-              id: userId,
-              google_id: '',
-              name: '',
-              email: '',
-              profile_picture: '',
-              assessment_completed,
-              assessment_score,
-              classification,
-              assessment_metrics,
-              created_at: ''
-            } as User);
-          }
-        }
-      );
-    });
+  async updateUserAssessment(userId: string | number, assessmentData: { assessment_completed: boolean; assessment_score?: number; classification?: string; assessment_metrics?: string }): Promise<User> {
+    const user = await UserModel.findByIdAndUpdate(userId, assessmentData, { new: true });
+    return toUser(user)!;
   }
 
   // Get user by ID
-  getUserById(userId: number): Promise<User | null> {
-    return new Promise((resolve, reject) => {
-      this.db.get(
-        'SELECT * FROM users WHERE id = ?',
-        [userId],
-        (err, row: User) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(row || null);
-          }
-        }
-      );
-    });
+  async getUserById(userId: string | number): Promise<User | null> {
+    const user = await UserModel.findById(userId);
+    return toUser(user);
   }
 
   // Create user with email/password
-  createUserWithEmail(user: { name: string; email: string; password: string }): Promise<User> {
-    return new Promise((resolve, reject) => {
-      const { name, email, password } = user;
-      
-      console.log('Creating user with:', { name, email, passwordLength: password.length });
-      
-      this.db.run(
-        'INSERT INTO users (name, email, password, assessment_completed) VALUES (?, ?, ?, ?)',
-        [name, email, password, false],
-        function(err) {
-          if (err) {
-            console.error('Database error creating user:', err);
-            reject(err);
-          } else {
-            console.log('User created successfully with ID:', this.lastID);
-            resolve({
-              id: this.lastID,
-              name,
-              email,
-              password,
-              assessment_completed: false,
-              created_at: new Date().toISOString()
-            } as User);
-          }
-        }
-      );
+  async createUserWithEmail(userData: { name: string; email: string; password: string }): Promise<User> {
+    const user = new UserModel({
+      ...userData,
+      assessment_completed: false,
+      email_verified: false
     });
+    await user.save();
+    return toUser(user)!;
   }
 
-  
   // Update user password
-  updatePassword(email: string, newPassword: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.db.run(
-        'UPDATE users SET password = ? WHERE email = ?',
-        [newPassword, email],
-        function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(this.changes > 0);
-          }
-        }
-      );
-    });
+  async updatePassword(email: string, newPassword: string): Promise<boolean> {
+    const result = await UserModel.updateOne({ email }, { password: newPassword });
+    return result.modifiedCount > 0;
   }
 
   // Update user with Google ID
-  updateUserWithGoogle(userId: number, googleId: string, profilePicture: string): Promise<User> {
-    return new Promise((resolve, reject) => {
-      const db = this.db;
-      db.run(
-        'UPDATE users SET google_id = ?, profile_picture = ? WHERE id = ?',
-        [googleId, profilePicture, userId],
-        function(err: any) {
-          if (err) {
-            reject(err);
-          } else {
-            // Return updated user
-            db.get(
-              'SELECT * FROM users WHERE id = ?',
-              [userId],
-              (err: any, row: User) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve(row);
-                }
-              }
-            );
-          }
-        }
-      );
-    });
+  async updateUserWithGoogle(userId: string | number, googleId: string, profilePicture: string): Promise<User> {
+    const user = await UserModel.findByIdAndUpdate(userId, { google_id: googleId, profile_picture: profilePicture }, { new: true });
+    return toUser(user)!;
+  }
+
+  // Save verification token
+  async saveVerificationToken(email: string, token: string, expiryMinutes: number = 24 * 60): Promise<boolean> {
+    const expiryTime = new Date(Date.now() + expiryMinutes * 60000);
+    const result = await UserModel.updateOne({ email }, { verification_token: token, verification_token_expiry: expiryTime });
+    return result.modifiedCount > 0;
+  }
+
+  // Verify email token
+  async verifyEmailToken(token: string): Promise<User | null> {
+    const user = await UserModel.findOne({ verification_token: token, verification_token_expiry: { $gt: new Date() } });
+    return toUser(user);
+  }
+
+  // Mark email as verified
+  async markEmailVerified(userId: string | number): Promise<boolean> {
+    const result = await UserModel.updateOne(
+      { _id: userId.toString() },
+      { email_verified: true, $unset: { verification_token: 1, verification_token_expiry: 1 } }
+    );
+    return result.modifiedCount > 0;
+  }
+
+  // Save password reset token
+  async saveResetToken(email: string, token: string, expiryMinutes: number = 60): Promise<boolean> {
+    const expiryTime = new Date(Date.now() + expiryMinutes * 60000);
+    const result = await UserModel.updateOne({ email }, { reset_token: token, reset_token_expiry: expiryTime });
+    return result.modifiedCount > 0;
+  }
+
+  // Verify reset token
+  async verifyResetToken(token: string): Promise<User | null> {
+    const user = await UserModel.findOne({ reset_token: token, reset_token_expiry: { $gt: new Date() } });
+    return toUser(user);
+  }
+
+  // Reset password with token
+  async resetPasswordWithToken(token: string, newPassword: string): Promise<boolean> {
+    const result = await UserModel.updateOne(
+      { reset_token: token, reset_token_expiry: { $gt: new Date() } },
+      { password: newPassword, $unset: { reset_token: 1, reset_token_expiry: 1 } }
+    );
+    return result.modifiedCount > 0;
   }
 
   // Close database connection
   close(): void {
-    this.db.close((err) => {
-      if (err) {
-        console.error('Error closing database:', err);
-      } else {
-        console.log('Database connection closed');
-      }
-    });
+    console.log('MongoDB connection managed by mongoose, no action needed for user db close');
   }
 }
 
