@@ -13,7 +13,7 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
   const [words] = useState(selectedParagraph.split(' '));
   
   const [phase, setPhase] = useState<'idle' | 'listening' | 'done'>('idle');
-  const [wordStatuses, setWordStatuses] = useState<('idle' | 'green' | 'red')[]>(Array(words.length).fill('idle'));
+  const [wordStatuses, setWordStatuses] = useState<('idle' | 'green' | 'red' | 'yellow')[]>(Array(words.length).fill('idle'));
   const [rereadCount, setRereadCount] = useState(0);
   const [transcript, setTranscript] = useState('');
 
@@ -110,15 +110,24 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
           if (!foundEarlier) {
              // Did they skip a word? Check next 2 words
              let foundAhead = false;
+             let targetNextIdx = textCursor + 1;
              for (let nextIdx = textCursor + 1; nextIdx <= Math.min(textCursor + 2, words.length - 1); nextIdx++) {
                 const aheadWord = words[nextIdx].toLowerCase().replace(/[^a-z0-9]/g, '');
                 if (currentSpoken === aheadWord) {
-                   textCursor = nextIdx;
+                   targetNextIdx = nextIdx;
                    foundAhead = true;
                    break;
                 }
              }
-             if (!foundAhead) {
+             if (foundAhead) {
+                 // The user skipped over some words (or mispronounced them). Mark the skipped words as yellow!
+                 for (let skipIdx = textCursor; skipIdx < targetNextIdx; skipIdx++) {
+                     if (newStatuses[skipIdx] === 'idle') {
+                         newStatuses[skipIdx] = 'yellow';
+                     }
+                 }
+                 textCursor = targetNextIdx; // Jump cursor to the matching word ahead
+             } else {
                 // Must be a filler word or hallucination by speech-to-text. Just advance spoken cursor.
                 spokenCursor++;
              }
@@ -161,6 +170,7 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
            let statusClass = 'text-gray-400'; // unread
            if (wordStatuses[idx] === 'green') statusClass = 'text-green-600 bg-green-50 rounded px-1 font-semibold';
            if (wordStatuses[idx] === 'red') statusClass = 'text-red-600 bg-red-100 rounded px-1 font-bold line-through decoration-red-400 decoration-2';
+           if (wordStatuses[idx] === 'yellow') statusClass = 'text-yellow-600 bg-yellow-100 rounded px-1 font-semibold';
 
            return (
              <span key={idx} className={`inline-block mx-0.5 transition-colors duration-300 ${statusClass}`}>
@@ -170,8 +180,9 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
          })}
        </div>
        
-       <div className="mt-4 text-sm text-slate-500 font-medium">
-         <span className="inline-block mr-4"><span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span> Read perfectly</span>
+       <div className="mt-4 text-sm text-slate-500 font-medium flex gap-4 justify-center">
+         <span className="inline-block"><span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span> Read perfectly</span>
+         <span className="inline-block"><span className="inline-block w-3 h-3 bg-yellow-400 rounded-full mr-1"></span> Mispronounced / Skipped</span>
          <span className="inline-block"><span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-1"></span> Repeated / Re-read</span>
        </div>
     </div>

@@ -1,6 +1,6 @@
 export interface AssessmentQuestion {
   id: number;
-  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction' | 'eye_tracking_maze';
+  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction' | 'eye_tracking_maze' | 'reading_reread_tracking';
   instruction: string;
   example?: string;
   audioInstruction?: string;
@@ -122,10 +122,11 @@ export const partAQuestions: AssessmentQuestion[] = [
   },
   {
     id: 6,
-    type: 'frequency',
-    instruction: 'When reading text, how often do you re-read a sentence?',
-    image: '/assessment/q6-sentence-rereading.png',
-    options: frequencyOptions,
+    type: 'reading_reread_tracking',
+    instruction: 'Please read the paragraph aloud. We will highlight words you read fluently in green, and words you repeat in red.',
+    options: [
+      { id: 'done', text: 'Finish Reading', weight: 0 }
+    ],
     dimension: 'executive',
     difficulty: 'medium',
   },
@@ -289,7 +290,7 @@ export function calculateDimensionScores(
         const weight = question.options[answer.selectedOption]?.weight ?? 0;
         // weight 0 (Rarely) = better performance; weight 3 (Most of the time) = more difficulty
         dimensionScores[question.dimension].correct += Math.max(0, 3 - weight);
-      } else if (question.type === 'reading_tracking' || question.type === 'eye_tracking_maze') {
+      } else if (question.type === 'reading_tracking' || question.type === 'eye_tracking_maze' || question.type === 'reading_reread_tracking') {
          // for tracking tasks, full score for completion in this basic implementation
          dimensionScores[question.dimension].total += 3;
          dimensionScores[question.dimension].correct += 3;

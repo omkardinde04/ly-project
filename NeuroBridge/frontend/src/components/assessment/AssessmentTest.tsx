@@ -5,6 +5,7 @@ import { partAQuestions } from './assessmentQuestions';
 import { speakText } from '../../utils/textToSpeech';
 import { questionIllustrations } from './AssessmentIllustrations';
 import { EyeTrackingMazeTask } from './EyeTrackingMazeTask';
+import { ReadingRereadTask } from './ReadingRereadTask';
 
 interface AssessmentTestProps {
   onComplete: (score: number, metrics: AssessmentMetrics) => void;
@@ -521,6 +522,12 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
           ) : currentQ.type === 'eye_tracking_maze' ? (
             <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
               <EyeTrackingMazeTask onComplete={(lookCount) => {
+                handleAnswer(0);
+              }} />
+            </div>
+          ) : currentQ.type === 'reading_reread_tracking' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+              <ReadingRereadTask onComplete={(rereadCount) => {
                 handleAnswer(0);
               }} />
             </div>
