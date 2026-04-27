@@ -3,6 +3,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { AuthService } from '../auth';
 import database from '../database';
+import AssessmentResult from '../models/AssessmentResult';
 
 export const googleAuthRouter = Router();
 
@@ -134,7 +135,7 @@ googleAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res:
 // Update assessment completion
 googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, async (req: any, res: Response) => {
   try {
-    const { assessment_score, classification } = req.body;
+    const { assessment_score, classification, assessment_metrics } = req.body;
     
     if (!assessment_score || !classification) {
       return res.status(400).json({ error: 'Assessment score and classification are required' });
@@ -143,8 +144,29 @@ googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, asy
     await database.updateUserAssessment(req.user.userId, {
       assessment_completed: true,
       assessment_score,
-      classification
+      classification,
+      assessment_metrics
     });
+
+    // Save detailed results to MongoDB
+    let parsedMetrics = {};
+    try {
+      if (assessment_metrics) {
+        parsedMetrics = JSON.parse(assessment_metrics);
+      }
+    } catch (e) {
+      console.error('Error parsing metrics:', e);
+    }
+
+    const newResult = new AssessmentResult({
+      userId: req.user.userId,
+      googleId: req.user.googleId,
+      score: assessment_score,
+      classification: classification,
+      metrics: parsedMetrics
+    });
+    
+    await newResult.save();
 
     res.json({ success: true, message: 'Assessment completed successfully' });
   } catch (error) {

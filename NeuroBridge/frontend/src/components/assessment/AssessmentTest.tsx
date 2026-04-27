@@ -16,6 +16,7 @@ interface AssessmentMetrics {
   backtrackCount: number;
   audioReplayCount: number;
   questionMetrics: QuestionMetric[];
+  readingTrackingCount?: number;
 }
 
 interface QuestionMetric {
@@ -27,6 +28,165 @@ interface QuestionMetric {
   audioReplays: number;
 }
 
+function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string; onComplete: (trackCount: number) => void }) {
+  const [phase, setPhase] = useState<'idle' | 'listening' | 'done'>('idle');
+  const [words] = useState(paragraph.split(' '));
+  const [hoveredWordIdx, setHoveredWordIdx] = useState<number>(-1);
+  const [wordStatuses, setWordStatuses] = useState<('idle' | 'correct' | 'wrong')[]>(Array(words.length).fill('idle'));
+  const [trackCount, setTrackCount] = useState(0);
+  const [transcript, setTranscript] = useState('');
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recogRef = useRef<any>(null);
+
+  const startListening = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+       alert("Speech recognition not supported in this browser. Please click stop to continue.");
+       setPhase('listening'); // to allow them to stop
+       return;
+    }
+    const rec = new SR();
+    rec.lang = 'en-US';
+    rec.continuous = true;
+    rec.interimResults = true;
+    recogRef.current = rec;
+
+    rec.onresult = (e: any) => {
+      let currentTranscript = '';
+      for (let i = 0; i < e.results.length; ++i) {
+        currentTranscript += e.results[i][0].transcript;
+      }
+      setTranscript(currentTranscript);
+    };
+
+    rec.start();
+    setPhase('listening');
+  };
+
+  const stopListening = () => {
+    if (recogRef.current) {
+      try { recogRef.current.stop(); } catch (e) { /* ignore */ }
+    }
+    setPhase('done');
+    onComplete(trackCount);
+  };
+
+  const handleMouseEnter = (idx: number) => {
+    setHoveredWordIdx(idx);
+    setTrackCount(prev => prev + 1);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredWordIdx(-1);
+  };
+
+  useEffect(() => {
+    const spokenWords = transcript.toLowerCase().split(/\s+/).filter(Boolean);
+    if (spokenWords.length === 0) return;
+
+    setWordStatuses(() => {
+      const newStatuses = Array(words.length).fill('idle');
+      let spokenCursor = 0;
+
+      for (let i = 0; i < words.length; i++) {
+        if (spokenCursor >= spokenWords.length) break;
+
+        const expectedWord = words[i].toLowerCase().replace(/[^a-z0-9]/g, '');
+        const currentSpoken = spokenWords[spokenCursor].replace(/[^a-z0-9]/g, '');
+
+        if (currentSpoken === expectedWord) {
+          newStatuses[i] = 'correct';
+          spokenCursor++;
+        } else {
+          // Check if user skipped a word in the text
+          let isSkipped = false;
+          if (i + 1 < words.length) {
+            const nextExpected = words[i + 1].toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (currentSpoken === nextExpected) {
+              isSkipped = true;
+            }
+          }
+
+          // Check if user inserted a filler word
+          let isFiller = false;
+          if (spokenCursor + 1 < spokenWords.length) {
+            const nextSpoken = spokenWords[spokenCursor + 1].replace(/[^a-z0-9]/g, '');
+            if (nextSpoken === expectedWord) {
+              isFiller = true;
+            }
+          }
+
+          if (isSkipped && !isFiller) {
+            newStatuses[i] = 'wrong';
+            // Do not advance spokenCursor so the next text word can match this spoken word
+          } else if (isFiller && !isSkipped) {
+            spokenCursor++;
+            i--; // Retry matching this same text word with the next spoken word
+          } else {
+            // Complete mismatch or ambiguous
+            newStatuses[i] = 'wrong';
+            spokenCursor++;
+          }
+        }
+      }
+
+      return newStatuses;
+    });
+  }, [transcript, words]);
+
+  useEffect(() => {
+    if (phase === 'listening' && wordStatuses.every(s => s !== 'idle')) {
+      stopListening();
+    }
+  }, [wordStatuses, phase]);
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 w-full h-full">
+       {phase === 'idle' && (
+         <button onClick={startListening} className="mb-6 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 transition-all">
+           🎤 Start Mic & Read
+         </button>
+       )}
+       {phase === 'listening' && (
+         <div className="flex flex-col items-center mb-6">
+           <button onClick={stopListening} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 animate-pulse transition-all">
+             🛑 Stop & Finish
+           </button>
+           <p className="text-sm text-gray-500 mt-2 font-medium">Recording... read the paragraph aloud.</p>
+         </div>
+       )}
+       {phase === 'done' && (
+         <div className="mb-6 bg-green-100 text-green-700 px-6 py-3 rounded-full font-bold text-lg flex items-center gap-2">
+           ✅ Completed! You tracked words {trackCount} times. Click Next to proceed.
+         </div>
+       )}
+
+       <div className="text-2xl leading-relaxed max-w-lg text-left p-6 bg-white rounded-2xl border-2 border-gray-100 shadow-inner" style={{ lineHeight: '2.5' }}>
+         {words.map((word, idx) => {
+           let statusClass = 'text-gray-700';
+           if (wordStatuses[idx] === 'correct') statusClass = 'text-green-600 bg-green-100 font-bold';
+           if (wordStatuses[idx] === 'wrong') statusClass = 'text-red-600 bg-red-100 font-bold';
+
+           return (
+             <span 
+               key={idx} 
+               onMouseEnter={() => handleMouseEnter(idx)}
+               onMouseLeave={handleMouseLeave}
+               className={`inline-block px-1 rounded transition-colors duration-200 cursor-default ${
+                 hoveredWordIdx === idx ? 'scale-110 shadow-sm border border-yellow-300 bg-yellow-50' : ''
+               } ${statusClass}`}
+             >
+               {word}{' '}
+             </span>
+           );
+         })}
+       </div>
+    </div>
+  );
+}
+
 export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const { language } = useDyslexia();
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -35,6 +195,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const [optionChanges, setOptionChanges] = useState<number[]>(Array(partAQuestions.length).fill(0));
   const [audioReplays, setAudioReplays] = useState<number[]>(Array(partAQuestions.length).fill(0));
   const [backtrackCount, setBacktrackCount] = useState(0);
+  const [trackingMetrics, setTrackingMetrics] = useState({ trackCount: 0 });
   const previousQuestionRef = useRef(0);
 
   const currentQ = partAQuestions[currentQuestion];
@@ -98,6 +259,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         backtrackCount,
         audioReplayCount: totalAudioReplays,
         questionMetrics,
+        readingTrackingCount: trackingMetrics.trackCount,
       };
 
       // Score based on frequency weights (higher weight = more difficulty indicators)
@@ -187,63 +349,74 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             )}
           </div>
 
-          {/* ILLUSTRATION */}
-          <div className="flex-1 min-h-0 relative bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden">
-            {/* Difficulty badge */}
-            <span className={`absolute top-2 right-2 z-10 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-              currentQ.difficulty === 'easy'
-                ? 'bg-emerald-100 text-emerald-700'
-                : currentQ.difficulty === 'medium'
-                ? 'bg-amber-100 text-amber-700'
-                : 'bg-orange-100 text-orange-700'
-            }`}>
-              {currentQ.difficulty === 'easy' ? '★ Easy' : currentQ.difficulty === 'medium' ? '★★ Medium' : '★★★ Hard'}
-            </span>
-
-            {IllustrationComponent ? (
-              <div className="w-full h-full p-3 flex items-center justify-center">
-                <IllustrationComponent />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-1 text-gray-400">
-                <span className="text-4xl">🎯</span>
-                <span className="text-xs font-medium">Visual Context</span>
-              </div>
-            )}
-          </div>
-
-          {/* ANSWER OPTIONS — 4 frequency buttons */}
-          <div className="flex-none px-4 pt-3 pb-2 border-t border-slate-100 bg-white">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-              {currentQ.options.map((option, index) => {
-                const isSelected = answers[currentQuestion] === index;
-                return (
-                  <motion.button
-                    key={option.id}
-                    onClick={() => handleAnswer(index)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.96 }}
-                    className={`relative py-3 px-2 rounded-xl text-sm font-semibold transition-all border-2 ${
-                      isSelected
-                        ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-500 shadow-md'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                    }`}
-                  >
-                    {option.text}
-                    {isSelected && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow text-green-500 text-xs font-black border border-green-200"
-                      >
-                        ✓
-                      </motion.span>
-                    )}
-                  </motion.button>
-                );
-              })}
+          {currentQ.type === 'reading_tracking' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+               <ReadingTrackingTask paragraph={currentQ.paragraph || ''} onComplete={(tCount) => {
+                 setTrackingMetrics({ trackCount: tCount });
+                 handleAnswer(0);
+               }} />
             </div>
-          </div>
+          ) : (
+            <>
+              {/* ILLUSTRATION */}
+              <div className="flex-1 min-h-0 relative bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden">
+                {/* Difficulty badge */}
+                <span className={`absolute top-2 right-2 z-10 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                  currentQ.difficulty === 'easy'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : currentQ.difficulty === 'medium'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-orange-100 text-orange-700'
+                }`}>
+                  {currentQ.difficulty === 'easy' ? '★ Easy' : currentQ.difficulty === 'medium' ? '★★ Medium' : '★★★ Hard'}
+                </span>
+
+                {IllustrationComponent ? (
+                  <div className="w-full h-full p-3 flex items-center justify-center">
+                    <IllustrationComponent />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-1 text-gray-400">
+                    <span className="text-4xl">🎯</span>
+                    <span className="text-xs font-medium">Visual Context</span>
+                  </div>
+                )}
+              </div>
+
+              {/* ANSWER OPTIONS — 4 frequency buttons */}
+              <div className="flex-none px-4 pt-3 pb-2 border-t border-slate-100 bg-white">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                  {currentQ.options.map((option, index) => {
+                    const isSelected = answers[currentQuestion] === index;
+                    return (
+                      <motion.button
+                        key={option.id}
+                        onClick={() => handleAnswer(index)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
+                        className={`relative py-3 px-2 rounded-xl text-sm font-semibold transition-all border-2 ${
+                          isSelected
+                            ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-500 shadow-md'
+                            : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        {option.text}
+                        {isSelected && (
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow text-green-500 text-xs font-black border border-green-200"
+                          >
+                            ✓
+                          </motion.span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* NAVIGATION */}
           <div className="flex-none px-4 py-3 bg-white flex items-center justify-between gap-2 border-t border-slate-100">

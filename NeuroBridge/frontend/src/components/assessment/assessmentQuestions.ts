@@ -1,14 +1,15 @@
 export interface AssessmentQuestion {
   id: number;
-  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency';
+  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking';
   instruction: string;
   example?: string;
   audioInstruction?: string;
-  image: string;
+  image?: string;
   options: QuestionOption[];
   correctAnswer?: number;
   dimension: 'phonological' | 'visual' | 'workingMemory' | 'processingSpeed' | 'orthographic' | 'executive';
   difficulty: 'easy' | 'medium' | 'hard';
+  paragraph?: string;
 }
 
 export interface QuestionOption {
@@ -29,21 +30,11 @@ const frequencyOptions: QuestionOption[] = [
 // Part A: 15 frequency-based self-assessment questions with inline SVG illustrations
 export const partAQuestions: AssessmentQuestion[] = [
   {
-    id: 1,
-    type: 'frequency',
-    instruction: 'When reading similar words (cat / cot), how often do you verify which one is written?',
-    example: 'cat — cot',
-    image: '/assessment/q1-visual-similarity.png',
-    options: frequencyOptions,
-    dimension: 'visual',
-    difficulty: 'easy',
-  },
-  {
     id: 2,
-    type: 'frequency',
-    instruction: 'When reading paragraphs, how often do you use a pointer to track the current line?',
-    image: '/assessment/q2-line-tracking.png',
-    options: frequencyOptions,
+    type: 'reading_tracking',
+    instruction: "Please read the paragraph aloud. Don't use your mouse pointer to track the words as you read.",
+    paragraph: 'Dyslexia is not a reflection of intelligence. It is simply a different way that the brain processes language. Many highly successful people are dyslexic.',
+    options: [],
     dimension: 'visual',
     difficulty: 'easy',
   },
@@ -243,6 +234,10 @@ export function calculateDimensionScores(
         const weight = question.options[answer.selectedOption]?.weight ?? 0;
         // weight 0 (Rarely) = better performance; weight 3 (Most of the time) = more difficulty
         dimensionScores[question.dimension].correct += Math.max(0, 3 - weight);
+      } else if (question.type === 'reading_tracking') {
+         // for tracking questions, full score for completion in this basic implementation
+         dimensionScores[question.dimension].total += 3;
+         dimensionScores[question.dimension].correct += 3;
       } else {
         dimensionScores[question.dimension].total += 1;
         if (answer.selectedOption === question.correctAnswer) {

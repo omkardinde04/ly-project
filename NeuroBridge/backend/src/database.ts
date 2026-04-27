@@ -11,6 +11,7 @@ export interface User {
   assessment_completed: boolean;
   assessment_score?: number;
   classification?: string;
+  assessment_metrics?: string;
   created_at: string;
 }
 
@@ -34,6 +35,7 @@ class DatabaseService {
         assessment_completed BOOLEAN DEFAULT 0,
         assessment_score INTEGER,
         classification TEXT,
+        assessment_metrics TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;
@@ -43,6 +45,8 @@ class DatabaseService {
         console.error('Error creating users table:', err);
       } else {
         console.log('Users table initialized successfully');
+        // Ensure assessment_metrics exists on older schema
+        this.db.run('ALTER TABLE users ADD COLUMN assessment_metrics TEXT', () => {});
       }
     });
   }
@@ -111,13 +115,13 @@ class DatabaseService {
   }
 
   // Update user assessment data
-  updateUserAssessment(userId: number, assessmentData: { assessment_completed: boolean; assessment_score?: number; classification?: string }): Promise<User> {
+  updateUserAssessment(userId: number, assessmentData: { assessment_completed: boolean; assessment_score?: number; classification?: string; assessment_metrics?: string }): Promise<User> {
     return new Promise((resolve, reject) => {
-      const { assessment_completed, assessment_score, classification } = assessmentData;
+      const { assessment_completed, assessment_score, classification, assessment_metrics } = assessmentData;
       
       this.db.run(
-        'UPDATE users SET assessment_completed = ?, assessment_score = ?, classification = ? WHERE id = ?',
-        [assessment_completed, assessment_score, classification, userId],
+        'UPDATE users SET assessment_completed = ?, assessment_score = ?, classification = ?, assessment_metrics = ? WHERE id = ?',
+        [assessment_completed, assessment_score, classification, assessment_metrics, userId],
         function(err) {
           if (err) {
             reject(err);
@@ -132,6 +136,7 @@ class DatabaseService {
               assessment_completed,
               assessment_score,
               classification,
+              assessment_metrics,
               created_at: ''
             } as User);
           }

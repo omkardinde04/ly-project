@@ -71,7 +71,8 @@ export function AssessmentPage() {
           },
           body: JSON.stringify({
             assessment_score: score,
-            classification: assessmentType
+            classification: assessmentType,
+            assessment_metrics: JSON.stringify(metrics)
           })
         });
 

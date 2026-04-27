@@ -26,6 +26,8 @@ console.log(`  Gemini Key  : ${geminiKey ? '✅ Loaded (ends …' + geminiKey.sl
 console.log(`  LinkedIn ID : ${linkedinId ? '✅ Loaded' : '❌ NOT FOUND'}`);
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
+import mongoose from 'mongoose';
+
 const app = express();
 
 // Session middleware
@@ -56,6 +58,20 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Backend server running on http://localhost:${PORT}`);
-});
+// Connect to MongoDB and start server
+const startServer = async () => {
+  try {
+    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/neurobridge';
+    await mongoose.connect(mongoUri);
+    console.log(`✅ Connected to MongoDB at ${mongoUri}`);
+    
+    app.listen(PORT, () => {
+      console.log(`✅ Backend server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to connect to MongoDB:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
