@@ -6,10 +6,110 @@ import { speakText } from '../../utils/textToSpeech';
 import { questionIllustrations } from './AssessmentIllustrations';
 import { EyeTrackingMazeTask } from './EyeTrackingMazeTask';
 import { ReadingRereadTask } from './ReadingRereadTask';
+import { MissionControlTask } from './MissionControlTask';
+import { SituationSeriesTask } from './SituationSeriesTask';
+import { MultiplicationRecallTask } from './MultiplicationRecallTask';
+import { VoiceAlphabetTask } from './VoiceAlphabetTask';
+import { ReadAloudTask } from './ReadAloudTask';
 
 interface AssessmentTestProps {
   onComplete: (score: number, metrics: AssessmentMetrics) => void;
 }
+
+const Q7_SCENARIOS = [
+  // Scenario 1 — Forgotten Homework
+  [
+    {
+      id: 'forgotten_homework',
+      scenario: "You reach class and realize you forgot your homework.",
+      options: [
+        { id: 'complete_fast', text: 'Try to complete it quickly' },
+        { id: 'explain', text: 'Explain honestly to the teacher' },
+        { id: 'ask_help', text: 'Ask a friend for help' },
+        { id: 'another_way', text: 'Think of another way to show your work' }
+      ]
+    },
+    {
+      id: 'submission_homework',
+      scenario: "The teacher says work must be submitted now.",
+      options: [
+        { id: 'submit_partial', text: 'Submit partially completed work' },
+        { id: 'request_time', text: 'Request extra time' },
+        { id: 'help_friend_later', text: 'Help friend and submit later' },
+        { id: 'suggest_after', text: 'Suggest showing it after class' }
+      ]
+    }
+  ],
+  // Scenario 2 — Group Task
+  [
+    {
+      id: 'group_task',
+      scenario: "Your group must make a poster, but you don’t have chart paper.",
+      options: [
+        { id: 'notebook_pages', text: 'Use notebook pages' },
+        { id: 'ask_group', text: 'Ask another group' },
+        { id: 'draw_digital', text: 'Draw digitally' },
+        { id: 'combine_sheets', text: 'Combine smaller sheets' }
+      ]
+    },
+    {
+      id: 'group_time_over',
+      scenario: "Time is almost over.",
+      options: [
+        { id: 'finish_fast', text: 'Finish quickly with what you have' },
+        { id: 'simplify', text: 'Simplify the idea' },
+        { id: 'divide_work', text: 'Divide work among members' },
+        { id: 'present_verbal', text: 'Present verbally instead' }
+      ]
+    }
+  ],
+  // Scenario 3 — Broken Pencil
+  [
+    {
+      id: 'broken_pencil',
+      scenario: "Your pencil breaks during writing.",
+      options: [
+        { id: 'borrow', text: 'Borrow from someone' },
+        { id: 'use_pen', text: 'Use pen instead' },
+        { id: 'sharpen', text: 'Sharpen the broken part' },
+        { id: 'write_later', text: 'Write later' }
+      ]
+    },
+    {
+      id: 'pencil_no_extra',
+      scenario: "No one has extra pencil.",
+      options: [
+        { id: 'share_friend', text: 'Share with a friend' },
+        { id: 'leftover_piece', text: 'Use leftover piece' },
+        { id: 'another_tool', text: 'Try another writing tool' },
+        { id: 'note_ideas', text: 'Note ideas and write later' }
+      ]
+    }
+  ],
+  // Scenario 4 — Locked Room
+  [
+    {
+      id: 'locked_room',
+      scenario: "You reach a room but the door is locked.",
+      options: [
+        { id: 'another_entrance', text: 'Look for another entrance' },
+        { id: 'wait_outside', text: 'Wait outside' },
+        { id: 'ask_nearby', text: 'Ask someone nearby' },
+        { id: 'check_schedule', text: 'Check schedule' }
+      ]
+    },
+    {
+      id: 'locked_fast_enter',
+      scenario: "You must enter quickly.",
+      options: [
+        { id: 'inform_teacher', text: 'Inform teacher' },
+        { id: 'call_someone', text: 'Call someone' },
+        { id: 'try_another', text: 'Try another room' },
+        { id: 'adjust_plan', text: 'Adjust your plan' }
+      ]
+    }
+  ]
+];
 
 interface AssessmentMetrics {
   totalTime: number;
@@ -346,6 +446,7 @@ function CameraDirectionTask({ onComplete }: { onComplete: (isCorrect: boolean) 
 export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const { language } = useDyslexia();
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showBrainGamesIntro, setShowBrainGamesIntro] = useState(false);
   const [answers, setAnswers] = useState<number[]>(Array(partAQuestions.length).fill(-1));
   const [startTime] = useState(Date.now());
   const [optionChanges, setOptionChanges] = useState<number[]>(Array(partAQuestions.length).fill(0));
@@ -440,12 +541,42 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const isAnswered = answers[currentQuestion] !== -1;
 
   return (
-    // Outer shell: fixed viewport height, no scroll
     <div
-      className="w-full max-w-3xl mx-auto flex flex-col overflow-hidden"
+      className="w-full max-w-3xl mx-auto flex flex-col overflow-hidden relative"
       style={{ height: '88vh', maxHeight: '860px', minHeight: '500px' }}
     >
-      {/* TOP BAR: progress */}
+      <AnimatePresence mode="wait">
+        {showBrainGamesIntro ? (
+          <motion.div
+            key="brain-intro"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="absolute inset-0 z-50 bg-[#4DA6FF] rounded-2xl flex flex-col items-center justify-center text-white p-10 text-center shadow-2xl"
+          >
+            <motion.div
+              initial={{ y: 20 }}
+              animate={{ y: 1 }}
+              transition={{ repeat: Infinity, duration: 2, repeatType: 'reverse' }}
+              className="text-8xl mb-8"
+            >
+              🧠✨
+            </motion.div>
+            <h2 className="text-4xl font-black mb-4 tracking-tight">Leveling Up!</h2>
+            <p className="text-xl font-medium opacity-90 max-w-sm">
+              Great progress! Now let's explore some <span className="bg-white/20 px-2 py-1 rounded">Brain Puzzles</span>...
+            </p>
+            <div className="mt-8 flex gap-2">
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <div className="flex flex-col h-full w-full">
+        {/* TOP BAR: progress */}
       <div className="flex-none pb-2">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-semibold text-gray-400 tracking-widest uppercase">
@@ -529,6 +660,53 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
               <ReadingRereadTask onComplete={(rereadCount) => {
                 handleAnswer(0);
+              }} />
+            </div>
+          ) : currentQ.type === 'mission_control' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+              <MissionControlTask onComplete={(logs) => {
+                handleAnswer(0);
+                setTimeout(handleNext, 100);
+              }} />
+            </div>
+          ) : currentQ.type === 'situation_series' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+              <SituationSeriesTask 
+                scenarios={Q7_SCENARIOS}
+                title="Imagine this..."
+                onComplete={(data) => {
+                  handleAnswer(0);
+                  setTimeout(handleNext, 100);
+                }} 
+              />
+            </div>
+          ) : currentQ.type === 'multiplication_recall' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+              <MultiplicationRecallTask onComplete={(metrics) => {
+                handleAnswer(0);
+                setTimeout(handleNext, 100);
+              }} />
+            </div>
+          ) : currentQ.type === 'voice_alphabet' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+              <VoiceAlphabetTask onComplete={(metrics) => {
+                handleAnswer(0);
+                setTimeout(handleNext, 100);
+              }} />
+            </div>
+          ) : currentQ.type === 'read_aloud' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+              <ReadAloudTask onComplete={(metrics) => {
+                handleAnswer(0);
+                if (currentQ.id === 10) {
+                  setShowBrainGamesIntro(true);
+                  setTimeout(() => {
+                    setShowBrainGamesIntro(false);
+                    handleNext();
+                  }, 3000);
+                } else {
+                  setTimeout(handleNext, 100);
+                }
               }} />
             </div>
           ) : (
@@ -634,5 +812,6 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         </motion.div>
       </AnimatePresence>
     </div>
-  );
+  </div>
+);
 }

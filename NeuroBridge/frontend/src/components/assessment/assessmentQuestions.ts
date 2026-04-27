@@ -1,6 +1,6 @@
 export interface AssessmentQuestion {
   id: number;
-  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction' | 'eye_tracking_maze' | 'reading_reread_tracking';
+  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction' | 'eye_tracking_maze' | 'reading_reread_tracking' | 'mission_control' | 'situation_series' | 'multiplication_recall' | 'voice_alphabet' | 'read_aloud';
   instruction: string;
   example?: string;
   audioInstruction?: string;
@@ -131,85 +131,53 @@ export const partAQuestions: AssessmentQuestion[] = [
     difficulty: 'medium',
   },
   {
-    id: 7,
-    type: 'frequency',
-    instruction: 'When given multiple steps, how often do you mentally split them?',
-    image: '/assessment/q7-multistep-instructions.png',
-    options: frequencyOptions,
+    id: 66,
+    type: 'mission_control',
+    instruction: 'Mission Control: Memorize and execute multiple instructions in order.',
+    options: [
+      { id: 'done', text: 'Start Mission', weight: 0 }
+    ],
     dimension: 'workingMemory',
+    difficulty: 'hard',
+  },
+  {
+    id: 7,
+    type: 'situation_series',
+    instruction: 'Imagine this...',
+    options: [
+      { id: 'done', text: 'Start', weight: 0 }
+    ],
+    dimension: 'executive',
     difficulty: 'medium',
   },
   {
     id: 8,
-    type: 'frequency',
-    instruction: 'When writing notes, how often do you review for mistakes?',
-    image: '/assessment/q8-writing-accuracy.png',
-    options: frequencyOptions,
-    dimension: 'orthographic',
+    type: 'multiplication_recall',
+    instruction: 'Quick Tap: Solve these fun number puzzles.',
+    options: [
+      { id: 'done', text: 'Start', weight: 0 }
+    ],
+    dimension: 'workingMemory',
     difficulty: 'medium',
   },
   {
     id: 9,
-    type: 'frequency',
-    instruction: 'While speaking, how often do you pause to choose the right word?',
-    image: '/assessment/q9-word-retrieval.png',
-    options: frequencyOptions,
+    type: 'voice_alphabet',
+    instruction: 'Voice Activity: Say the letters out loud.',
+    options: [
+      { id: 'done', text: 'Start', weight: 0 }
+    ],
     dimension: 'phonological',
     difficulty: 'medium',
   },
   {
     id: 10,
-    type: 'frequency',
-    instruction: 'When solving tasks, how often do you consider more than one solution?',
-    image: '/assessment/q10-problem-solving.png',
-    options: frequencyOptions,
+    type: 'read_aloud',
+    instruction: 'Read the paragraph aloud: Focus on the highlighted words.',
+    options: [
+      { id: 'done', text: 'Start', weight: 0 }
+    ],
     dimension: 'executive',
-    difficulty: 'hard',
-  },
-  {
-    id: 11,
-    type: 'frequency',
-    instruction: 'When reading new words, how often do you break them into parts?',
-    example: 'e-le-phant',
-    image: '/assessment/q11-sound-segmentation.png',
-    options: frequencyOptions,
-    dimension: 'phonological',
-    difficulty: 'hard',
-  },
-  {
-    id: 12,
-    type: 'frequency',
-    instruction: 'When writing, how often do you rearrange ideas?',
-    image: '/assessment/q12-idea-organization.png',
-    options: frequencyOptions,
-    dimension: 'executive',
-    difficulty: 'hard',
-  },
-  {
-    id: 13,
-    type: 'frequency',
-    instruction: 'When recalling tables, how often do you count instead of remembering?',
-    image: '/assessment/q13-multiplication-recall.png',
-    options: frequencyOptions,
-    dimension: 'workingMemory',
-    difficulty: 'hard',
-  },
-  {
-    id: 14,
-    type: 'frequency',
-    instruction: 'When reciting sequences (A-Z), how often do you check the next letter?',
-    image: '/assessment/q14-sequence-recall.png',
-    options: frequencyOptions,
-    dimension: 'workingMemory',
-    difficulty: 'hard',
-  },
-  {
-    id: 15,
-    type: 'frequency',
-    instruction: 'When reading aloud, how often do you slow down for accuracy?',
-    image: '/assessment/q15-reading-aloud.png',
-    options: frequencyOptions,
-    dimension: 'processingSpeed',
     difficulty: 'hard',
   },
 ];
@@ -290,7 +258,7 @@ export function calculateDimensionScores(
         const weight = question.options[answer.selectedOption]?.weight ?? 0;
         // weight 0 (Rarely) = better performance; weight 3 (Most of the time) = more difficulty
         dimensionScores[question.dimension].correct += Math.max(0, 3 - weight);
-      } else if (question.type === 'reading_tracking' || question.type === 'eye_tracking_maze' || question.type === 'reading_reread_tracking') {
+      } else if (['reading_tracking', 'eye_tracking_maze', 'reading_reread_tracking', 'mission_control', 'situation_series', 'multiplication_recall', 'voice_alphabet', 'read_aloud'].includes(question.type)) {
          // for tracking tasks, full score for completion in this basic implementation
          dimensionScores[question.dimension].total += 3;
          dimensionScores[question.dimension].correct += 3;
