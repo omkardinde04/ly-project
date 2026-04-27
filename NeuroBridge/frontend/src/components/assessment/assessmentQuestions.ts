@@ -1,6 +1,6 @@
 export interface AssessmentQuestion {
   id: number;
-  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking';
+  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction';
   instruction: string;
   example?: string;
   audioInstruction?: string;
@@ -101,10 +101,12 @@ export const partAQuestions: AssessmentQuestion[] = [
   },
   {
     id: 4,
-    type: 'frequency',
-    instruction: 'When following directions, how often do you confirm left vs right?',
-    image: '/assessment/q4-direction-processing.png',
-    options: frequencyOptions,
+    type: 'camera_direction',
+    instruction: 'When following directions, confirm your left vs right:',
+    options: [
+      { id: 'correct', text: 'Correct', weight: 0 },
+      { id: 'wrong', text: 'Wrong', weight: 3 }
+    ],
     dimension: 'visual',
     difficulty: 'easy',
   },

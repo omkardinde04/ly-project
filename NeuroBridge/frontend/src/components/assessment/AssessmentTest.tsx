@@ -193,6 +193,154 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
   );
 }
 
+function CameraDirectionTask({ onComplete }: { onComplete: (isCorrect: boolean) => void }) {
+  const [targetDirection] = useState<'left' | 'right'>(() => Math.random() > 0.5 ? 'left' : 'right');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [phase, setPhase] = useState<'initializing' | 'ready' | 'result'>('initializing');
+  const [resultMessage, setResultMessage] = useState('');
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const prevFrameRef = useRef<Uint8ClampedArray | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const phaseRef = useRef(phase);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
+
+  const handsRef = useRef<any>(null);
+  const cameraHardwareRef = useRef<any>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Check if Hands is available
+    if (!(window as any).Hands || !(window as any).Camera) {
+      console.error("MediaPipe Hands not loaded.");
+      if (isMounted) {
+        setPhase('result');
+        onComplete(false);
+      }
+      return;
+    }
+
+    const hands = new (window as any).Hands({locateFile: (file: string) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+    }});
+
+    handsRef.current = hands;
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.5
+    });
+
+    hands.onResults((results: any) => {
+      if (!isMounted || phaseRef.current !== 'ready') return;
+      if (results.multiHandedness && results.multiHandedness.length > 0) {
+        // results.multiHandedness[0].label is 'Left' or 'Right'
+        // MediaPipe evaluates the image directly. If a user holds up their physical Right hand,
+        // it appears on the left side of the camera feed, which MediaPipe identifies as a "Left" hand
+        // if it assumes it's looking at another person.
+        // Therefore, if handedness is 'Left', the physical hand raised was 'Right'.
+        // if handedness is 'Right', the physical hand raised was 'Left'.
+        const handednessLabel = results.multiHandedness[0].label; // "Left" or "Right"
+        const detectedPhysicalHand = handednessLabel === 'Left' ? 'right' : 'left';
+
+        // Found a hand!
+        if (cameraHardwareRef.current) {
+          cameraHardwareRef.current.stop(); // Immediately turn off webcam
+        }
+
+        const correct = detectedPhysicalHand === targetDirection;
+        setIsCorrect(correct);
+        setResultMessage(correct ? "Great job!" : "It happens, don't worry!");
+        setPhase('result');
+
+        setTimeout(() => {
+          if (isMounted) onComplete(correct);
+        }, 2500);
+      }
+    });
+
+    if (videoRef.current) {
+      const camera = new (window as any).Camera(videoRef.current, {
+        onFrame: async () => {
+          if (isMounted && handsRef.current && phaseRef.current === 'ready') {
+            await handsRef.current.send({image: videoRef.current});
+          }
+        },
+        width: 640,
+        height: 480
+      });
+      cameraHardwareRef.current = camera;
+      camera.start().then(() => {
+        if (isMounted) setPhase('ready');
+      }).catch((e: any) => {
+        console.error(e);
+        if (isMounted) {
+          setPhase('result');
+          onComplete(false);
+        }
+      });
+    }
+
+    return () => {
+      isMounted = false;
+      if (cameraHardwareRef.current) {
+        cameraHardwareRef.current.stop();
+      }
+      if (handsRef.current) {
+        handsRef.current.close();
+      }
+    };
+  }, [targetDirection]);
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 w-full h-full text-center bg-slate-50 border-b border-slate-100">
+      <video ref={videoRef} style={{ display: 'none' }} muted playsInline />
+      <canvas ref={canvasRef} width="64" height="48" style={{ display: 'none' }} />
+      
+      {phase === 'initializing' && (
+        <div className="text-blue-500 animate-pulse text-lg font-medium flex flex-col items-center">
+          <span className="text-4xl mb-4">📷</span>
+          Accessing camera and stabilizing...
+        </div>
+      )}
+      
+      {phase === 'ready' && (
+        <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 animate-bounce">
+            <span className="text-5xl">👋</span>
+          </div>
+          <h2 className="text-3xl font-bold text-slate-800 flex items-center">
+            Quick! Raise your 
+            <span className="text-blue-600 uppercase font-black tracking-wider text-5xl mx-3 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200">
+              {targetDirection}
+            </span> 
+            hand!
+          </h2>
+          <p className="text-slate-500 text-base mt-4 font-medium">Make a large, fast motion to be detected.</p>
+        </div>
+      )}
+
+      {phase === 'result' && (
+        <div className={`p-8 rounded-2xl ${isCorrect ? 'bg-emerald-100 border border-emerald-200' : 'bg-red-50 border border-red-200'} flex flex-col items-center justify-center space-y-4 shadow-sm transition-all scale-105`}>
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center shadow-inner ${isCorrect ? 'bg-emerald-200' : 'bg-red-100'}`}>
+            <span className="text-5xl">{isCorrect ? '✅' : '❤️'}</span>
+          </div>
+          <h2 className={`text-3xl font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-600'}`}>
+            {resultMessage}
+          </h2>
+          <p className="text-slate-600 font-medium">Proceeding to next question...</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const { language } = useDyslexia();
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -360,6 +508,13 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                <ReadingTrackingTask paragraph={currentQ.paragraph || ''} onComplete={(tCount) => {
                  setTrackingMetrics({ trackCount: tCount });
                  handleAnswer(0);
+               }} />
+            </div>
+          ) : currentQ.type === 'camera_direction' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto">
+               <CameraDirectionTask onComplete={(isCorrect) => {
+                 // The 'camera_direction' question options are: index 0 (Correct), index 1 (Wrong).
+                 handleAnswer(isCorrect ? 0 : 1);
                }} />
             </div>
           ) : (
