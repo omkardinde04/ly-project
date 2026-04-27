@@ -41,6 +41,27 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
       setTranscript(currentTranscript);
     };
 
+    rec.onend = () => {
+      if (phase === 'listening') {
+        try {
+          rec.start();
+        } catch (e) {
+          console.error('Failed to restart speech recognition:', e);
+        }
+      }
+    };
+
+    rec.onerror = (e: any) => {
+      console.error('Speech recognition error:', e);
+      if (phase === 'listening') {
+        try {
+          rec.start();
+        } catch (e) {
+          console.error('Failed to restart after error:', e);
+        }
+      }
+    };
+
     rec.start();
     setPhase('listening');
   };
@@ -144,7 +165,7 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
     <div className="flex flex-col items-center justify-center p-6 w-full h-full bg-slate-50">
        <div className="mb-4">
          <h2 className="text-2xl font-bold text-slate-800">Reading Fluency</h2>
-         <p className="text-slate-600">Please read the paragraph aloud. We will track your fluency.</p>
+         <p className="text-slate-600">Please read the paragraph aloud. We will highlight words you read fluently in green, and words you repeat in red.</p>
        </div>
 
        {phase === 'idle' && (
