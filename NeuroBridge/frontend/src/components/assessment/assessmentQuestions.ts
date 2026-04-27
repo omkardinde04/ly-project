@@ -9,7 +9,7 @@ export interface AssessmentQuestion {
   correctAnswer?: number;
   dimension: 'phonological' | 'visual' | 'workingMemory' | 'processingSpeed' | 'orthographic' | 'executive';
   difficulty: 'easy' | 'medium' | 'hard';
-  paragraph?: string;
+  paragraph?: string | string[];
 }
 
 export interface QuestionOption {
@@ -27,23 +27,75 @@ const frequencyOptions: QuestionOption[] = [
   { id: 'd', text: 'Most of the time', weight: 3 },
 ];
 
+const homeApplianceVariants = [
+  {
+    imageType: 'chair',
+    options: [
+      { id: 'a', text: 'Table', weight: 3 },
+      { id: 'b', text: 'Chair', weight: 0 },
+      { id: 'c', text: 'Spoon', weight: 3 },
+      { id: 'd', text: 'Dish', weight: 3 }
+    ],
+    correctAnswer: 1
+  },
+  {
+    imageType: 'spoon',
+    options: [
+      { id: 'a', text: 'Fork', weight: 3 },
+      { id: 'b', text: 'Knife', weight: 3 },
+      { id: 'c', text: 'Spoon', weight: 0 },
+      { id: 'd', text: 'Plate', weight: 3 }
+    ],
+    correctAnswer: 2
+  },
+  {
+    imageType: 'bed',
+    options: [
+      { id: 'a', text: 'Sofa', weight: 3 },
+      { id: 'b', text: 'Desk', weight: 3 },
+      { id: 'c', text: 'Chair', weight: 3 },
+      { id: 'd', text: 'Bed', weight: 0 }
+    ],
+    correctAnswer: 3
+  },
+  {
+    imageType: 'clock',
+    options: [
+      { id: 'a', text: 'Clock', weight: 0 },
+      { id: 'b', text: 'Mirror', weight: 3 },
+      { id: 'c', text: 'Frame', weight: 3 },
+      { id: 'd', text: 'Window', weight: 3 }
+    ],
+    correctAnswer: 0
+  }
+];
+
+const selectedAppliance = homeApplianceVariants[Math.floor(Math.random() * homeApplianceVariants.length)];
+
 // Part A: 15 frequency-based self-assessment questions with inline SVG illustrations
 export const partAQuestions: AssessmentQuestion[] = [
   {
     id: 2,
     type: 'reading_tracking',
     instruction: "Please read the paragraph aloud. Don't use your mouse pointer to track the words as you read.",
-    paragraph: 'Dyslexia is not a reflection of intelligence. It is simply a different way that the brain processes language. Many highly successful people are dyslexic.',
+    paragraph: [
+      'Dyslexia is not a reflection of intelligence. It is simply a different way that the brain processes language. Many highly successful people are dyslexic.',
+      'The quick brown fox jumps over the lazy dog. Reading can be fun when you take your time and practice every day.',
+      'Learning to read is a complex process. Everyone learns at their own pace. Do not worry if you read differently than others.',
+      'Creativity often comes naturally to dyslexic individuals. They excel at thinking outside the box and solving complex problems.',
+      'A positive mindset goes a long way. Challenges in reading do not define your potential to achieve great things in life.'
+    ],
     options: [],
     dimension: 'visual',
     difficulty: 'easy',
   },
   {
     id: 3,
-    type: 'frequency',
-    instruction: 'During conversation, how often do you pause before naming a familiar object?',
-    image: '/assessment/q3-object-naming.png',
-    options: frequencyOptions,
+    type: 'object_naming',
+    instruction: 'Identify the familiar object below as quickly as possible:',
+    image: selectedAppliance.imageType,
+    options: selectedAppliance.options,
+    correctAnswer: selectedAppliance.correctAnswer,
     dimension: 'phonological',
     difficulty: 'medium',
   },

@@ -44,20 +44,43 @@ export function Q2LineTracking() {
   );
 }
 
-export function Q3ObjectNaming() {
+export function Q3ObjectNaming({ question }: { question?: any }) {
+  const objectType = question?.image || 'chair';
+
   return (
     <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       <rect width="400" height="220" fill="#f0f7ff" rx="16" />
-      <rect x="178" y="120" width="44" height="60" rx="6" fill="#93c5fd" />
-      <rect x="160" y="174" width="80" height="12" rx="6" fill="#60a5fa" />
-      <ellipse cx="200" cy="100" rx="42" ry="42" fill="#bfdbfe" stroke="#3b82f6" strokeWidth="3" />
-      <ellipse cx="200" cy="100" rx="28" ry="28" fill="#93c5fd" />
-      <ellipse cx="200" cy="100" rx="58" ry="58" fill="none" stroke="#3b82f6" strokeWidth="1.5" opacity="0.3" strokeDasharray="8 5" />
-      <circle cx="290" cy="55" r="28" fill="white" stroke="#93c5fd" strokeWidth="2" />
-      <circle cx="278" cy="88" r="8" fill="white" stroke="#93c5fd" strokeWidth="2" />
-      <circle cx="270" cy="104" r="5" fill="white" stroke="#93c5fd" strokeWidth="1.5" />
-      <rect x="278" y="43" width="24" height="10" rx="5" fill="#bfdbfe" />
-      <circle cx="290" cy="66" r="6" fill="#93c5fd" />
+      {objectType === 'chair' && (
+        <g transform="translate(150, 40) scale(1.2)">
+          <rect x="20" y="20" width="10" height="40" rx="3" fill="#60a5fa" />
+          <rect x="50" y="20" width="10" height="40" rx="3" fill="#60a5fa" />
+          <rect x="15" y="50" width="50" height="10" rx="3" fill="#3b82f6" />
+          <rect x="20" y="60" width="8" height="40" rx="3" fill="#93c5fd" />
+          <rect x="52" y="60" width="8" height="40" rx="3" fill="#93c5fd" />
+        </g>
+      )}
+      {objectType === 'spoon' && (
+        <g transform="translate(120, 90) scale(1.5)">
+          <ellipse cx="25" cy="15" rx="15" ry="10" fill="#93c5fd" stroke="#3b82f6" strokeWidth="2" />
+          <path d="M 40 15 L 90 15" stroke="#93c5fd" strokeWidth="6" strokeLinecap="round" />
+        </g>
+      )}
+      {objectType === 'bed' && (
+        <g transform="translate(120, 60) scale(1.5)">
+          <rect x="10" y="30" width="80" height="20" rx="4" fill="#bfdbfe" />
+          <rect x="10" y="15" width="10" height="45" rx="3" fill="#60a5fa" />
+          <rect x="80" y="25" width="10" height="35" rx="3" fill="#60a5fa" />
+          <rect x="20" y="25" width="30" height="10" rx="4" fill="#93c5fd" />
+        </g>
+      )}
+      {objectType === 'clock' && (
+        <g transform="translate(150, 60) scale(1.5)">
+          <circle cx="30" cy="30" r="25" fill="#bfdbfe" stroke="#3b82f6" strokeWidth="3" />
+          <circle cx="30" cy="30" r="3" fill="#3b82f6" />
+          <line x1="30" y1="30" x2="30" y2="15" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+          <line x1="30" y1="30" x2="40" y2="30" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+        </g>
+      )}
     </svg>
   );
 }
@@ -296,7 +319,7 @@ export function Q15ReadingAloud() {
 }
 
 // Map question IDs to their illustration components
-export const questionIllustrations: Record<number, () => React.ReactElement> = {
+export const questionIllustrations: Record<number, React.FC<any>> = {
   1: Q1VisualSimilarity,
   2: Q2LineTracking,
   3: Q3ObjectNaming,

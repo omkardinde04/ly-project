@@ -28,9 +28,15 @@ interface QuestionMetric {
   audioReplays: number;
 }
 
-function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string; onComplete: (trackCount: number) => void }) {
+function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | string[]; onComplete: (trackCount: number) => void }) {
+  const [selectedParagraph] = useState(() => {
+    if (Array.isArray(paragraph)) {
+      return paragraph[Math.floor(Math.random() * paragraph.length)];
+    }
+    return paragraph || '';
+  });
   const [phase, setPhase] = useState<'idle' | 'listening' | 'done'>('idle');
-  const [words] = useState(paragraph.split(' '));
+  const [words] = useState(selectedParagraph.split(' '));
   const [hoveredWordIdx, setHoveredWordIdx] = useState<number>(-1);
   const [wordStatuses, setWordStatuses] = useState<('idle' | 'correct' | 'wrong')[]>(Array(words.length).fill('idle'));
   const [trackCount, setTrackCount] = useState(0);
@@ -373,7 +379,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
 
                 {IllustrationComponent ? (
                   <div className="w-full h-full p-3 flex items-center justify-center">
-                    <IllustrationComponent />
+                    <IllustrationComponent question={currentQ} />
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-1 text-gray-400">
