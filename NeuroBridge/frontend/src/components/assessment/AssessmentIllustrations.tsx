@@ -51,34 +51,68 @@ export function Q3ObjectNaming({ question }: { question?: any }) {
     <svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       <rect width="400" height="220" fill="#f0f7ff" rx="16" />
       {objectType === 'chair' && (
-        <g transform="translate(150, 40) scale(1.2)">
-          <rect x="20" y="20" width="10" height="40" rx="3" fill="#60a5fa" />
-          <rect x="50" y="20" width="10" height="40" rx="3" fill="#60a5fa" />
-          <rect x="15" y="50" width="50" height="10" rx="3" fill="#3b82f6" />
-          <rect x="20" y="60" width="8" height="40" rx="3" fill="#93c5fd" />
-          <rect x="52" y="60" width="8" height="40" rx="3" fill="#93c5fd" />
+        <g transform="translate(150, 40) scale(1.4)">
+          {/* Backrest */}
+          <rect x="20" y="10" width="40" height="35" rx="6" fill="#3b82f6" />
+          <rect x="25" y="15" width="30" height="25" rx="4" fill="#93c5fd" opacity="0.4" />
+          {/* Seat Cushion */}
+          <path d="M 15 45 L 65 45 L 70 55 L 10 55 Z" fill="#2563eb" />
+          <rect x="10" y="55" width="60" height="6" rx="3" fill="#1d4ed8" />
+          {/* Legs */}
+          <rect x="15" y="61" width="6" height="25" rx="2" fill="#60a5fa" />
+          <rect x="59" y="61" width="6" height="25" rx="2" fill="#60a5fa" />
+          <rect x="22" y="58" width="5" height="20" rx="2" fill="#93c5fd" />
+          <rect x="53" y="58" width="5" height="20" rx="2" fill="#93c5fd" />
         </g>
       )}
       {objectType === 'spoon' && (
-        <g transform="translate(120, 90) scale(1.5)">
-          <ellipse cx="25" cy="15" rx="15" ry="10" fill="#93c5fd" stroke="#3b82f6" strokeWidth="2" />
-          <path d="M 40 15 L 90 15" stroke="#93c5fd" strokeWidth="6" strokeLinecap="round" />
+        <g transform="translate(100, 70) scale(1.8)">
+          {/* Spoon head */}
+          <ellipse cx="40" cy="30" rx="20" ry="14" fill="#93c5fd" stroke="#3b82f6" strokeWidth="2.5" />
+          <ellipse cx="36" cy="27" rx="8" ry="4" fill="#eff6ff" opacity="0.9" />
+          <ellipse cx="46" cy="34" rx="6" ry="3" fill="#60a5fa" opacity="0.5" />
+          {/* Spoon handle */}
+          <path d="M 58 30 Q 80 35 120 25" fill="none" stroke="#60a5fa" strokeWidth="7" strokeLinecap="round" />
+          <path d="M 60 30 Q 80 35 118 25" fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
         </g>
       )}
       {objectType === 'bed' && (
-        <g transform="translate(120, 60) scale(1.5)">
-          <rect x="10" y="30" width="80" height="20" rx="4" fill="#bfdbfe" />
-          <rect x="10" y="15" width="10" height="45" rx="3" fill="#60a5fa" />
-          <rect x="80" y="25" width="10" height="35" rx="3" fill="#60a5fa" />
-          <rect x="20" y="25" width="30" height="10" rx="4" fill="#93c5fd" />
+        <g transform="translate(110, 45) scale(1.6)">
+          {/* Headboard */}
+          <rect x="10" y="10" width="10" height="60" rx="3" fill="#2563eb" />
+          <rect x="13" y="15" width="4" height="50" rx="2" fill="#60a5fa" />
+          {/* Mattress */}
+          <rect x="20" y="45" width="85" height="14" rx="4" fill="#bfdbfe" />
+          <rect x="20" y="59" width="85" height="6" rx="2" fill="#93c5fd" />
+          {/* Pillow */}
+          <rect x="25" y="35" width="28" height="12" rx="6" fill="#ffffff" stroke="#93c5fd" strokeWidth="2" />
+          <rect x="30" y="38" width="18" height="6" rx="3" fill="#eff6ff" />
+          {/* Blanket */}
+          <path d="M 55 42 L 105 42 Q 110 42 110 47 L 110 65 L 50 65 Z" fill="#60a5fa" />
+          <path d="M 55 42 L 65 42 L 60 65 L 50 65 Z" fill="#3b82f6" opacity="0.5" />
+          {/* Footboard */}
+          <rect x="105" y="30" width="8" height="40" rx="3" fill="#2563eb" />
         </g>
       )}
       {objectType === 'clock' && (
-        <g transform="translate(150, 60) scale(1.5)">
-          <circle cx="30" cy="30" r="25" fill="#bfdbfe" stroke="#3b82f6" strokeWidth="3" />
-          <circle cx="30" cy="30" r="3" fill="#3b82f6" />
-          <line x1="30" y1="30" x2="30" y2="15" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
-          <line x1="30" y1="30" x2="40" y2="30" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+        <g transform="translate(130, 30) scale(1.8)">
+          {/* Outer rim */}
+          <circle cx="40" cy="40" r="34" fill="#bfdbfe" stroke="#3b82f6" strokeWidth="6" />
+          {/* Inner face */}
+          <circle cx="40" cy="40" r="28" fill="#ffffff" />
+          {/* Center dot */}
+          <circle cx="40" cy="40" r="4" fill="#1e3a8a" />
+          {/* Hour hand */}
+          <line x1="40" y1="40" x2="40" y2="24" stroke="#1e3a8a" strokeWidth="4" strokeLinecap="round" />
+          {/* Minute hand */}
+          <line x1="40" y1="40" x2="52" y2="40" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" />
+          {/* Second hand */}
+          <line x1="40" y1="40" x2="30" y2="52" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Tick marks */}
+          <line x1="40" y1="14" x2="40" y2="18" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
+          <line x1="40" y1="66" x2="40" y2="62" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
+          <line x1="14" y1="40" x2="18" y2="40" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
+          <line x1="66" y1="40" x2="62" y2="40" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
         </g>
       )}
     </svg>
