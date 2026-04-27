@@ -14,8 +14,8 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
   const prevDirection = useRef<'left' | 'center' | 'right'>('center');
   const phaseRef = useRef(phase);
   
-  const calibrationFrames = useRef<{iris: number}[]>([]);
-  const baseCenter = useRef<{iris: number} | null>(null);
+  const calibrationFrames = useRef<{nose: number}[]>([]);
+  const baseCenter = useRef<{nose: number} | null>(null);
 
   // Drawing canvas ref
   const drawingCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -142,7 +142,7 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
     if (videoRef.current) {
       const camera = new (window as any).Camera(videoRef.current, {
         onFrame: async () => {
-          if (isMounted && faceMeshRef.current && (phaseRef.current === 'calibrating' || phaseRef.current === 'ready' || phaseRef.current === 'drawing')) {
+          if (isMounted && faceMeshRef.current && (phaseRef.current === 'calibrating' || phaseRef.current === 'standby' || phaseRef.current === 'drawing')) {
             await faceMeshRef.current.send({image: videoRef.current});
           }
         },

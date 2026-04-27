@@ -118,8 +118,7 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
         // Update local user state
         updateUser({
           assessment_completed: false,
-          assessment_score: undefined,
-          assessment_type: undefined
+          assessment_score: undefined
         });
         
         // Navigate to assessment
