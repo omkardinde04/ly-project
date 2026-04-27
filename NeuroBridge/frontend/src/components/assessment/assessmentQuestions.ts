@@ -1,6 +1,6 @@
 export interface AssessmentQuestion {
   id: number;
-  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction';
+  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction' | 'eye_tracking_maze';
   instruction: string;
   example?: string;
   audioInstruction?: string;
@@ -112,10 +112,11 @@ export const partAQuestions: AssessmentQuestion[] = [
   },
   {
     id: 5,
-    type: 'frequency',
-    instruction: 'When viewing maps, how often do you re-check the route?',
-    image: '/assessment/q5-map-navigation.png',
-    options: frequencyOptions,
+    type: 'eye_tracking_maze',
+    instruction: 'Draw the same path on the right canvas. We will track your eye movements to see how often you check the map.',
+    options: [
+      { id: 'done', text: 'Finish Drawing', weight: 0 }
+    ],
     dimension: 'visual',
     difficulty: 'medium',
   },
@@ -288,8 +289,8 @@ export function calculateDimensionScores(
         const weight = question.options[answer.selectedOption]?.weight ?? 0;
         // weight 0 (Rarely) = better performance; weight 3 (Most of the time) = more difficulty
         dimensionScores[question.dimension].correct += Math.max(0, 3 - weight);
-      } else if (question.type === 'reading_tracking') {
-         // for tracking questions, full score for completion in this basic implementation
+      } else if (question.type === 'reading_tracking' || question.type === 'eye_tracking_maze') {
+         // for tracking tasks, full score for completion in this basic implementation
          dimensionScores[question.dimension].total += 3;
          dimensionScores[question.dimension].correct += 3;
       } else {

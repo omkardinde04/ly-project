@@ -4,6 +4,7 @@ import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { partAQuestions } from './assessmentQuestions';
 import { speakText } from '../../utils/textToSpeech';
 import { questionIllustrations } from './AssessmentIllustrations';
+import { EyeTrackingMazeTask } from './EyeTrackingMazeTask';
 
 interface AssessmentTestProps {
   onComplete: (score: number, metrics: AssessmentMetrics) => void;
@@ -516,6 +517,12 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                  // The 'camera_direction' question options are: index 0 (Correct), index 1 (Wrong).
                  handleAnswer(isCorrect ? 0 : 1);
                }} />
+            </div>
+          ) : currentQ.type === 'eye_tracking_maze' ? (
+            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
+              <EyeTrackingMazeTask onComplete={(lookCount) => {
+                handleAnswer(0);
+              }} />
             </div>
           ) : (
             <>
