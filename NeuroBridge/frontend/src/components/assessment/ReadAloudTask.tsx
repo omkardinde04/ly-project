@@ -54,72 +54,92 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
   const mountTime = useRef<number>(Date.now());
   const speakStartTime = useRef<number | null>(null);
   const transcriptRef = useRef('');
+  const isMounted = useRef(true);
 
   useEffect(() => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SR) {
-      const recognition = new SR();
-      recognition.continuous = true; 
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event: any) => {
-        if (!speakStartTime.current) {
-          speakStartTime.current = Date.now();
-        }
-        let currentTranscript = '';
-        for (let i = 0; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript;
-        }
-        transcriptRef.current = currentTranscript;
-        setTranscript(currentTranscript);
-      };
-
-      recognition.onend = () => {
-        if (recognitionRef.current?.isManuallyStopped) return;
-      };
-
-      recognition.onerror = (event: any) => {
-        if (event.error !== 'no-speech') {
-          console.error('Read Aloud error:', event.error);
-          setPhase('ready');
-        }
-      };
-
-      recognitionRef.current = recognition;
-    }
-
-    return () => {
-      if (autoStopTimeoutRef.current) clearTimeout(autoStopTimeoutRef.current);
-      recognitionRef.current?.stop();
-    };
+    return () => { isMounted.current = false; };
   }, []);
 
+  const stopCurrentRecognition = () => {
+    if (autoStopTimeoutRef.current) {
+      clearTimeout(autoStopTimeoutRef.current);
+      autoStopTimeoutRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.stop();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
+  };
+
   const startListening = () => {
+    stopCurrentRecognition();
+    
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
     setTranscript('');
     transcriptRef.current = '';
     speakStartTime.current = null;
+    
+    const recognition = new SR();
+    recognition.continuous = true; 
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: any) => {
+      if (!speakStartTime.current) {
+        speakStartTime.current = Date.now();
+      }
+      let currentTranscript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        currentTranscript += event.results[i][0].transcript;
+      }
+      transcriptRef.current = currentTranscript;
+      if (isMounted.current) setTranscript(currentTranscript);
+    };
+
+    recognition.onend = () => {
+      if (isMounted.current && phase === 'listening') {
+        if (transcriptRef.current.trim()) {
+          setPhase('review');
+        } else {
+          setPhase('ready');
+        }
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Read Aloud error:', event.error);
+      if (isMounted.current) setPhase('ready');
+    };
+
+    recognitionRef.current = recognition;
     setPhase('listening');
     
-    if (recognitionRef.current) {
-      recognitionRef.current.isManuallyStopped = false;
-      try {
-        recognitionRef.current.start();
-      } catch (e) {}
+    try {
+      recognition.start();
+    } catch (e) {
+      setPhase('ready');
     }
 
-    // Auto stop after 15 seconds
+    // Auto stop after 20 seconds
     autoStopTimeoutRef.current = setTimeout(() => {
-      stopAndReview();
-    }, 15000);
+      if (isMounted.current && phase === 'listening') {
+        stopAndReview();
+      }
+    }, 20000);
   };
 
   const stopAndReview = () => {
-    if (autoStopTimeoutRef.current) clearTimeout(autoStopTimeoutRef.current);
-    if (recognitionRef.current) {
-      recognitionRef.current.isManuallyStopped = true;
-      recognitionRef.current.stop();
-    }
+    stopCurrentRecognition();
     setPhase('review');
   };
 
@@ -134,9 +154,13 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
     };
 
     setTimeout(() => {
-      onComplete(metrics);
+      if (isMounted.current) onComplete(metrics);
     }, 1000);
   };
+
+  useEffect(() => {
+    return () => stopCurrentRecognition();
+  }, []);
 
   const renderText = () => {
     return selectedParagraph.text.split(' ').map((word, i) => {
@@ -212,6 +236,7 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
               <div className="italic text-gray-400 font-medium h-4 max-w-md truncate overflow-hidden">
                 {transcript || "Keep reading out loud..."}
               </div>
+              <button onClick={stopAndReview} className="text-xs text-blue-500 font-bold hover:underline">Stop manually</button>
             </motion.div>
           )}
 
@@ -229,14 +254,17 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
                 </div>
               </div>
               
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleContinue}
-                className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-3.5 px-12 rounded-full shadow-lg shadow-blue-100 transition-colors"
-              >
-                Continue
-              </motion.button>
+              <div className="flex gap-4">
+                <button onClick={() => setPhase('ready')} className="text-sm text-gray-500 underline">Retry</button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleContinue}
+                  className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-3.5 px-12 rounded-full shadow-lg shadow-blue-100 transition-colors"
+                >
+                  Continue
+                </motion.button>
+              </div>
             </motion.div>
           )}
 
@@ -252,6 +280,20 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      <div className="mt-8">
+        <button 
+          onClick={() => onComplete({
+            paragraph_id: selectedParagraph.id,
+            transcript: "Skipped",
+            time_to_start_ms: 0,
+            total_time_ms: 0
+          })}
+          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          Microphone issues? Skip this task
+        </button>
       </div>
     </div>
   );

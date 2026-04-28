@@ -253,38 +253,47 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { name: 'Phonological Awareness', icon: '🔊', desc: 'Sound processing & blending', level: 'Medium' },
-            { name: 'Visual Attention', icon: '👁️', desc: 'Visual span & recall', level: 'High' },
-            { name: 'Working Memory', icon: '🧠', desc: 'Sequential memory', level: 'Medium' },
-            { name: 'Processing Speed', icon: '⚡', desc: 'Pattern recognition speed', level: 'High' },
-            { name: 'Orthographic Processing', icon: '📝', desc: 'Word recognition', level: 'Medium' },
-            { name: 'Executive Function', icon: '⏱️', desc: 'Timed task performance', level: 'High' },
-          ].map((dimension, idx) => (
-            <div key={idx} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-4xl">{dimension.icon}</span>
-                <div>
-                  <h3 className="font-bold text-gray-800">{dimension.name}</h3>
-                  <p className="text-xs text-gray-600">{dimension.desc}</p>
+            { id: 'phonological', name: 'Phonological Awareness', icon: '🔊', desc: 'Sound processing & blending' },
+            { id: 'visual', name: 'Visual Attention', icon: '👁️', desc: 'Visual matching & tracking' },
+            { id: 'workingMemory', name: 'Working Memory', icon: '🧠', desc: 'Sequential recall' },
+            { id: 'processingSpeed', name: 'Processing Speed', icon: '⚡', desc: 'Pattern recognition speed' },
+            { id: 'orthographic', name: 'Orthographic Processing', icon: '📝', desc: 'Word recognition' },
+            { id: 'executive', name: 'Executive Function', icon: '⏱️', desc: 'Complex task coordination' },
+          ].map((dim, idx) => {
+            const profile = (useDyslexia() as any).cognitiveProfile;
+            const scoreVal = profile?.[dim.id] || (score > 40 ? 65 : 85);
+            const levelStr = scoreVal >= 80 ? 'High' : scoreVal >= 50 ? 'Medium' : 'Low';
+            
+            return (
+              <div key={idx} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-4xl">{dim.icon}</span>
+                  <div>
+                    <h3 className="font-bold text-gray-800">{dim.name}</h3>
+                    <p className="text-xs text-gray-600">{dim.desc}</p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium text-gray-700">Performance</span>
+                    <span className={`font-bold ${
+                      levelStr === 'High' ? 'text-green-600' :
+                      levelStr === 'Medium' ? 'text-yellow-600' : 'text-red-600'
+                    }`}>{levelStr}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-1000 ${
+                        levelStr === 'High' ? 'bg-green-500' :
+                        levelStr === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'
+                      }`} 
+                      style={{ width: `${scoreVal}%` }}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium text-gray-700">Performance</span>
-                  <span className={`font-bold ${
-                    dimension.level === 'High' ? 'text-green-600' :
-                    dimension.level === 'Medium' ? 'text-yellow-600' : 'text-red-600'
-                  }`}>{dimension.level}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${
-                    dimension.level === 'High' ? 'bg-green-500 w-[80%]' :
-                    dimension.level === 'Medium' ? 'bg-yellow-500 w-[60%]' : 'bg-red-500 w-[40%]'
-                  }`} />
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </motion.div>
 

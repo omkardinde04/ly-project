@@ -18,8 +18,28 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
   const [transcript, setTranscript] = useState('');
 
   const recogRef = useRef<any>(null);
+  const isMounted = useRef(true);
+  const transcriptRef = useRef('');
+
+  useEffect(() => {
+    return () => { isMounted.current = false; stopCurrentRecognition(); };
+  }, []);
+
+  const stopCurrentRecognition = () => {
+    if (recogRef.current) {
+      try {
+        recogRef.current.onresult = null;
+        recogRef.current.onend = null;
+        recogRef.current.onerror = null;
+        recogRef.current.stop();
+      } catch (e) {}
+      recogRef.current = null;
+    }
+  };
 
   const startListening = () => {
+    stopCurrentRecognition();
+    
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
        alert("Speech recognition not supported in this browser.");
@@ -27,49 +47,51 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
        onComplete(0);
        return;
     }
+
+    setTranscript('');
+    transcriptRef.current = '';
+    
     const rec = new SR();
     rec.lang = 'en-US';
     rec.continuous = true;
     rec.interimResults = true;
-    recogRef.current = rec;
 
     rec.onresult = (e: any) => {
       let currentTranscript = '';
       for (let i = 0; i < e.results.length; ++i) {
         currentTranscript += e.results[i][0].transcript;
       }
-      setTranscript(currentTranscript);
+      transcriptRef.current = currentTranscript;
+      if (isMounted.current) setTranscript(currentTranscript);
     };
 
     rec.onend = () => {
-      if (phase === 'listening') {
-        try {
-          rec.start();
-        } catch (e) {
-          console.error('Failed to restart speech recognition:', e);
-        }
+      // Re-start ONLY if deliberate
+      if (isMounted.current && phase === 'listening') {
+        try { rec.start(); } catch (err) {}
       }
     };
 
     rec.onerror = (e: any) => {
-      console.error('Speech recognition error:', e);
-      if (phase === 'listening') {
-        try {
-          rec.start();
-        } catch (e) {
-          console.error('Failed to restart after error:', e);
-        }
+      console.error('Reading Review recognition error:', e.error);
+      if (e.error === 'not-allowed') {
+        alert("Camera and Mic permission required for this task.");
       }
     };
 
-    rec.start();
+    recogRef.current = rec;
     setPhase('listening');
+    
+    try {
+      rec.start();
+    } catch (e) {
+      console.error('Failed to start reading review:', e);
+      setPhase('idle');
+    }
   };
 
   const stopListening = () => {
-    if (recogRef.current) {
-      try { recogRef.current.stop(); } catch (e) {}
-    }
+    stopCurrentRecognition();
     setPhase('done');
     onComplete(rereadCount);
   };
@@ -85,14 +107,6 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
       let textCursor = 0;
       let newRereadCount = rereadCount;
 
-      // We re-evaluate the entire transcript from scratch for accuracy
-      for (let i = 0; i < words.length; i++) {
-        if (newStatuses[i] === 'idle') {
-            // keep it idle if we haven't reached it
-        }
-      }
-
-      // Very simple continuous match logic that detects jumps backward
       let maxMatchedIndex = -1;
 
       while (spokenCursor < spokenWords.length && textCursor < words.length) {
@@ -100,12 +114,9 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
         const currentSpoken = spokenWords[spokenCursor].replace(/[^a-z0-9]/g, '');
 
         if (currentSpoken === expectedWord) {
-          // They said the right word!
           if (textCursor <= maxMatchedIndex) {
-            // They are re-reading a word they already passed!
             newStatuses[textCursor] = 'red';
           } else {
-            // They are reading it for the first time
             if (newStatuses[textCursor] !== 'red') {
                newStatuses[textCursor] = 'green';
             }
@@ -114,14 +125,11 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
           spokenCursor++;
           textCursor++;
         } else {
-          // Word didn't match. 
-          // Did they jump backward? (Re-reading)
           let foundEarlier = false;
           for (let prevIdx = 0; prevIdx <= maxMatchedIndex; prevIdx++) {
             const earlierWord = words[prevIdx].toLowerCase().replace(/[^a-z0-9]/g, '');
             if (currentSpoken === earlierWord) {
-               // They jumped back to prevIdx
-               textCursor = prevIdx; // Move cursor back
+               textCursor = prevIdx;
                foundEarlier = true;
                newRereadCount++;
                break;
@@ -129,7 +137,6 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
           }
           
           if (!foundEarlier) {
-             // Did they skip a word? Check next 2 words
              let foundAhead = false;
              let targetNextIdx = textCursor + 1;
              for (let nextIdx = textCursor + 1; nextIdx <= Math.min(textCursor + 2, words.length - 1); nextIdx++) {
@@ -141,15 +148,13 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
                 }
              }
              if (foundAhead) {
-                 // The user skipped over some words (or mispronounced them). Mark the skipped words as yellow!
-                 for (let skipIdx = textCursor; skipIdx < targetNextIdx; skipIdx++) {
-                     if (newStatuses[skipIdx] === 'idle') {
-                         newStatuses[skipIdx] = 'yellow';
-                     }
-                 }
-                 textCursor = targetNextIdx; // Jump cursor to the matching word ahead
+                  for (let skipIdx = textCursor; skipIdx < targetNextIdx; skipIdx++) {
+                      if (newStatuses[skipIdx] === 'idle') {
+                          newStatuses[skipIdx] = 'yellow';
+                      }
+                  }
+                  textCursor = targetNextIdx;
              } else {
-                // Must be a filler word or hallucination by speech-to-text. Just advance spoken cursor.
                 spokenCursor++;
              }
           }
@@ -188,7 +193,7 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
 
        <div className="text-2xl leading-relaxed max-w-3xl text-left p-8 bg-white rounded-2xl border-2 border-slate-200 shadow-sm" style={{ lineHeight: '2.5' }}>
          {words.map((word, idx) => {
-           let statusClass = 'text-gray-400'; // unread
+           let statusClass = 'text-gray-400';
            if (wordStatuses[idx] === 'green') statusClass = 'text-green-600 bg-green-50 rounded px-1 font-semibold';
            if (wordStatuses[idx] === 'red') statusClass = 'text-red-600 bg-red-100 rounded px-1 font-bold line-through decoration-red-400 decoration-2';
            if (wordStatuses[idx] === 'yellow') statusClass = 'text-yellow-600 bg-yellow-100 rounded px-1 font-semibold';

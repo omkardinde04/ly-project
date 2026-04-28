@@ -35,72 +35,100 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
   const recognitionRef = useRef<any>(null);
   const autoStopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const startTime = useRef<number>(0);
-  
   const transcriptRef = useRef('');
 
+  // Use a ref to track if component is mounted
+  const isMounted = useRef(true);
   useEffect(() => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SR) {
-      const recognition = new SR();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event: any) => {
-        let currentTranscript = '';
-        for (let i = 0; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript;
-        }
-        transcriptRef.current = currentTranscript;
-        setTranscript(currentTranscript);
-      };
-
-      recognition.onend = () => {
-        // Only trigger finish if we were actually listening
-        if (recognitionRef.current?.isManuallyStopped) return;
-      };
-
-      recognition.onerror = (event: any) => {
-        if (event.error !== 'no-speech') {
-          console.error('Recognition error:', event.error);
-          setPhase('ready');
-        }
-      };
-
-      recognitionRef.current = recognition;
-    }
-
-    return () => {
-      if (autoStopTimeoutRef.current) clearTimeout(autoStopTimeoutRef.current);
-      recognitionRef.current?.stop();
-    };
+    return () => { isMounted.current = false; };
   }, []);
 
+  const stopCurrentRecognition = () => {
+    if (autoStopTimeoutRef.current) {
+      clearTimeout(autoStopTimeoutRef.current);
+      autoStopTimeoutRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error("Cleanup error:", e);
+      }
+      recognitionRef.current = null;
+    }
+  };
+
   const startListening = () => {
+    stopCurrentRecognition();
+    
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      alert("Speech recognition not supported in this browser. Please use Chrome or Edge.");
+      return;
+    }
+
     setTranscript('');
     transcriptRef.current = '';
     startTime.current = Date.now();
+    
+    const recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: any) => {
+      let currentTranscript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        currentTranscript += event.results[i][0].transcript;
+      }
+      transcriptRef.current = currentTranscript;
+      if (isMounted.current) setTranscript(currentTranscript);
+    };
+
+    recognition.onend = () => {
+      if (isMounted.current && phase === 'listening') {
+        // If it stopped naturally but we have content, move to review
+        if (transcriptRef.current.trim()) {
+          setPhase('review');
+        } else {
+          setPhase('ready');
+        }
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Recognition error:', event.error);
+      if (isMounted.current) {
+        if (event.error === 'not-allowed') {
+          alert("Microphone access was denied. Please enable it to continue.");
+        }
+        setPhase('ready');
+      }
+    };
+
+    recognitionRef.current = recognition;
     setPhase('listening');
     
-    if (recognitionRef.current) {
-      recognitionRef.current.isManuallyStopped = false;
-      try {
-        recognitionRef.current.start();
-      } catch (e) {}
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Failed to start recognition:", e);
+      setPhase('ready');
     }
 
-    // Auto stop after 15 seconds
+    // Auto stop after 10 seconds per letter set
     autoStopTimeoutRef.current = setTimeout(() => {
-      stopAndReview();
-    }, 15000);
+      if (isMounted.current && phase === 'listening') {
+        stopAndReview();
+      }
+    }, 10000);
   };
 
   const stopAndReview = () => {
-    if (autoStopTimeoutRef.current) clearTimeout(autoStopTimeoutRef.current);
-    if (recognitionRef.current) {
-      recognitionRef.current.isManuallyStopped = true;
-      recognitionRef.current.stop();
-    }
+    stopCurrentRecognition();
     setPhase('review');
   };
 
@@ -123,10 +151,15 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
     } else {
       setPhase('transition');
       setTimeout(() => {
-        onComplete(updatedMetrics);
-      }, 1000);
+        if (isMounted.current) onComplete(updatedMetrics);
+      }, 500);
     }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => stopCurrentRecognition();
+  }, []);
 
   return (
     <div className="w-full max-w-lg mx-auto bg-white rounded-3xl p-10 border border-blue-50 shadow-sm font-sans flex flex-col items-center justify-center min-h-[460px]">
@@ -191,6 +224,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
                   <div className="italic text-gray-400 font-medium h-4 max-w-xs truncate overflow-hidden">
                     {transcript || "Wait, we're listening..."}
                   </div>
+                  <button onClick={stopAndReview} className="text-xs text-blue-500 font-bold hover:underline">Stop manually</button>
                 </div>
               )}
 
@@ -205,16 +239,20 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
                     <div className="px-6 py-3 bg-blue-50 rounded-2xl border border-blue-100 text-[#1A2340] font-bold text-xl min-w-[120px]">
                       {transcript || "..."}
                     </div>
+                    { !transcript && <p className="text-xs text-red-400">No speech detected. Try again?</p> }
                   </div>
                   
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleContinue}
-                    className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-10 rounded-full shadow-lg shadow-blue-100 transition-colors"
-                  >
-                    Continue
-                  </motion.button>
+                  <div className="flex gap-4">
+                    <button onClick={() => setPhase('ready')} className="text-sm text-gray-500 underline">Retry</button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleContinue}
+                      className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-10 rounded-full shadow-lg shadow-blue-100 transition-colors"
+                    >
+                      Continue
+                    </motion.button>
+                  </div>
                 </motion.div>
               )}
             </div>
@@ -222,13 +260,21 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
         )}
       </AnimatePresence>
 
-      <div className="mt-12 flex gap-2">
-        {SCENARIOS.map((_, i) => (
-          <div 
-            key={i} 
-            className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIdx ? 'w-8 bg-blue-400' : i < currentIdx ? 'w-2 bg-blue-200' : 'w-2 bg-blue-50'}`} 
-          />
-        ))}
+      <div className="mt-12 flex flex-col items-center gap-4">
+        <div className="flex gap-2">
+          {SCENARIOS.map((_, i) => (
+            <div 
+              key={i} 
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIdx ? 'w-8 bg-blue-400' : i < currentIdx ? 'w-2 bg-blue-200' : 'w-2 bg-blue-50'}`} 
+            />
+          ))}
+        </div>
+        <button 
+          onClick={() => onComplete(allMetrics)}
+          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          Can't use microphone? Skip task
+        </button>
       </div>
     </div>
   );

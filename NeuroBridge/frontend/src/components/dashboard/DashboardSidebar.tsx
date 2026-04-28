@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { getTranslation } from '../../utils/translations';
@@ -11,6 +11,7 @@ interface SidebarProps {
 export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
   const { language, resetTest } = useDyslexia();
   const navigate = useNavigate();
+  const location = useLocation();
   const t = getTranslation(language);
 
   const handleLogout = () => {
@@ -24,13 +25,14 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
   };
 
   const menuItems = [
-    { id: 'home', label: t.navHome, icon: '🏠' },
-    { id: 'learning', label: t.navLearning, icon: '📚' },
-    { id: 'progress', label: t.navProgress, icon: '📊' },
+    { id: 'home', label: 'Dashboard', icon: '🏠' },
+    { id: 'assessment', label: 'Assessment', icon: '🧠' },
+    { id: 'cognitive', label: 'Cognitive Tasks', icon: '🧩' },
+    { id: 'progress', label: 'Progress', icon: '📊' },
+    { id: 'resumeBuilder', label: 'Resume Builder', icon: '📝' },
     { id: 'opportunities', label: 'Opportunities', icon: '💼' },
     { id: 'linkedin', label: 'LinkedIn', icon: 'linkedin' },
     { id: 'notebook', label: 'Notebook LLM', icon: '🤖' },
-    { id: 'brain', label: 'Research Brain', icon: '🧠' },
     { id: 'community', label: 'Community', icon: '👥' },
     { id: 'accessibility', label: t.navSettings, icon: '⚙️' },
     { id: 'profile', label: 'Profile', icon: '👤' },
@@ -58,7 +60,18 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
         {menuItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onNavigate(item.id)}
+            onClick={() => {
+              if (item.id === 'assessment') {
+                navigate('/assessment');
+              } else if (item.id === 'resumeBuilder') {
+                navigate('/dashboard/resume-builder');
+              } else if (item.id === 'opportunities') {
+                navigate('/dashboard/opportunities');
+              } else if (location.pathname.startsWith('/dashboard/resume-builder')) {
+                navigate('/dashboard');
+              }
+              onNavigate(item.id);
+            }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
               activeTab === item.id
                 ? 'bg-[#4A90E2] text-white shadow-md'

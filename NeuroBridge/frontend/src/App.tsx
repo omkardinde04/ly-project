@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { DyslexiaProvider, useDyslexia } from './contexts/DyslexiaContext';
@@ -21,6 +21,7 @@ import { VerifyEmail } from './components/pages/VerifyEmail'
 import { GlobalReader } from './components/ui/GlobalReader'
 import { AuthRedirect } from './components/auth/AuthRedirect'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { ResumeBuilderPage } from './components/pages/ResumeBuilderPage'
 
 function Layout({ children }: { children: ReactNode }) {
   const { isDyslexiaMode, dyslexiaLevel } = useDyslexia();
@@ -76,7 +77,7 @@ function AppContent() {
             <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route 
-              path="/dashboard" 
+              path="/dashboard/*" 
               element={
                 <ProtectedRoute requireAssessment={true}>
                   <Dashboard />
@@ -108,6 +109,8 @@ function AppContent() {
               } 
             />
             <Route path="/about" element={<AboutPage />} />
+            {/* Resume Builder is only accessible via Dashboard */}
+            <Route path="/resume-builder" element={<Navigate to="/dashboard/resume-builder" replace />} />
             <Route path="/auth-redirect" element={<AuthRedirect />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

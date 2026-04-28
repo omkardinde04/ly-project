@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
@@ -14,10 +14,12 @@ import { Profile } from '../dashboard/Profile';
 import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
 import { LinkedInConnect } from '../dashboard/LinkedInConnect';
 import { Brain } from '../dashboard/Brain';
+import { ResumeBuilder } from '../resume-builder/ResumeBuilder';
 
 export function Dashboard() {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('home');
 
   // Auto-navigate to linkedin tab if returning from OAuth callback
@@ -27,6 +29,15 @@ export function Dashboard() {
       setActiveTab('linkedin');
     }
   }, []);
+
+  // Support dashboard sub-routes like /dashboard/resume-builder
+  useEffect(() => {
+    if (location.pathname.startsWith('/dashboard/resume-builder')) {
+      setActiveTab('resumeBuilder');
+    } else if (location.pathname.startsWith('/dashboard/opportunities')) {
+      setActiveTab('opportunities');
+    }
+  }, [location.pathname]);
 
   // Check if user is authenticated
   if (!user || !token) {
@@ -57,12 +68,18 @@ export function Dashboard() {
     switch (activeTab) {
       case 'home':
         return <HomeDashboard onNavigate={setActiveTab} />;
+      case 'assessment':
+        return <HomeDashboard onNavigate={setActiveTab} />;
+      case 'cognitive':
+        return <Brain />;
       case 'learning':
         return <MyLearning />;
       case 'progress':
         return <ProgressTracking />;
       case 'opportunities':
         return <Opportunities />;
+      case 'resumeBuilder':
+        return <ResumeBuilder />;
       case 'linkedin':
         return <LinkedInConnect />;
       case 'brain':
@@ -318,6 +335,34 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
           </motion.div>
         ))}
       </div>
+
+      {/* Career Section (last module): Resume Builder */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-50"
+      >
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center text-3xl border border-blue-100">
+              📝
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-gray-800">Resume Builder</h3>
+              <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                Build a clean, dyslexia-friendly resume with live preview.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/dashboard/resume-builder')}
+            className="px-6 py-3 rounded-xl text-white font-bold text-sm transition-all shadow-sm bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+          >
+            Open Resume Builder →
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 }

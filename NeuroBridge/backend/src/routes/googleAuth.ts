@@ -13,53 +13,53 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? '';
 const googleCallbackURL = process.env.GOOGLE_REDIRECT_URI ?? 'http://localhost:4000/api/auth/google/callback';
 
 if (!googleClientID || !googleClientSecret) {
-  throw new Error('Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in backend .env');
-}
+  console.warn('⚠️  GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing in .env. Google Login will not work.');
+} else {
+  passport.use(new GoogleStrategy({
+    clientID: googleClientID,
+    clientSecret: googleClientSecret,
+    callbackURL: googleCallbackURL
+  }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+    try {
+      // Extract user information from Google profile
+      const googleId = profile.id;
+      const email = profile.emails?.[0]?.value;
+      const name = profile.displayName;
+      const profilePicture = profile.photos?.[0]?.value;
 
-passport.use(new GoogleStrategy({
-  clientID: googleClientID,
-  clientSecret: googleClientSecret,
-  callbackURL: googleCallbackURL
-}, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
-  try {
-    // Extract user information from Google profile
-    const googleId = profile.id;
-    const email = profile.emails?.[0]?.value;
-    const name = profile.displayName;
-    const profilePicture = profile.photos?.[0]?.value;
-
-    if (!email) {
-      return done(new Error('Email is required from Google profile'), undefined);
-    }
-
-    // Check if user exists in database
-    let user = await database.findUserByGoogleId(googleId);
-    
-    if (!user) {
-      // Check if user exists with same email (maybe registered with different method)
-      const existingUser = await database.findUserByEmail(email);
-      
-      if (existingUser && existingUser.id) {
-        // User exists with email but not Google ID - link Google ID to existing account
-        user = await database.updateUserWithGoogle(existingUser.id, googleId, profilePicture || '');
-      } else {
-        // Create new user automatically (email is verified via Google)
-        user = await database.createUser({
-          google_id: googleId,
-          name,
-          email,
-          profile_picture: profilePicture || '',
-          assessment_completed: false,
-          email_verified: true
-        });
+      if (!email) {
+        return done(new Error('Email is required from Google profile'), undefined);
       }
-    }
 
-    return done(null, user);
-  } catch (error) {
-    return done(error, undefined);
-  }
-}));
+      // Check if user exists in database
+      let user = await database.findUserByGoogleId(googleId);
+      
+      if (!user) {
+        // Check if user exists with same email (maybe registered with different method)
+        const existingUser = await database.findUserByEmail(email);
+        
+        if (existingUser && existingUser.id) {
+          // User exists with email but not Google ID - link Google ID to existing account
+          user = await database.updateUserWithGoogle(existingUser.id, googleId, profilePicture || '');
+        } else {
+          // Create new user automatically (email is verified via Google)
+          user = await database.createUser({
+            google_id: googleId,
+            name,
+            email,
+            profile_picture: profilePicture || '',
+            assessment_completed: false,
+            email_verified: true
+          });
+        }
+      }
+
+      return done(null, user);
+    } catch (error) {
+      return done(error, undefined);
+    }
+  }));
+}
 
 // Serialize user for session
 passport.serializeUser((user: any, done) => {
