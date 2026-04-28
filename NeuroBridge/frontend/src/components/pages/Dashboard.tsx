@@ -102,6 +102,15 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const t = getTranslation(language);
   const [isRetaking, setIsRetaking] = useState(false);
 
+  useEffect(() => {
+    if (!user?.assessment_completed || !token) return;
+    fetch('http://localhost:4000/api/auth/google/ml/init-adaptive-params', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).catch(() => {});
+  }, [user?.assessment_completed, token]);
+  const [isRetaking, setIsRetaking] = useState(false);
+
   const handleRetakeAssessment = async () => {
     if (!token || !user) return;
     
@@ -109,9 +118,7 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
     try {
       const response = await fetch('http://localhost:4000/api/auth/google/assessment/retake', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
