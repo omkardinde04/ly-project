@@ -1,0 +1,6602 @@
+[
+  {
+    "user_id": "user_0000",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2897371322408986,
+      "visual": 0.6361735698828815,
+      "memory": 0.6147688538100693,
+      "processing_speed": 0.6523029856408026,
+      "orthographic": 0.3312677300221331,
+      "executive": 0.576586304305082
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0001",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5678614158347006,
+      "visual": 0.16533572744779518,
+      "memory": 0.5703822727527468,
+      "processing_speed": 0.5559109202614527,
+      "orthographic": 0.5872541591430479,
+      "executive": 0.7154354338408924
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0002",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.4080383786976181,
+      "visual": 0.45914996489823345,
+      "memory": 0.3822297752886443,
+      "processing_speed": 0.49703987441379105,
+      "orthographic": 0.4407739681473492,
+      "executive": 0.4700143353960322
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0003",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6448649745528345,
+      "visual": 0.5974739002503874,
+      "memory": 0.6776561409963023,
+      "processing_speed": 0.7494949238278324,
+      "orthographic": 0.77034595500316,
+      "executive": 0.9872008281376577
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0004",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.057942082416932494,
+      "visual": 0.23474611495554998,
+      "memory": 0.2299716191057245,
+      "processing_speed": 0.3173209241278603,
+      "orthographic": 0.0873616296001045,
+      "executive": 0.20746237076007817
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0005",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.07079600811843975,
+      "visual": 0.7340620026504553,
+      "memory": 0.604673356820138,
+      "processing_speed": 0.4761067900830306,
+      "orthographic": 0.320654047054825,
+      "executive": 0.5608241850956178
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0006",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.600796428264733,
+      "visual": 0.2802967619048542,
+      "memory": 0.7687488829374207,
+      "processing_speed": 0.37096355154571636,
+      "orthographic": 0.43510861187275013,
+      "executive": 0.6189092493839052
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0007",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.39881883780446936,
+      "visual": 0.2982112651025687,
+      "memory": 0.569015069999194,
+      "processing_speed": 0.3896589285045769,
+      "orthographic": 0.5826982167933199,
+      "executive": 0.4571358829558162
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0008",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8067922598274755,
+      "visual": 0.7303799902718939,
+      "memory": 0.8057129041509993,
+      "processing_speed": 0.8616039285543717,
+      "orthographic": 0.7573408370087158,
+      "executive": 0.7764458714100348
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0009",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.11888352125818231,
+      "visual": 0.1759033426416397,
+      "memory": 0.14891777298123135,
+      "processing_speed": 0.2540290339253576,
+      "orthographic": 0.14611994820057644,
+      "executive": 0.18666583912312432
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0010",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.1577334077435404,
+      "visual": 0.48126556528892894,
+      "memory": 0.370610750213211,
+      "processing_speed": 0.3644552496887711,
+      "orthographic": 0.2932783233895607,
+      "executive": 0.7953259137526568
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0011",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5684913268805891,
+      "visual": 0.205817970192263,
+      "memory": 0.5687295549823219,
+      "processing_speed": 0.3614571731885509,
+      "orthographic": 0.5793285405165125,
+      "executive": 0.699652463389658
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0012",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.3018525814740273,
+      "visual": 0.48268717318388854,
+      "memory": 0.4257085550964717,
+      "processing_speed": 0.4145409977805904,
+      "orthographic": 0.3975074897495109,
+      "executive": 0.479215988738599
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0013",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7025925610672109,
+      "visual": 0.7116959520307344,
+      "memory": 0.575331485406607,
+      "processing_speed": 0.7322749490297032,
+      "orthographic": 0.6182631023855568,
+      "executive": 0.7099691127903652
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0014",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.07955555210346152,
+      "visual": 0.13267968413091824,
+      "memory": 0.2538526142182277,
+      "processing_speed": 0.24781318631024885,
+      "orthographic": 0.10953942278568446,
+      "executive": 0.17536683608046497
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0015",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2603631711364838,
+      "visual": 0.6655324999199401,
+      "memory": 0.5898147265122538,
+      "processing_speed": 0.49420922501230913,
+      "orthographic": 0.2911906559420329,
+      "executive": 0.5814075519051229
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0016",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.7274977382020819,
+      "visual": 0.21581993084304554,
+      "memory": 0.4670890819365955,
+      "processing_speed": 0.3395245012089031,
+      "orthographic": 0.4651196845127026,
+      "executive": 0.40418245711169876
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0017",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.38940553801977684,
+      "visual": 0.556882304735263,
+      "memory": 0.5219168409661388,
+      "processing_speed": 0.40800800079125465,
+      "orthographic": 0.400386578374612,
+      "executive": 0.4916025833949101
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0018",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6437873803906679,
+      "visual": 0.5275735638039252,
+      "memory": 0.6620957004518664,
+      "processing_speed": 0.6590163882991222,
+      "orthographic": 0.6920984857733474,
+      "executive": 0.9070468707745204
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0019",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.054983523934788156,
+      "visual": 0.17920002917781228,
+      "memory": 0.1794376067832042,
+      "processing_speed": 0.14402018073846007,
+      "orthographic": 0.03215807052174542,
+      "executive": 0.11602758090126224
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0020",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.2512899830320378,
+      "visual": 0.6643306305000004,
+      "memory": 0.49840946868676606,
+      "processing_speed": 0.40746077423570437,
+      "orthographic": 0.20956496821514317,
+      "executive": 0.5304850641923128
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0021",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.603218508703684,
+      "visual": 0.379513702040244,
+      "memory": 0.2774031149900525,
+      "processing_speed": 0.47861035113556816,
+      "orthographic": 0.6252495729149999,
+      "executive": 0.6980262952721683
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0022",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5347652458098718,
+      "visual": 0.3755775602475736,
+      "memory": 0.563041002185277,
+      "processing_speed": 0.5011370562671085,
+      "orthographic": 0.5982371068305412,
+      "executive": 0.4624522826858631
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0023",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7680575515568517,
+      "visual": 0.6643646500965693,
+      "memory": 0.7637065364801401,
+      "processing_speed": 0.6983808222961883,
+      "orthographic": 0.6017529299001241,
+      "executive": 0.6916293083731874
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0024",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.10792928088458141,
+      "visual": 0.14567088402464734,
+      "memory": 0.3155375676477167,
+      "processing_speed": 0.11380495767177962,
+      "orthographic": 0.20485557268764737,
+      "executive": 0.28962410975604047
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0025",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.31399418396239337,
+      "visual": 0.706864461601277,
+      "memory": 0.5882921710057264,
+      "processing_speed": 0.6626430734608859,
+      "orthographic": 0.36888344510594956,
+      "executive": 0.5613977202129302
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0026",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6848298179304868,
+      "visual": 0.25186021250606955,
+      "memory": 0.5639893423470319,
+      "processing_speed": 0.5573976700831678,
+      "orthographic": 0.5245943718831838,
+      "executive": 0.5857719503207222
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0027",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.42736021221601117,
+      "visual": 0.3014214861058153,
+      "memory": 0.572133246643798,
+      "processing_speed": 0.4318317552886849,
+      "orthographic": 0.4630042461328451,
+      "executive": 0.5320513310671869
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0028",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8349321082934318,
+      "visual": 0.6247887329960885,
+      "memory": 0.7819432846531488,
+      "processing_speed": 0.7567149160854973,
+      "orthographic": 0.4687371491539677,
+      "executive": 0.6833444477971301
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0029",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.23070111937629484,
+      "visual": 0.15635138403882626,
+      "memory": 0.11627374141341981,
+      "processing_speed": 0.17609169985626671,
+      "orthographic": 0.17689905374580941,
+      "executive": 0.1407719121387837
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0030",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3208461665356036,
+      "visual": 0.8281684786466852,
+      "memory": 0.41353236740994587,
+      "processing_speed": 0.49475261439369506,
+      "orthographic": 0.3278931763964626,
+      "executive": 0.6433749685960962
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0031",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6193661764516799,
+      "visual": 0.4333626216966925,
+      "memory": 0.5978846867832577,
+      "processing_speed": 0.5018490058947156,
+      "orthographic": 0.6312688178449648,
+      "executive": 0.6218092806461666
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0032",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.403540712755484,
+      "visual": 0.4197215321141438,
+      "memory": 0.46839730467772617,
+      "processing_speed": 0.4302649051450184,
+      "orthographic": 0.4926476846855956,
+      "executive": 0.4277365511376713
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0033",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6841064692941677,
+      "visual": 0.6516238444534448,
+      "memory": 0.6581569454079127,
+      "processing_speed": 0.5948844402632023,
+      "orthographic": 0.7011633100881655,
+      "executive": 0.7018170916265272
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0034",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.18595267026878196,
+      "visual": 0.1908157676340907,
+      "memory": 0.17612049350664666,
+      "processing_speed": 0.19548551859608018,
+      "orthographic": 0.11744940553711597,
+      "executive": 0.13730869889001368
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0035",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.23497666974750891,
+      "visual": 0.557376088741145,
+      "memory": 0.5238219277657293,
+      "processing_speed": 0.4400644294947003,
+      "orthographic": 0.4488345420605441,
+      "executive": 0.6095027885272073
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0036",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5886019810017971,
+      "visual": 0.1991040662832184,
+      "memory": 0.42623001853595843,
+      "processing_speed": 0.461132160654636,
+      "orthographic": 0.6496164526766879,
+      "executive": 0.7037716615671117
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0037",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.5163372034710614,
+      "visual": 0.35663971407238043,
+      "memory": 0.3845296950044944,
+      "processing_speed": 0.46559422894758185,
+      "orthographic": 0.45117081925665126,
+      "executive": 0.484352541052062
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0038",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6934375490952673,
+      "visual": 0.7394690849205532,
+      "memory": 0.720606132782245,
+      "processing_speed": 0.8392416983869914,
+      "orthographic": 0.5529700184910895,
+      "executive": 0.8172173487971265
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0039",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.12317098330163204,
+      "visual": 0.167235598916064,
+      "memory": 0.15059395430259595,
+      "processing_speed": 0.2580543872128312,
+      "orthographic": 0.15352826074417608,
+      "executive": 0.20691283236095104
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0040",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.26148718603835935,
+      "visual": 0.5686875906153613,
+      "memory": 0.6322110847282814,
+      "processing_speed": 0.5140466975734856,
+      "orthographic": 0.2600382656308884,
+      "executive": 0.6081124583418502
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0041",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.5948302060624768,
+      "visual": 0.17681847226168249,
+      "memory": 0.34777541907966003,
+      "processing_speed": 0.340751279435508,
+      "orthographic": 0.38719715929685167,
+      "executive": 0.5966415024820004
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0042",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.25864144883550877,
+      "visual": 0.4477568237507585,
+      "memory": 0.4678000257352064,
+      "processing_speed": 0.3946663525630848,
+      "orthographic": 0.5211156290972373,
+      "executive": 0.49640643694764536
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0043",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6899365897873335,
+      "visual": 0.667119346704424,
+      "memory": 0.8610788485934195,
+      "processing_speed": 0.6285575598473184,
+      "orthographic": 0.5688122347154199,
+      "executive": 0.7418856885455875
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0044",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.22758585127446554,
+      "visual": 0.17065664871195943,
+      "memory": 0.21803956693315804,
+      "processing_speed": 0.28838142956235335,
+      "orthographic": 0.14234242928097088,
+      "executive": 0.20894524126875716
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0045",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.17907102499796407,
+      "visual": 0.8318278703742822,
+      "memory": 0.5692192249458696,
+      "processing_speed": 0.46798304917792743,
+      "orthographic": 0.3067771577683453,
+      "executive": 0.5067051529826979
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0046",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5130584568447389,
+      "visual": 0.20257268956521454,
+      "memory": 0.6236775408903168,
+      "processing_speed": 0.5520401762735357,
+      "orthographic": 0.5156573748996737,
+      "executive": 0.6877631471260267
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0047",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.3349016200042904,
+      "visual": 0.4779197625921523,
+      "memory": 0.457095887768465,
+      "processing_speed": 0.32506785662566035,
+      "orthographic": 0.5040848099372747,
+      "executive": 0.40355341191809957
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0048",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6264784167144846,
+      "visual": 0.6015562938306959,
+      "memory": 0.6316295206065209,
+      "processing_speed": 0.753400713798539,
+      "orthographic": 0.6300542418721362,
+      "executive": 0.7715799149993535
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0049",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.15671860596484502,
+      "visual": 0.19837725903878378,
+      "memory": 0.05792364407398248,
+      "processing_speed": 0.24150356355751373,
+      "orthographic": 0.14454793914855601,
+      "executive": 0.15277611328595156
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0050",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.17912299456000885,
+      "visual": 0.47442321422419464,
+      "memory": 0.3532905437093846,
+      "processing_speed": 0.3529619865324283,
+      "orthographic": 0.4589230562278489,
+      "executive": 0.6016206599484052
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0051",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.47150553380451715,
+      "visual": 0.13715141751004292,
+      "memory": 0.39351050809642224,
+      "processing_speed": 0.32116110727956537,
+      "orthographic": 0.544937663902481,
+      "executive": 0.5071243440311339
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0052",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.4123568688376466,
+      "visual": 0.3069847078005895,
+      "memory": 0.4899811090301908,
+      "processing_speed": 0.34378471768841057,
+      "orthographic": 0.4512999181733106,
+      "executive": 0.3439923871984993
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0053",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6422847400135835,
+      "visual": 0.6814479971459116,
+      "memory": 0.6039665407014317,
+      "processing_speed": 0.7768868774593578,
+      "orthographic": 0.7391618787243925,
+      "executive": 0.7500501465469135
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0054",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.040205768330196276,
+      "visual": 0.19380991932043196,
+      "memory": 0.1697242664750573,
+      "processing_speed": 0.2058402071610421,
+      "orthographic": 0.1979460878413133,
+      "executive": 0.17826879098779572
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0055",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2957143694597186,
+      "visual": 0.6362708932089634,
+      "memory": 0.5319897398648643,
+      "processing_speed": 0.4992435340325351,
+      "orthographic": 0.4254813454522166,
+      "executive": 0.7760628034624493
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0056",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6855294213202313,
+      "visual": 0.30669992389020134,
+      "memory": 0.6004495676855307,
+      "processing_speed": 0.4442152144746563,
+      "orthographic": 0.4251414847326706,
+      "executive": 0.5588171402675298
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0057",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.39857444552646865,
+      "visual": 0.3418657843754116,
+      "memory": 0.33601283716892494,
+      "processing_speed": 0.40110908265209344,
+      "orthographic": 0.4942446998120933,
+      "executive": 0.5089870358985902
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0058",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6805564749884202,
+      "visual": 0.7924342945228744,
+      "memory": 0.7327091738495853,
+      "processing_speed": 0.6185076974957872,
+      "orthographic": 0.6232027780773016,
+      "executive": 0.6345268450993159
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0059",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.0928283701916488,
+      "visual": 0.18386730499367965,
+      "memory": 0.26443050967709614,
+      "processing_speed": 0.08378137614764428,
+      "orthographic": 0.10967310292574753,
+      "executive": 0.2170915493373716
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0060",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.32968260026460205,
+      "visual": 0.8274239618040181,
+      "memory": 0.5080686969015524,
+      "processing_speed": 0.45013149760636206,
+      "orthographic": 0.3755812410785489,
+      "executive": 0.5817300228078113
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0061",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.49365581337382436,
+      "visual": 0.17602228843111906,
+      "memory": 0.688471033428043,
+      "processing_speed": 0.37827528775742886,
+      "orthographic": 0.4551717313587825,
+      "executive": 0.5150662151934825
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0062",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.38050584676152216,
+      "visual": 0.4015475064905561,
+      "memory": 0.4849465337614496,
+      "processing_speed": 0.4332074141171717,
+      "orthographic": 0.5673802821042888,
+      "executive": 0.4735865549994535
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0063",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.5912746802488974,
+      "visual": 0.7984296599988538,
+      "memory": 0.6911481714006571,
+      "processing_speed": 0.6445335998148994,
+      "orthographic": 0.7377927334369959,
+      "executive": 0.7275826070148605
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0064",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.13641070679824926,
+      "visual": 0.11540349877541822,
+      "memory": 0.16865381288254094,
+      "processing_speed": 0.194176805637183,
+      "orthographic": 0.11318931048527754,
+      "executive": 0.19146750487607664
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0065",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.15314273603380368,
+      "visual": 0.7287553406805047,
+      "memory": 0.5516914217176604,
+      "processing_speed": 0.4509671555657394,
+      "orthographic": 0.34072010190715313,
+      "executive": 0.49610265162852357
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0066",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.5018921217607084,
+      "visual": 0.17217621117164955,
+      "memory": 0.32051373044694337,
+      "processing_speed": 0.5707906117660144,
+      "orthographic": 0.45111946633929145,
+      "executive": 0.6288570475221992
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0067",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5267838769658733,
+      "visual": 0.25816990742167284,
+      "memory": 0.5053148546741162,
+      "processing_speed": 0.37645745222919724,
+      "orthographic": 0.5475975655756864,
+      "executive": 0.5011226987105482
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0068",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8477257320235517,
+      "visual": 0.5757745908597449,
+      "memory": 0.6614306395553219,
+      "processing_speed": 0.9248494339396989,
+      "orthographic": 0.7336562767070884,
+      "executive": 0.5393485564782371
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0069",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.054896433903957625,
+      "visual": 0.11213259079437013,
+      "memory": 0.16910092853809766,
+      "processing_speed": 0.23977548430684406,
+      "orthographic": 0.1279365635657241,
+      "executive": 0.1695033053267221
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0070",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.34251342171979504,
+      "visual": 0.5749906342511694,
+      "memory": 0.3994290337620693,
+      "processing_speed": 0.5168680859410509,
+      "orthographic": 0.38041419100843565,
+      "executive": 0.6093832945385569
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0071",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.8381944983415625,
+      "visual": 0.22239165351854953,
+      "memory": 0.462341601156529,
+      "processing_speed": 0.4378856121010598,
+      "orthographic": 0.4856979448505649,
+      "executive": 0.7230252981799206
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0072",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4263088336133032,
+      "visual": 0.41012968717251963,
+      "memory": 0.5494128112844492,
+      "processing_speed": 0.43708005780430675,
+      "orthographic": 0.4153374085591789,
+      "executive": 0.5972619805126379
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0073",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7966221193420475,
+      "visual": 0.5930266187426945,
+      "memory": 0.7660068248351707,
+      "processing_speed": 0.6439325611570988,
+      "orthographic": 0.7230430691139934,
+      "executive": 0.7536828648090133
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0074",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.18982250961205663,
+      "visual": 0.18499893504666876,
+      "memory": 0.19775913686054836,
+      "processing_speed": 0.23357735623043638,
+      "orthographic": 0.20483526805825775,
+      "executive": 0.12198572454227108
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0075",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.14516212847100185,
+      "visual": 0.6439667277579934,
+      "memory": 0.6188494549982094,
+      "processing_speed": 0.3416510598886883,
+      "orthographic": 0.30489572285564986,
+      "executive": 0.5597327440057798
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0076",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.642312236735182,
+      "visual": 0.15059240152374676,
+      "memory": 0.559219691658773,
+      "processing_speed": 0.2933785368990114,
+      "orthographic": 0.5764992345603409,
+      "executive": 0.681203506689471
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0077",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6071425697896773,
+      "visual": 0.536356556536667,
+      "memory": 0.371656565893845,
+      "processing_speed": 0.5050893229161164,
+      "orthographic": 0.574925468138147,
+      "executive": 0.3474224743193664
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0078",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.5840098790391239,
+      "visual": 0.7076242637882724,
+      "memory": 0.6412838290084717,
+      "processing_speed": 0.6808851140421531,
+      "orthographic": 0.620592380672831,
+      "executive": 0.842372472431119
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0079",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.09205664456057805,
+      "visual": 0.31085452916210843,
+      "memory": 0.18193733027342868,
+      "processing_speed": 0.07206843667398793,
+      "orthographic": 0.021805026899748975,
+      "executive": 0.3712064745293301
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0080",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.26124556401206606,
+      "visual": 0.5637861217546328,
+      "memory": 0.5004677018016129,
+      "processing_speed": 0.4872409319371136,
+      "orthographic": 0.43351961530645483,
+      "executive": 0.692879059831682
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0081",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6148826729031633,
+      "visual": 0.2833767045227774,
+      "memory": 0.5792037977000077,
+      "processing_speed": 0.501010455105593,
+      "orthographic": 0.6124132386232086,
+      "executive": 0.6936800483020896
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0082",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.4669167156041398,
+      "visual": 0.4821631413094644,
+      "memory": 0.25473516044181643,
+      "processing_speed": 0.4362318633685163,
+      "orthographic": 0.39152947948978944,
+      "executive": 0.6201090003856187
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0083",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7995755621619081,
+      "visual": 0.7892842879150461,
+      "memory": 0.5923069903162589,
+      "processing_speed": 0.7244674961023541,
+      "orthographic": 0.7288237422670233,
+      "executive": 0.7212200664585248
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0084",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.09088718775625583,
+      "visual": 0.1076525243136216,
+      "memory": 0.1619999677795591,
+      "processing_speed": 0.21118698878994838,
+      "orthographic": 0.12890253299618587,
+      "executive": 0.21468415427239454
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0085",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.25738402354889184,
+      "visual": 0.683617133231164,
+      "memory": 0.6202114139176753,
+      "processing_speed": 0.523743765731826,
+      "orthographic": 0.2551246237465492,
+      "executive": 0.3495533390919951
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0086",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.7157477127086662,
+      "visual": 0.2529301595870391,
+      "memory": 0.5639297324125698,
+      "processing_speed": 0.42607272326699264,
+      "orthographic": 0.5272474296096482,
+      "executive": 0.5489699965076696
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0087",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.40678738662169,
+      "visual": 0.43615161728514007,
+      "memory": 0.5047458798976174,
+      "processing_speed": 0.46811264527326235,
+      "orthographic": 0.5556531150227626,
+      "executive": 0.499314168609032
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0088",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.71180433546173,
+      "visual": 0.6843237395431734,
+      "memory": 0.6738346172284017,
+      "processing_speed": 0.7117056322898062,
+      "orthographic": 0.5439813853295048,
+      "executive": 0.786253289000934
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0089",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.19366400991551605,
+      "visual": 0.14520726391070263,
+      "memory": 0.20968482216526627,
+      "processing_speed": 0.18947070439823452,
+      "orthographic": 0.11302373000852653,
+      "executive": 0.17485641165762994
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0090",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.1479355045787585,
+      "visual": 0.8359647493603614,
+      "memory": 0.456292971564067,
+      "processing_speed": 0.4999639274642724,
+      "orthographic": 0.3627289572928244,
+      "executive": 0.5270622260763154
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0091",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.4223081175172973,
+      "visual": 0.08196062311855147,
+      "memory": 0.5124278993623238,
+      "processing_speed": 0.4773472206436596,
+      "orthographic": 0.5526004670430769,
+      "executive": 0.48630676690280533
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0092",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.3788802393294236,
+      "visual": 0.3301755253473151,
+      "memory": 0.4316929098461687,
+      "processing_speed": 0.48959328377632894,
+      "orthographic": 0.3502827394721536,
+      "executive": 0.5229964208405361
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0093",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.5913107354097245,
+      "visual": 0.8106569932783105,
+      "memory": 0.8486722017850421,
+      "processing_speed": 0.7487407365804842,
+      "orthographic": 0.6657667232438622,
+      "executive": 0.7578245160680785
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0094",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.19099857039905435,
+      "visual": 0.17662489181103386,
+      "memory": 0.24997086255853748,
+      "processing_speed": 0.2055652925151571,
+      "orthographic": 0.14558827092822643,
+      "executive": 0.23233517329411713
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0095",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.23249089698621703,
+      "visual": 0.6263137133180752,
+      "memory": 0.6968647014539054,
+      "processing_speed": 0.40947149779233494,
+      "orthographic": 0.18151649139246492,
+      "executive": 0.7500256991012526
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0096",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5265034046455596,
+      "visual": 0.14728896032469677,
+      "memory": 0.617663902919649,
+      "processing_speed": 0.5361742641727459,
+      "orthographic": 0.49007341216179906,
+      "executive": 0.5220103974227801
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0097",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.39635972199980535,
+      "visual": 0.4233841137667493,
+      "memory": 0.4198125997433928,
+      "processing_speed": 0.3707409017282446,
+      "orthographic": 0.5244640971319925,
+      "executive": 0.5357567045255325
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0098",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.784343691685888,
+      "visual": 0.6491840770165584,
+      "memory": 0.7783654844816968,
+      "processing_speed": 0.7651295313627188,
+      "orthographic": 0.7555782528235422,
+      "executive": 0.7821125089834685
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0099",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.1652263612003575,
+      "visual": 0.1714691800696518,
+      "memory": 0.23032356406925475,
+      "processing_speed": 0.12144686739272867,
+      "orthographic": 0.19098604185396112,
+      "executive": 0.3464272874988945
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0100",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.2023730180205538,
+      "visual": 0.5875302633704265,
+      "memory": 0.47468571239269264,
+      "processing_speed": 0.39827054023091973,
+      "orthographic": 0.31962301458257364,
+      "executive": 0.5360072147671983
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0101",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5191738397532871,
+      "visual": 0.29007703559696346,
+      "memory": 0.5259852734460524,
+      "processing_speed": 0.5522139982744467,
+      "orthographic": 0.4049477154970418,
+      "executive": 0.6661590762914882
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0102",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.398909346812363,
+      "visual": 0.386852158341016,
+      "memory": 0.5059530776678829,
+      "processing_speed": 0.413419916015449,
+      "orthographic": 0.46026426855106145,
+      "executive": 0.5645459692282772
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0103",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6779645754601749,
+      "visual": 0.6399706732502891,
+      "memory": 0.6779271247723051,
+      "processing_speed": 0.6419588926467429,
+      "orthographic": 0.804923121785155,
+      "executive": 0.7456652052515348
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0104",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.18058598308204746,
+      "visual": 0.21815729200922807,
+      "memory": 0.2887869179771841,
+      "processing_speed": 0.22173998780303508,
+      "orthographic": 0.24891637677622322,
+      "executive": 0.2217108520120027
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0105",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.18199682523734956,
+      "visual": 0.6422483934058626,
+      "memory": 0.504760367425447,
+      "processing_speed": 0.5589151938807477,
+      "orthographic": 0.2933830101433556,
+      "executive": 0.47780925400134633
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0106",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6116557643473604,
+      "visual": 0.09139305284018776,
+      "memory": 0.6485447071609786,
+      "processing_speed": 0.5755886174815477,
+      "orthographic": 0.34993348899807497,
+      "executive": 0.6125848390805486
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0107",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.49739216091741584,
+      "visual": 0.43352762177594745,
+      "memory": 0.4885147068227295,
+      "processing_speed": 0.3581494420174379,
+      "orthographic": 0.5632969967233253,
+      "executive": 0.30051412592658555
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0108",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6958056490406778,
+      "visual": 0.6026219412238689,
+      "memory": 0.6797753023132315,
+      "processing_speed": 0.7308299175425179,
+      "orthographic": 0.6751588374347458,
+      "executive": 0.7656807418563909
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0109",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.14058762106500297,
+      "visual": 0.19486010794172381,
+      "memory": 0.12992859887519015,
+      "processing_speed": 0.19449738415339687,
+      "orthographic": 0.1212965232445385,
+      "executive": 0.18692268296697823
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0110",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.17901485076486848,
+      "visual": 0.739176427991462,
+      "memory": 0.5008365086414155,
+      "processing_speed": 0.6725957971760368,
+      "orthographic": 0.2353194488815945,
+      "executive": 0.7022925503352695
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0111",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5690404482242953,
+      "visual": 0.18490575473542964,
+      "memory": 0.5755564471419204,
+      "processing_speed": 0.4680158963188743,
+      "orthographic": 0.48161711755085035,
+      "executive": 0.5888276495128741
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0112",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6009770744131866,
+      "visual": 0.3585285641781788,
+      "memory": 0.49889251255903383,
+      "processing_speed": 0.530279111071132,
+      "orthographic": 0.40727873212053217,
+      "executive": 0.5562979366455177
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0113",
+    "profile": "mild",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6507271213295149,
+      "visual": 0.6252143848354423,
+      "memory": 0.734997465728036,
+      "processing_speed": 0.5054550093867303,
+      "orthographic": 0.6955419163840791,
+      "executive": 0.5919376220976279
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0114",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.2642658188468481,
+      "visual": 0.2349068067013339,
+      "memory": 0.22471938443428385,
+      "processing_speed": 0.16700547437151203,
+      "orthographic": 0.08548726087306907,
+      "executive": 0.29164382894396584
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0115",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.24943522297034823,
+      "visual": 0.8450248298860186,
+      "memory": 0.40961136749779686,
+      "processing_speed": 0.5285084752804076,
+      "orthographic": 0.40954721477833783,
+      "executive": 0.6983644977104624
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0116",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6237754218498065,
+      "visual": 0.19109912823505995,
+      "memory": 0.5834519385495123,
+      "processing_speed": 0.5600318396002082,
+      "orthographic": 0.3804275284193894,
+      "executive": 0.5058065728569566
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0117",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5300232631204566,
+      "visual": 0.4399665481497909,
+      "memory": 0.5633827113822665,
+      "processing_speed": 0.6054138005550881,
+      "orthographic": 0.3389815650477798,
+      "executive": 0.40844047947190837
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0118",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8238932674555777,
+      "visual": 0.6247620686247026,
+      "memory": 0.7400024772409319,
+      "processing_speed": 0.6678150127052771,
+      "orthographic": 0.8118115161780096,
+      "executive": 0.8542757040084644
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0119",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.1433367013437259,
+      "visual": 0.30885766912688883,
+      "memory": 0.14084382657975197,
+      "processing_speed": 0.1388256769608339,
+      "orthographic": 0.22368467537773934,
+      "executive": 0.14748552200018894
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0120",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.24769488374286872,
+      "visual": 0.6751743062646635,
+      "memory": 0.6943494791383105,
+      "processing_speed": 0.40756824323994595,
+      "orthographic": 0.44810682921305417,
+      "executive": 0.5118330122369394
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0121",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6558413762539167,
+      "visual": 0.15979394210892098,
+      "memory": 0.8280026223238948,
+      "processing_speed": 0.417786731167847,
+      "orthographic": 0.6286390077163001,
+      "executive": 0.5771293844309267
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0122",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4530958254569497,
+      "visual": 0.34763045996800324,
+      "memory": 0.45353560056357245,
+      "processing_speed": 0.4737819911193882,
+      "orthographic": 0.4856587936825003,
+      "executive": 0.5963988463394403
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0123",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7662608269099734,
+      "visual": 0.627205140542283,
+      "memory": 0.7801333250094336,
+      "processing_speed": 0.6192707250597599,
+      "orthographic": 0.5761097638523809,
+      "executive": 0.6871837831536136
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0124",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.27984898861083035,
+      "visual": 0.1449381204984091,
+      "memory": 0.2848269986168796,
+      "processing_speed": 0.24933870736353297,
+      "orthographic": 0.15296798448084226,
+      "executive": 0.3303556624074934
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0125",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2527283800815858,
+      "visual": 0.544227818410559,
+      "memory": 0.641739366176717,
+      "processing_speed": 0.3823869936884753,
+      "orthographic": 0.45756537476576503,
+      "executive": 0.5151037812960475
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0126",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.500885458708404,
+      "visual": 0.11717521839962713,
+      "memory": 0.6633559632160886,
+      "processing_speed": 0.3608014663907545,
+      "orthographic": 0.5074684701319775,
+      "executive": 0.7698073366275922
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0127",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.33846139137070885,
+      "visual": 0.38842620581341225,
+      "memory": 0.3651324909087591,
+      "processing_speed": 0.37421101454124406,
+      "orthographic": 0.4042906553383657,
+      "executive": 0.5980697876637299
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0128",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.9505947755886276,
+      "visual": 0.8285153852467044,
+      "memory": 0.6401035451315575,
+      "processing_speed": 0.7052755468803206,
+      "orthographic": 0.6548811517248738,
+      "executive": 0.7613621325572609
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0129",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.21109257161343192,
+      "visual": 0.23882254093158342,
+      "memory": 0.08368585093869382,
+      "processing_speed": 0.2083494828879347,
+      "orthographic": 0.07522610854525859,
+      "executive": 0.1886020352280695
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0130",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3039960762388781,
+      "visual": 0.8171501113141486,
+      "memory": 0.5429233541742909,
+      "processing_speed": 0.5511683640511347,
+      "orthographic": 0.4491327492628002,
+      "executive": 0.49302714125952424
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0131",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5459552965317864,
+      "visual": 0.06438167947043935,
+      "memory": 0.4363016339961853,
+      "processing_speed": 0.5109277009750521,
+      "orthographic": 0.5947652533715104,
+      "executive": 0.7471642703053113
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0132",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.5570778285281184,
+      "visual": 0.525976746162103,
+      "memory": 0.37891264108350975,
+      "processing_speed": 0.2784163623441748,
+      "orthographic": 0.4246884312198277,
+      "executive": 0.4359712184059813
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0133",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7565024513100364,
+      "visual": 0.6345032925412253,
+      "memory": 0.762763859745417,
+      "processing_speed": 0.6363674571365463,
+      "orthographic": 0.6920558963314911,
+      "executive": 0.7577892050412247
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0134",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.3001741401137693,
+      "visual": 0.14412358211927895,
+      "memory": 0.2657694837728994,
+      "processing_speed": 0.10213462278931106,
+      "orthographic": 0.1607312834179751,
+      "executive": 0.24090443307571893
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0135",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2544700675908502,
+      "visual": 0.4985590771499082,
+      "memory": 0.4507171629459755,
+      "processing_speed": 0.7664612323238509,
+      "orthographic": 0.3579971222131245,
+      "executive": 0.6694702350055137
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0136",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.543991611177831,
+      "visual": 0.3356846202862962,
+      "memory": 0.49461669767014943,
+      "processing_speed": 0.3459359030889455,
+      "orthographic": 0.5125406782941272,
+      "executive": 0.7017817286474413
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0137",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4187720173622997,
+      "visual": 0.4449912866765087,
+      "memory": 0.5990400989194583,
+      "processing_speed": 0.3241893708107891,
+      "orthographic": 0.5072562590776957,
+      "executive": 0.5606036391065703
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0138",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8234234668760975,
+      "visual": 0.6414763095159491,
+      "memory": 0.6745609848743834,
+      "processing_speed": 0.7989433448082902,
+      "orthographic": 0.6506250773634261,
+      "executive": 0.7169425383772234
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0139",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.12200255534702645,
+      "visual": 0.2686815845729341,
+      "memory": 0.21018574174682025,
+      "processing_speed": 0.2342517488445749,
+      "orthographic": 0.11264115889933554,
+      "executive": 0.17649132104377094
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0140",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3488263688562965,
+      "visual": 0.6235042985560445,
+      "memory": 0.6442790491047851,
+      "processing_speed": 0.47758088847780505,
+      "orthographic": 0.4013241222797545,
+      "executive": 0.7328610271420282
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0141",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4585730557433436,
+      "visual": 0.2556910142728647,
+      "memory": 0.5452467704960778,
+      "processing_speed": 0.4753214776624126,
+      "orthographic": 0.3821694329605668,
+      "executive": 0.6210020344078699
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0142",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.3408019641649769,
+      "visual": 0.3428063193263017,
+      "memory": 0.395467148464738,
+      "processing_speed": 0.2535574990979532,
+      "orthographic": 0.36471373809692653,
+      "executive": 0.4335181986319848
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0143",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7347493347806335,
+      "visual": 0.5997435686824021,
+      "memory": 0.640318368926876,
+      "processing_speed": 0.7262479736666068,
+      "orthographic": 0.7706281588671701,
+      "executive": 0.7339652861973831
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0144",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.07353431655386787,
+      "visual": 0.2653247558162812,
+      "memory": 0.2778626033313214,
+      "processing_speed": 0.08553429578040968,
+      "orthographic": 0.11964718831339838,
+      "executive": 0.19616026158753783
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0145",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.26988844976375775,
+      "visual": 0.7315049481160777,
+      "memory": 0.5520057437487452,
+      "processing_speed": 0.49250717787240467,
+      "orthographic": 0.2563275996194519,
+      "executive": 0.5987609596282818
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0146",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5936049626168568,
+      "visual": 0.19246161949463678,
+      "memory": 0.5161749678576778,
+      "processing_speed": 0.52188435239619,
+      "orthographic": 0.6504236304133504,
+      "executive": 0.6214112514469943
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0147",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.39930420265780064,
+      "visual": 0.6223849139932138,
+      "memory": 0.47970267103782044,
+      "processing_speed": 0.46037744584190005,
+      "orthographic": 0.34050376753745987,
+      "executive": 0.5833593304999778
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0148",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6321280714767478,
+      "visual": 0.7303524926700837,
+      "memory": 0.7582398304401756,
+      "processing_speed": 0.7261761871958492,
+      "orthographic": 0.6649000374954736,
+      "executive": 0.6475533542123266
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0149",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.13524437765540498,
+      "visual": 0.17080059792703955,
+      "memory": 0.1947231977613128,
+      "processing_speed": 0.07057874077333642,
+      "orthographic": 0.18954558605549587,
+      "executive": 0.25704529421268246
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0150",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.23104262932755515,
+      "visual": 0.6673474849986861,
+      "memory": 0.4937505283461326,
+      "processing_speed": 0.5100720958123494,
+      "orthographic": 0.3755830105259659,
+      "executive": 0.48879456326629206
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0151",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.7328309774952735,
+      "visual": 0.19385977801779075,
+      "memory": 0.3915188471211234,
+      "processing_speed": 0.44289596419296023,
+      "orthographic": 0.3076549533594145,
+      "executive": 0.5750058117266946
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0152",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4660969272809374,
+      "visual": 0.524525378725932,
+      "memory": 0.4414685628631185,
+      "processing_speed": 0.3646777239544092,
+      "orthographic": 0.3850381759910637,
+      "executive": 0.5349721972902572
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0153",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7365500020827569,
+      "visual": 0.7302531104382712,
+      "memory": 0.8430274132926701,
+      "processing_speed": 0.7956193166329102,
+      "orthographic": 0.7566715318748269,
+      "executive": 0.7689423677381078
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0154",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.13639340293040741,
+      "visual": 0.19391564982865167,
+      "memory": 0.1723342739153212,
+      "processing_speed": 0.24292806071445233,
+      "orthographic": 0.03370829351708475,
+      "executive": 0.0863885830671067
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0155",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2944475962207546,
+      "visual": 0.6376906648068235,
+      "memory": 0.7273199501559413,
+      "processing_speed": 0.39244843460865547,
+      "orthographic": 0.34621168236239935,
+      "executive": 0.5760267796842015
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0156",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6548506637665676,
+      "visual": 0.2513733962645629,
+      "memory": 0.627188522232306,
+      "processing_speed": 0.5898998987236833,
+      "orthographic": 0.5776457227037776,
+      "executive": 0.712702023858672
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0157",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.32168881837367436,
+      "visual": 0.42573783229895334,
+      "memory": 0.511027009861486,
+      "processing_speed": 0.4403426040081616,
+      "orthographic": 0.4510669469009976,
+      "executive": 0.5313104373901096
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0158",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7000526285377736,
+      "visual": 0.8051128528278462,
+      "memory": 0.7171169742331414,
+      "processing_speed": 0.7330806440171227,
+      "orthographic": 0.6660180144098715,
+      "executive": 0.7207338738933006
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0159",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.18195224761161413,
+      "visual": 0.12812575706587961,
+      "memory": 0.22695475827548123,
+      "processing_speed": 0.1771937593842584,
+      "orthographic": 0.24389122901304125,
+      "executive": 0.23553702467191978
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0160",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.292441323629221,
+      "visual": 0.5066774807315644,
+      "memory": 0.5088782839952981,
+      "processing_speed": 0.5741791286805944,
+      "orthographic": 0.2290801968729544,
+      "executive": 0.4597191510568346
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0161",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.5765412795510689,
+      "visual": 0.1925641235497222,
+      "memory": 0.5003113568567792,
+      "processing_speed": 0.4415172311486694,
+      "orthographic": 0.5029062170422354,
+      "executive": 0.47687091864942965
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0162",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.457789404824328,
+      "visual": 0.4180869592583857,
+      "memory": 0.3638555188645036,
+      "processing_speed": 0.4518306851425654,
+      "orthographic": 0.39002905131930143,
+      "executive": 0.5165218331072201
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0163",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.671220817540098,
+      "visual": 0.6718329358390664,
+      "memory": 0.6863897240598535,
+      "processing_speed": 0.7173526891273386,
+      "orthographic": 0.5879640895929712,
+      "executive": 0.6607286685650149
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0164",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.19203513102904982,
+      "visual": 0.1959279164972011,
+      "memory": 0.046421848994982806,
+      "processing_speed": 0.1577580117988465,
+      "orthographic": 0.08082149022616121,
+      "executive": 0.27860410419300147
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0165",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4069943531282255,
+      "visual": 0.49020977958355894,
+      "memory": 0.7229634147069474,
+      "processing_speed": 0.4044520256191289,
+      "orthographic": 0.32657941204167695,
+      "executive": 0.45138374163835326
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0166",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.5388490795907995,
+      "visual": 0.20639160369697704,
+      "memory": 0.4688371408046019,
+      "processing_speed": 0.5174380398582543,
+      "orthographic": 0.5058527411951808,
+      "executive": 0.4139889779442746
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0167",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4439102203488671,
+      "visual": 0.4410412272554099,
+      "memory": 0.4470190497631884,
+      "processing_speed": 0.413764294334202,
+      "orthographic": 0.4674781648917879,
+      "executive": 0.5397534525957495
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0168",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6010384632794166,
+      "visual": 0.6982883467503764,
+      "memory": 0.7251854009679335,
+      "processing_speed": 0.7439076677700668,
+      "orthographic": 0.7174504812932297,
+      "executive": 0.7523290724359575
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0169",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.18036498999069264,
+      "visual": 0.22411163650340482,
+      "memory": 0.13302227585001697,
+      "processing_speed": 0.1479555727539109,
+      "orthographic": 0.09570992323404999,
+      "executive": 0.18831844601496148
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0170",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3364856836231567,
+      "visual": 0.7463493017468066,
+      "memory": 0.42923046431701267,
+      "processing_speed": 0.35770007682877425,
+      "orthographic": 0.4266908817138241,
+      "executive": 0.4554165354670957
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0171",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.495975152414483,
+      "visual": 0.27305624337382356,
+      "memory": 0.5843307481101673,
+      "processing_speed": 0.3532297456597132,
+      "orthographic": 0.395757788382018,
+      "executive": 0.6013914621672342
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0172",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5489970400509246,
+      "visual": 0.4560490757351261,
+      "memory": 0.5613941722247628,
+      "processing_speed": 0.6240720474253215,
+      "orthographic": 0.5253853605409846,
+      "executive": 0.7567622953088305
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0173",
+    "profile": "mild",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6568757884228132,
+      "visual": 0.5184758542027901,
+      "memory": 0.6658399617008856,
+      "processing_speed": 0.5960352651864866,
+      "orthographic": 0.4995512753832845,
+      "executive": 0.8094020059352666
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0174",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.11354383933913634,
+      "visual": 0.21004961905769817,
+      "memory": 0.20247166953840562,
+      "processing_speed": 0.26806843958451476,
+      "orthographic": 0.13179413678149549,
+      "executive": 0.3145641682621855
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0175",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2787236025070684,
+      "visual": 0.8362846500856741,
+      "memory": 0.3727084899235964,
+      "processing_speed": 0.45136583741022496,
+      "orthographic": 0.2775039524768099,
+      "executive": 0.6776955220773586
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0176",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.49868604190635024,
+      "visual": 0.24488987547553026,
+      "memory": 0.5847048636895066,
+      "processing_speed": 0.38994862880668957,
+      "orthographic": 0.4425624846015065,
+      "executive": 0.6247695262893056
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0177",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4260500830698093,
+      "visual": 0.45563504598045457,
+      "memory": 0.4730939343624626,
+      "processing_speed": 0.4442608237605199,
+      "orthographic": 0.438040697359801,
+      "executive": 0.49778069056627217
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0178",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.757585766152587,
+      "visual": 0.7895152566925634,
+      "memory": 0.7177108504600199,
+      "processing_speed": 0.7565045986441387,
+      "orthographic": 0.7028514628161189,
+      "executive": 0.8226614855482267
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0179",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.10184067315190462,
+      "visual": 0.10321652824324858,
+      "memory": 0.16072886818564852,
+      "processing_speed": 0.17182396868677968,
+      "orthographic": 0.1550546657473221,
+      "executive": 0.1759966467505944
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0180",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.20207840508219033,
+      "visual": 0.6047585562218002,
+      "memory": 0.46009235994747233,
+      "processing_speed": 0.4413572401554357,
+      "orthographic": 0.39404606426279576,
+      "executive": 0.7201992946991809
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0181",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.712844519798667,
+      "visual": 0.17723635689844192,
+      "memory": 0.7421105813878024,
+      "processing_speed": 0.3808348319369768,
+      "orthographic": 0.5729394870874793,
+      "executive": 0.4751843374008734
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0182",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4660280370569557,
+      "visual": 0.3893409016076813,
+      "memory": 0.5196592843971101,
+      "processing_speed": 0.4059278909092773,
+      "orthographic": 0.47251668486980786,
+      "executive": 0.5884993155668039
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0183",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6295022522736413,
+      "visual": 0.6848775858874555,
+      "memory": 0.6667561989928267,
+      "processing_speed": 0.7138857963625549,
+      "orthographic": 0.6843623119571551,
+      "executive": 0.8204028855314658
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0184",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.14505565143356305,
+      "visual": 0.16886646427598728,
+      "memory": 0.09746384945051025,
+      "processing_speed": 0.23463707609029985,
+      "orthographic": 0.15774920747064602,
+      "executive": 0.14932527461061862
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0185",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.24036327373989266,
+      "visual": 0.8125600778828855,
+      "memory": 0.6661532531889868,
+      "processing_speed": 0.441665311021934,
+      "orthographic": 0.5006548634907937,
+      "executive": 0.6466540001948623
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0186",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6324871603257695,
+      "visual": 0.03823360518141547,
+      "memory": 0.5041200514726437,
+      "processing_speed": 0.6001718772004571,
+      "orthographic": 0.42376573472260826,
+      "executive": 0.7043380920876106
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0187",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5535505413701638,
+      "visual": 0.3396739234534823,
+      "memory": 0.6254170974065217,
+      "processing_speed": 0.3547667109294542,
+      "orthographic": 0.3104806164055923,
+      "executive": 0.5719903866501738
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0188",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6009707074377962,
+      "visual": 0.6557146019289872,
+      "memory": 0.6416138664084551,
+      "processing_speed": 0.7661755351545267,
+      "orthographic": 0.6280250699567889,
+      "executive": 0.8410824341647519
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0189",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.15250950570314836,
+      "visual": 0.22926178862199353,
+      "memory": 0.3112436442537739,
+      "processing_speed": 0.22881800321910745,
+      "orthographic": 0.17734462795276504,
+      "executive": 0.21113587836882067
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0190",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2823599683767039,
+      "visual": 0.5026019668440553,
+      "memory": 0.5803093643945597,
+      "processing_speed": 0.47412350403131087,
+      "orthographic": 0.4586843072604785,
+      "executive": 0.5772513264884651
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0191",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6182126666937218,
+      "visual": 0.12492333825166495,
+      "memory": 0.49380667004098644,
+      "processing_speed": 0.5460587895149096,
+      "orthographic": 0.5211319551852467,
+      "executive": 0.595912052302372
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0192",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.4626665366376973,
+      "visual": 0.25719952501734955,
+      "memory": 0.40886401899627967,
+      "processing_speed": 0.5678075403419183,
+      "orthographic": 0.3666375579851191,
+      "executive": 0.5064491330850623
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0193",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7407719032716923,
+      "visual": 0.6472672719913675,
+      "memory": 0.8654378062981942,
+      "processing_speed": 0.7334082554423912,
+      "orthographic": 0.7334958615635991,
+      "executive": 0.7027952179047455
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0194",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.15550297353775822,
+      "visual": 0.1338787229820498,
+      "memory": 0.16513001103548264,
+      "processing_speed": 0.07275597104075916,
+      "orthographic": 0.1686767030221951,
+      "executive": 0.2632398030072421
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0195",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.27823987475679274,
+      "visual": 0.6223322825582392,
+      "memory": 0.550056309906732,
+      "processing_speed": 0.33824360781377116,
+      "orthographic": 0.4204985636925582,
+      "executive": 0.4927875937121533
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0196",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.48671205525433575,
+      "visual": 0.2068857115586873,
+      "memory": 0.4920175549805663,
+      "processing_speed": 0.5206408193671594,
+      "orthographic": 0.48899798201447364,
+      "executive": 0.47426767399513786
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0197",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.518705730216953,
+      "visual": 0.4425628603346313,
+      "memory": 0.41831122938349896,
+      "processing_speed": 0.25071678635508443,
+      "orthographic": 0.47691496159080565,
+      "executive": 0.5619194854647412
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0198",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6406850610676819,
+      "visual": 0.6141403735340689,
+      "memory": 0.699324473435256,
+      "processing_speed": 0.812843032107492,
+      "orthographic": 0.5953638731559786,
+      "executive": 0.6669629626442589
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0199",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.16366852751262703,
+      "visual": 0.11341294927721679,
+      "memory": 0.24147236098307617,
+      "processing_speed": 0.23432324438508745,
+      "orthographic": 0.13408755891580396,
+      "executive": 0.26193495573040315
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0200",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.2898043381189699,
+      "visual": 0.4928000532725798,
+      "memory": 0.48530571464992145,
+      "processing_speed": 0.3854547130050421,
+      "orthographic": 0.2860669820892496,
+      "executive": 0.6329347979320367
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0201",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.7114378089603907,
+      "visual": 0.08926851261799572,
+      "memory": 0.5285365152584173,
+      "processing_speed": 0.495222806363106,
+      "orthographic": 0.368678417763315,
+      "executive": 0.6705101512915378
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0202",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.41851492535270285,
+      "visual": 0.4182539824748356,
+      "memory": 0.4628273071172024,
+      "processing_speed": 0.4957914196606491,
+      "orthographic": 0.526430497672573,
+      "executive": 0.3760700850230542
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0203",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6476504419702371,
+      "visual": 0.7732690758339442,
+      "memory": 0.6662889456481869,
+      "processing_speed": 0.6842559552748868,
+      "orthographic": 0.7163359514328347,
+      "executive": 0.6813952082348574
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0204",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.23252416153309519,
+      "visual": 0.2511155432065606,
+      "memory": 0.2749755814747226,
+      "processing_speed": 0.17250976131316542,
+      "orthographic": 0.18648504867682528,
+      "executive": 0.2426992380853139
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0205",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2089681917120459,
+      "visual": 0.8015362356952719,
+      "memory": 0.5450632273669257,
+      "processing_speed": 0.40992757847071215,
+      "orthographic": 0.39861546236179923,
+      "executive": 0.5929378465267089
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0206",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5103841047801206,
+      "visual": 0.34311236155922764,
+      "memory": 0.6522509326107689,
+      "processing_speed": 0.29902238713735296,
+      "orthographic": 0.4307653342138717,
+      "executive": 0.5829008617475239
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0207",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5232550947809871,
+      "visual": 0.41783836503886834,
+      "memory": 0.39791428427049874,
+      "processing_speed": 0.5014000445126447,
+      "orthographic": 0.46726799627966453,
+      "executive": 0.6713178457276406
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0208",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8185805960921948,
+      "visual": 0.818481810839131,
+      "memory": 0.7453921607806179,
+      "processing_speed": 0.631833055498183,
+      "orthographic": 0.6285155424525823,
+      "executive": 0.7380679402849066
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0209",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.18123128697954294,
+      "visual": 0.18557845004027695,
+      "memory": 0.19202303178656793,
+      "processing_speed": 0.14946975752857763,
+      "orthographic": 0.1038219151117607,
+      "executive": 0.1610838646972435
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0210",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.1961982028580917,
+      "visual": 0.672422913665891,
+      "memory": 0.526017326828401,
+      "processing_speed": 0.5212023904231708,
+      "orthographic": 0.3094426020863251,
+      "executive": 0.758741122674906
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0211",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5780812597878277,
+      "visual": 0.0443007155181713,
+      "memory": 0.5588380516226246,
+      "processing_speed": 0.5979070858562932,
+      "orthographic": 0.5900450864025284,
+      "executive": 0.7084284727585619
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0212",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3690552157427904,
+      "visual": 0.4516664140516642,
+      "memory": 0.5026186350611028,
+      "processing_speed": 0.46000252605233194,
+      "orthographic": 0.5694421608384781,
+      "executive": 0.40510695976874234
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0213",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6985944511926914,
+      "visual": 0.7289656314573667,
+      "memory": 0.6993503573547717,
+      "processing_speed": 0.686055686289599,
+      "orthographic": 0.6523119580849563,
+      "executive": 0.6802236713482638
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0214",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.14445930848096233,
+      "visual": 0.2614611457443188,
+      "memory": 0.155684671785343,
+      "processing_speed": 0.16533566956215276,
+      "orthographic": 0.24712229827802462,
+      "executive": 0.24318128573388909
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0215",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.32726069663499374,
+      "visual": 0.7095195854456671,
+      "memory": 0.5086420088781796,
+      "processing_speed": 0.5238609019171573,
+      "orthographic": 0.3674532130082809,
+      "executive": 0.5794567778724676
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0216",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5963518771966475,
+      "visual": 0.12497495397426676,
+      "memory": 0.6951266682341203,
+      "processing_speed": 0.5333572894457211,
+      "orthographic": 0.6223441877822509,
+      "executive": 0.36628381635678486
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0217",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5170562504675504,
+      "visual": 0.5136647200904465,
+      "memory": 0.5315190112083394,
+      "processing_speed": 0.37768845677399554,
+      "orthographic": 0.5883416494312226,
+      "executive": 0.6578389274584724
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0218",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7110250791075116,
+      "visual": 0.6612958987721713,
+      "memory": 0.6896105795593909,
+      "processing_speed": 0.6640881038235898,
+      "orthographic": 0.6715171273568052,
+      "executive": 0.73708105494074
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0219",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.12566916833536085,
+      "visual": 0.11092067730194008,
+      "memory": 0.2509513544053777,
+      "processing_speed": 0.1832240301346617,
+      "orthographic": 0.22436466007067152,
+      "executive": 0.12409188374514181
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0220",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.27053614520428537,
+      "visual": 0.6838400662172482,
+      "memory": 0.4873808638481408,
+      "processing_speed": 0.6042200185276201,
+      "orthographic": 0.4463971005911972,
+      "executive": 0.5395030625456653
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0221",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.605738346802139,
+      "visual": 0.1386779559649967,
+      "memory": 0.5454510142122331,
+      "processing_speed": 0.4613594812211182,
+      "orthographic": 0.6758034497912274,
+      "executive": 0.5742225122171359
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0222",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.482598566827426,
+      "visual": 0.27691531702322425,
+      "memory": 0.48568709340756067,
+      "processing_speed": 0.37747035075209,
+      "orthographic": 0.2928081850371036,
+      "executive": 0.4562849978945713
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0223",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8257232622693829,
+      "visual": 0.5754379725073058,
+      "memory": 0.6549648481153008,
+      "processing_speed": 0.7948797587968368,
+      "orthographic": 0.6121220509904228,
+      "executive": 0.6979624948428467
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0224",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.13476792621470557,
+      "visual": 0.24153839317288148,
+      "memory": 0.08870203461010899,
+      "processing_speed": 0.13005949665060274,
+      "orthographic": 0.13800110839361973,
+      "executive": 0.11824669811426113
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0225",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2356134089940934,
+      "visual": 0.7597600957222841,
+      "memory": 0.41988796868322137,
+      "processing_speed": 0.5028491003899103,
+      "orthographic": 0.38796318659864587,
+      "executive": 0.7196399946032318
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0226",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.7823283854874922,
+      "visual": 0.25630108713837546,
+      "memory": 0.7829432554599378,
+      "processing_speed": 0.4538224497686851,
+      "orthographic": 0.6197162610828479,
+      "executive": 0.7819748866982794
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0227",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4264072332559062,
+      "visual": 0.5197630684374467,
+      "memory": 0.5710539730568105,
+      "processing_speed": 0.5095558182273546,
+      "orthographic": 0.3431229995787059,
+      "executive": 0.5546644182446019
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0228",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7089167834549921,
+      "visual": 0.725845783328342,
+      "memory": 0.7398600173428859,
+      "processing_speed": 0.6865569752900672,
+      "orthographic": 0.5742359654403618,
+      "executive": 0.7700927225182669
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0229",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.11985076397587505,
+      "visual": 0.19327130853688318,
+      "memory": 0.2008563697536085,
+      "processing_speed": 0.2008915400471439,
+      "orthographic": 0.0788247066548009,
+      "executive": 0.2912807724872819
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0230",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.31586775659250943,
+      "visual": 0.4892038816778201,
+      "memory": 0.5404829390844202,
+      "processing_speed": 0.4377043984962909,
+      "orthographic": 0.31455355446734024,
+      "executive": 0.7341493571982544
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0231",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6726229135701242,
+      "visual": 0.17529699240975463,
+      "memory": 0.5070449614100564,
+      "processing_speed": 0.525284295108147,
+      "orthographic": 0.46065155252489076,
+      "executive": 0.7249770612970577
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0232",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.47341918321676096,
+      "visual": 0.4736384521966575,
+      "memory": 0.5925512140470804,
+      "processing_speed": 0.4042743798115329,
+      "orthographic": 0.5236899907932727,
+      "executive": 0.46444633929776924
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0233",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.5707173546109826,
+      "visual": 0.6971748465630212,
+      "memory": 0.791384814773069,
+      "processing_speed": 0.6623608463827976,
+      "orthographic": 0.733159671320826,
+      "executive": 0.6873521390538202
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0234",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.036459780117402085,
+      "visual": 0.22189267745090768,
+      "memory": 0.17345717847876205,
+      "processing_speed": 0.06499104685546114,
+      "orthographic": 0.1589258341661492,
+      "executive": 0.24795204853846117
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0235",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.19227764247578333,
+      "visual": 0.8151328202755672,
+      "memory": 0.5185355095356547,
+      "processing_speed": 0.6081826790230481,
+      "orthographic": 0.3565554637227986,
+      "executive": 0.4607828860563916
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0236",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5216557806527379,
+      "visual": 0.24829275861671335,
+      "memory": 0.5733979495977495,
+      "processing_speed": 0.6601244054829909,
+      "orthographic": 0.5522669829688274,
+      "executive": 0.46950990098817325
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0237",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.42864611376368567,
+      "visual": 0.37005217435335674,
+      "memory": 0.5359341257715543,
+      "processing_speed": 0.3214157331428676,
+      "orthographic": 0.6103512699615523,
+      "executive": 0.590505447522502
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0238",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7213152114452569,
+      "visual": 0.758636003831678,
+      "memory": 0.7844895502477336,
+      "processing_speed": 0.6328799830243332,
+      "orthographic": 0.6179804827906428,
+      "executive": 0.7917698204579993
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0239",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.13828961424276343,
+      "visual": 0.084072167559824,
+      "memory": 0.15565829880653045,
+      "processing_speed": 0.16543798195948434,
+      "orthographic": 0.0819827898483787,
+      "executive": 0.2593883500335167
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0240",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3268466694870209,
+      "visual": 0.7267957954674283,
+      "memory": 0.733830751802962,
+      "processing_speed": 0.5105739033561008,
+      "orthographic": 0.33728498628032416,
+      "executive": 0.4532566957104103
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0241",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.7008711384949411,
+      "visual": 0.1754604866097442,
+      "memory": 0.74606081291387,
+      "processing_speed": 0.5748604720447344,
+      "orthographic": 0.47702114850226224,
+      "executive": 0.5812583824140557
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0242",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.38201077801176353,
+      "visual": 0.5526314032589794,
+      "memory": 0.37243621113387226,
+      "processing_speed": 0.4658488610980251,
+      "orthographic": 0.5774107790101372,
+      "executive": 0.7216724959644664
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0243",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6723980370745288,
+      "visual": 0.6486564325021891,
+      "memory": 0.7333689907155506,
+      "processing_speed": 0.8742009203244638,
+      "orthographic": 0.718859542857136,
+      "executive": 0.6744317557046626
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0244",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.13176070227639264,
+      "visual": 0.21528092533262694,
+      "memory": 0.20139181929168595,
+      "processing_speed": 0.1791539450226033,
+      "orthographic": 0.18452501013675882,
+      "executive": 0.16136132338032333
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0245",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2715469340423307,
+      "visual": 0.8238278872945131,
+      "memory": 0.5307809199578325,
+      "processing_speed": 0.5223731505404217,
+      "orthographic": 0.41996220277015406,
+      "executive": 0.7532887402198596
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0246",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5904946153039119,
+      "visual": 0.292719623346852,
+      "memory": 0.761931733467059,
+      "processing_speed": 0.3236841631811709,
+      "orthographic": 0.45006748458710566,
+      "executive": 0.5790684317027062
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0247",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.3232366666674143,
+      "visual": 0.5232988633699304,
+      "memory": 0.5038235988474828,
+      "processing_speed": 0.46745664467146364,
+      "orthographic": 0.40189035019526803,
+      "executive": 0.45115582571193863
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0248",
+    "profile": "mild",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5882640396417449,
+      "visual": 0.4781061259254171,
+      "memory": 0.7552919337228218,
+      "processing_speed": 0.5967233673841136,
+      "orthographic": 0.51580371220675,
+      "executive": 0.7624857705260549
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0249",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.07890214905472093,
+      "visual": 0.17621771207516085,
+      "memory": 0.23948842145548863,
+      "processing_speed": 0.14818856737185113,
+      "orthographic": 0.21398223638469968,
+      "executive": 0.29977086220858334
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0250",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.11173991117654769,
+      "visual": 0.4897304060773175,
+      "memory": 0.6339793258241,
+      "processing_speed": 0.5206284611818037,
+      "orthographic": 0.42420432805648534,
+      "executive": 0.6478652400636675
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0251",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.671304711747288,
+      "visual": 0.26572692009814436,
+      "memory": 0.4923090001810137,
+      "processing_speed": 0.679421256094076,
+      "orthographic": 0.4821369924359078,
+      "executive": 0.7605378759992634
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0252",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3360589580899952,
+      "visual": 0.4559003763605962,
+      "memory": 0.615091252660716,
+      "processing_speed": 0.4039052588020035,
+      "orthographic": 0.3807712404910611,
+      "executive": 0.5324957074514944
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0253",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7665504310717697,
+      "visual": 0.6988783323796531,
+      "memory": 0.8003225517961533,
+      "processing_speed": 0.6187796349132686,
+      "orthographic": 0.5872674511410927,
+      "executive": 0.8125175981016504
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0254",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.23244561976713646,
+      "visual": 0.17667971522924766,
+      "memory": 0.26804045911299845,
+      "processing_speed": 0.20431814924118638,
+      "orthographic": 0.0722153990306397,
+      "executive": 0.2082531458121595
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0255",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.18545798798360424,
+      "visual": 0.571125892152503,
+      "memory": 0.49956040673438035,
+      "processing_speed": 0.4476074645791229,
+      "orthographic": 0.23409067134728817,
+      "executive": 0.6069514004488311
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0256",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.7231884937909556,
+      "visual": 0.25734507938536594,
+      "memory": 0.3270333160577533,
+      "processing_speed": 0.4178677716775684,
+      "orthographic": 0.33216488360703617,
+      "executive": 0.5597950700096571
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0257",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4671135560173352,
+      "visual": 0.5347903457387203,
+      "memory": 0.4365365544741354,
+      "processing_speed": 0.4313616571416559,
+      "orthographic": 0.447227974099481,
+      "executive": 0.43600598222158904
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0258",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.633035764699631,
+      "visual": 0.7440809744566429,
+      "memory": 0.6902390052451005,
+      "processing_speed": 0.7729862498525208,
+      "orthographic": 0.7444981646537796,
+      "executive": 0.8001146208347508
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0259",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.06988201142682332,
+      "visual": 0.1773815559325129,
+      "memory": 0.1823356140496642,
+      "processing_speed": 0.13576367336729647,
+      "orthographic": 0.21015204386851918,
+      "executive": 0.15185496110565647
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0260",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2708823350579454,
+      "visual": 0.6225761494425623,
+      "memory": 0.5953646558456759,
+      "processing_speed": 0.4813693835001896,
+      "orthographic": 0.37447138136950714,
+      "executive": 0.5494266514155575
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0261",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6599115323743603,
+      "visual": 0.24074490919576574,
+      "memory": 0.5099160540703717,
+      "processing_speed": 0.4935016139416937,
+      "orthographic": 0.4336928699322759,
+      "executive": 0.6295498810878688
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0262",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5672789067636876,
+      "visual": 0.4439878178001886,
+      "memory": 0.43787298800287905,
+      "processing_speed": 0.33433532684932166,
+      "orthographic": 0.4246568547323902,
+      "executive": 0.5237984426052738
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0263",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.6131386837277426,
+      "visual": 0.5674102310465649,
+      "memory": 0.6905740361565679,
+      "processing_speed": 0.8287406111279725,
+      "orthographic": 0.727799046981304,
+      "executive": 0.7883042843304606
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0264",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.15209955518606172,
+      "visual": 0.18142029816038532,
+      "memory": 0.1434906381884808,
+      "processing_speed": 0.055879205907456195,
+      "orthographic": 0.16469167055889683,
+      "executive": 0.29345617143175756
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0265",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2681125823709216,
+      "visual": 0.5500076814855156,
+      "memory": 0.622277179382101,
+      "processing_speed": 0.5811455133235922,
+      "orthographic": 0.20038191469722835,
+      "executive": 0.6513512552220648
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0266",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.47828563919931394,
+      "visual": 0.02781066403019833,
+      "memory": 0.4617806577815048,
+      "processing_speed": 0.4898124155537941,
+      "orthographic": 0.4763828113998201,
+      "executive": 0.4796734068001522
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0267",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.46318704859129095,
+      "visual": 0.5286881089475319,
+      "memory": 0.3402484036377109,
+      "processing_speed": 0.36865462877344357,
+      "orthographic": 0.47693038372585017,
+      "executive": 0.41206606939996115
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0268",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.5957033370096899,
+      "visual": 0.7398284776009186,
+      "memory": 0.7482235632682894,
+      "processing_speed": 0.7317334933960129,
+      "orthographic": 0.6815060917423634,
+      "executive": 0.7525167497699259
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0269",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.22902953555037303,
+      "visual": 0.2325171540154733,
+      "memory": 0.1877234629086083,
+      "processing_speed": 0.14366875067491636,
+      "orthographic": 0.15614111198229555,
+      "executive": 0.20281785188002494
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0270",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.37987597819222163,
+      "visual": 0.7287530312081338,
+      "memory": 0.5547021771882445,
+      "processing_speed": 0.5138794884394031,
+      "orthographic": 0.21801457315943654,
+      "executive": 0.45891446681984677
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0271",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6671744269184358,
+      "visual": 0.07757077224246381,
+      "memory": 0.537280128484312,
+      "processing_speed": 0.683581061516999,
+      "orthographic": 0.6109348301010059,
+      "executive": 0.7254103772259793
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0272",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4177052778457118,
+      "visual": 0.3762285520602074,
+      "memory": 0.5251734602817035,
+      "processing_speed": 0.44236386801166777,
+      "orthographic": 0.5501763540363176,
+      "executive": 0.5113079775393513
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0273",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7788779690819381,
+      "visual": 0.6017779692521474,
+      "memory": 0.7009803894968377,
+      "processing_speed": 0.6283366554589568,
+      "orthographic": 0.7472546369565082,
+      "executive": 0.7075804675276895
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0274",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.20011969638606714,
+      "visual": 0.09904309098788332,
+      "memory": 0.20263140674924204,
+      "processing_speed": 0.12026243916457632,
+      "orthographic": 0.15973038386405122,
+      "executive": 0.19361434120147106
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0275",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.16651829088972803,
+      "visual": 0.6330474827386523,
+      "memory": 0.33154505519020744,
+      "processing_speed": 0.415014309505123,
+      "orthographic": 0.3329474052088347,
+      "executive": 0.5868932490978117
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0276",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.7644435481021661,
+      "visual": 0.23769165046451562,
+      "memory": 0.68339988232804,
+      "processing_speed": 0.5042970559616456,
+      "orthographic": 0.6236092183430685,
+      "executive": 0.5015628036749147
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0277",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3901283158155999,
+      "visual": 0.3487928633392599,
+      "memory": 0.41944103559744855,
+      "processing_speed": 0.5922102275489702,
+      "orthographic": 0.508146998380825,
+      "executive": 0.6586122931802426
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0278",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7834153077915498,
+      "visual": 0.6486814395479624,
+      "memory": 0.676643969626396,
+      "processing_speed": 0.6646287369525015,
+      "orthographic": 0.6611929383242309,
+      "executive": 0.7723430135497611
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0279",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.07045181568803698,
+      "visual": 0.07817123139824582,
+      "memory": 0.14935353787740513,
+      "processing_speed": 0.20397938840394786,
+      "orthographic": 0.1192497599517827,
+      "executive": 0.19950412899123499
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0280",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.3683301474929838,
+      "visual": 0.5416791751562098,
+      "memory": 0.5840176644972244,
+      "processing_speed": 0.3409920489030426,
+      "orthographic": 0.25649753424619137,
+      "executive": 0.5283268911450322
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0281",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.609575130314589,
+      "visual": 0.1995562969890923,
+      "memory": 0.6107066471763807,
+      "processing_speed": 0.6551783062953385,
+      "orthographic": 0.607253806860409,
+      "executive": 0.6671590856546826
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0282",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.5094633533461587,
+      "visual": 0.34432328004569784,
+      "memory": 0.4698803351593153,
+      "processing_speed": 0.4713980174945145,
+      "orthographic": 0.37317940061188976,
+      "executive": 0.3874524081504852
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0283",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8139943009177015,
+      "visual": 0.8588508179053509,
+      "memory": 0.7715840506975061,
+      "processing_speed": 0.5376258550706301,
+      "orthographic": 0.7737524350025718,
+      "executive": 0.783308382613029
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0284",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.09321587241288334,
+      "visual": 0.23227769905580367,
+      "memory": 0.23732491597644242,
+      "processing_speed": 0.10494634472447603,
+      "orthographic": 0.17238546572387933,
+      "executive": 0.39076389548947166
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0285",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.13318238374359226,
+      "visual": 0.6873770646799726,
+      "memory": 0.37713589491182564,
+      "processing_speed": 0.5582042790363289,
+      "orthographic": 0.38865291620375075,
+      "executive": 0.5784454332343628
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0286",
+    "profile": "visual_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.45626568239925425,
+      "visual": 0.1966910269389036,
+      "memory": 0.3181641501417094,
+      "processing_speed": 0.5220069510364211,
+      "orthographic": 0.4065095191023798,
+      "executive": 0.5980759667708025
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0287",
+    "profile": "mixed_moderate",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.36405167788670717,
+      "visual": 0.4287472850225034,
+      "memory": 0.5394361982177177,
+      "processing_speed": 0.3289033879208843,
+      "orthographic": 0.563907065257892,
+      "executive": 0.445349806076712
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0288",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.7145203995165315,
+      "visual": 0.6944618247753053,
+      "memory": 0.7082197820415022,
+      "processing_speed": 0.6080945279358754,
+      "orthographic": 0.6178600126414289,
+      "executive": 0.881235131381066
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0289",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.07220635224397819,
+      "visual": 0.18781700040115373,
+      "memory": 0.19147045366143978,
+      "processing_speed": 0.17244746470685035,
+      "orthographic": 0.11548565769344463,
+      "executive": 0.1933312586344516
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0290",
+    "profile": "phonological_dominant",
+    "severity": "moderate",
+    "cognitive_scores": {
+      "phonological": 0.18936171647469374,
+      "visual": 0.6549920884874254,
+      "memory": 0.5384894975010494,
+      "processing_speed": 0.39916968928174495,
+      "orthographic": 0.2391167276470387,
+      "executive": 0.6241253325190257
+    },
+    "initial_params": {
+      "font_size": 40,
+      "letter_spacing": 0.14,
+      "line_height": 1.9,
+      "mask_opacity": 0.7,
+      "content_difficulty": 3,
+      "read_aloud_dependency": 0.65,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0291",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.6726934886074297,
+      "visual": 0.16529947803163125,
+      "memory": 0.5711709648993891,
+      "processing_speed": 0.5027898864419537,
+      "orthographic": 0.43842819302193464,
+      "executive": 0.4135036695567864
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0292",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.5406210867767303,
+      "visual": 0.4329416368806396,
+      "memory": 0.44014308083696435,
+      "processing_speed": 0.47920302217655686,
+      "orthographic": 0.5614927676700928,
+      "executive": 0.45924326898024587
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0293",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8232617864395327,
+      "visual": 0.7661345317569509,
+      "memory": 0.9015118099309274,
+      "processing_speed": 0.5080308273168554,
+      "orthographic": 0.6603070187103041,
+      "executive": 0.7360199641134221
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0294",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.06407924545986919,
+      "visual": 0.19867139147899426,
+      "memory": 0.09981924122417977,
+      "processing_speed": 0.2537852352624801,
+      "orthographic": 0.22461343221205746,
+      "executive": 0.15811727428942457
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  },
+  {
+    "user_id": "user_0295",
+    "profile": "phonological_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.2481543021222259,
+      "visual": 0.5901624518776857,
+      "memory": 0.6035350703277802,
+      "processing_speed": 0.4436855163517339,
+      "orthographic": 0.28901314782493914,
+      "executive": 0.5551236282140023
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0296",
+    "profile": "visual_dominant",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.4144041240131975,
+      "visual": 0.0049579855193487565,
+      "memory": 0.6632979533970571,
+      "processing_speed": 0.5696557094684124,
+      "orthographic": 0.6546129588826859,
+      "executive": 0.5658078206585656
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0297",
+    "profile": "mixed_moderate",
+    "severity": "mild",
+    "cognitive_scores": {
+      "phonological": 0.3500496197744882,
+      "visual": 0.34402689090094973,
+      "memory": 0.41256608084138224,
+      "processing_speed": 0.5366389668853039,
+      "orthographic": 0.5376296679331438,
+      "executive": 0.6428694387658163
+    },
+    "initial_params": {
+      "font_size": 34,
+      "letter_spacing": 0.1,
+      "line_height": 1.7,
+      "mask_opacity": 0.4,
+      "content_difficulty": 5,
+      "read_aloud_dependency": 0.35,
+      "font_family_stage": 1
+    }
+  },
+  {
+    "user_id": "user_0298",
+    "profile": "mild",
+    "severity": "minimal",
+    "cognitive_scores": {
+      "phonological": 0.8076758472364988,
+      "visual": 0.6945994318766487,
+      "memory": 0.8875445946103708,
+      "processing_speed": 0.6384057441331613,
+      "orthographic": 0.7161890974388098,
+      "executive": 0.7074091630780671
+    },
+    "initial_params": {
+      "font_size": 26,
+      "letter_spacing": 0.06,
+      "line_height": 1.5,
+      "mask_opacity": 0.1,
+      "content_difficulty": 7,
+      "read_aloud_dependency": 0.1,
+      "font_family_stage": 2
+    }
+  },
+  {
+    "user_id": "user_0299",
+    "profile": "severe",
+    "severity": "severe",
+    "cognitive_scores": {
+      "phonological": 0.09690540059683697,
+      "visual": 0.2133897448797039,
+      "memory": 0.2365270707206184,
+      "processing_speed": 0.11183076228744421,
+      "orthographic": 0.22399334313354352,
+      "executive": 0.18674305933914487
+    },
+    "initial_params": {
+      "font_size": 46,
+      "letter_spacing": 0.18,
+      "line_height": 2.1,
+      "mask_opacity": 0.95,
+      "content_difficulty": 1,
+      "read_aloud_dependency": 0.9,
+      "font_family_stage": 0
+    }
+  }
+]
