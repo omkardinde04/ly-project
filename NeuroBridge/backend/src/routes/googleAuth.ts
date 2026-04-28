@@ -1,11 +1,57 @@
 import { Router, Request, Response } from 'express';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import axios from 'axios';
 import { AuthService } from '../auth';
 import database from '../database';
 import AssessmentResult from '../models/AssessmentResult';
+import AdaptiveParams from '../models/AdaptiveParams';
 
 export const googleAuthRouter = Router();
+
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5001';
+
+// ── Helper: Initialize ML adaptive parameters after assessment ──────────────
+async function initializeMLAdaptiveParams(userId: string, cognitiveProfile: any) {
+  try {
+    // Check if ML service is available
+    const healthResponse = await axios.get(`${ML_SERVICE_URL}/health`, { timeout: 2000 });
+    if (healthResponse.data?.status !== 'ok') {
+      console.warn('⚠️  ML service not healthy, skipping initialization');
+      return null;
+    }
+
+    // Call ML service to get initial parameters
+    const mlResponse = await axios.post(
+      `${ML_SERVICE_URL}/init-params`,
+      { cognitiveProfile },
+      { timeout: 5000 }
+    );
+
+    if (!mlResponse.data?.params) {
+      console.warn('⚠️  Invalid response from ML service');
+      return null;
+    }
+
+    // Store adaptive params in database
+    const adaptiveParams = await AdaptiveParams.findOneAndUpdate(
+      { userId },
+      {
+        userId,
+        phase: 'phase1',
+        params: mlResponse.data.params,
+        lastUpdated: new Date()
+      },
+      { upsert: true, new: true }
+    );
+
+    console.log('✅ ML adaptive parameters initialized for user:', userId);
+    return adaptiveParams.params;
+  } catch (error: any) {
+    console.warn('⚠️  ML initialization failed (non-critical):', error.message);
+    return null;
+  }
+}
 
 // Configure Google OAuth Strategy
 const googleClientID = process.env.GOOGLE_CLIENT_ID ?? '';
@@ -150,7 +196,7 @@ googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, asy
     });
 
     // Save detailed results to MongoDB
-    let parsedMetrics = {};
+    let parsedMetrics: any = {};
     try {
       if (assessment_metrics) {
         parsedMetrics = JSON.parse(assessment_metrics);
@@ -169,7 +215,30 @@ googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, asy
     
     await newResult.save();
 
-    res.json({ success: true, message: 'Assessment completed successfully' });
+    // ── Call ML service to initialize adaptive parameters (Phase 1) ──────────
+    let adaptiveParams = null;
+    try {
+      // Extract cognitive profile from metrics
+      const cognitiveProfile = {
+        phonological: parsedMetrics.phonological || 50,
+        visual: parsedMetrics.visual || 50,
+        workingMemory: parsedMetrics.memory || parsedMetrics.workingMemory || 50,
+        processingSpeed: parsedMetrics.processing_speed || parsedMetrics.processingSpeed || 50,
+        orthographic: parsedMetrics.orthographic || 50,
+        executive: parsedMetrics.executive || 50
+      };
+
+      adaptiveParams = await initializeMLAdaptiveParams(req.user.userId, cognitiveProfile);
+    } catch (mlError) {
+      console.warn('⚠️  ML initialization error (non-critical):', mlError);
+      // Continue without ML params - system still works
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Assessment completed successfully',
+      adaptiveParams: adaptiveParams || null
+    });
   } catch (error) {
     console.error('Assessment completion error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -200,4 +269,67 @@ googleAuthRouter.post('/logout', (req: Request, res: Response) => {
     }
     res.json({ success: true, message: 'Logged out successfully' });
   });
+});
+
+// ── Initialize ML adaptive parameters for existing users (retroactive) ──────
+// This endpoint is for users who completed assessment before ML integration
+googleAuthRouter.post('/ml/init-adaptive-params', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const userId = req.user.userId;
+
+    // Check if user already has adaptive params
+    const existingParams = await AdaptiveParams.findOne({ userId });
+    if (existingParams) {
+      return res.json({
+        success: true,
+        message: 'Adaptive parameters already initialized',
+        params: existingParams.params
+      });
+    }
+
+    // Get user's assessment metrics
+    const user = await database.getUserById(userId);
+    if (!user || !user.assessment_completed) {
+      return res.status(400).json({ error: 'User has not completed assessment' });
+    }
+
+    // Parse stored metrics
+    let parsedMetrics: any = {};
+    try {
+      if (user.assessment_metrics) {
+        parsedMetrics = JSON.parse(user.assessment_metrics);
+      }
+    } catch (e) {
+      console.error('Error parsing metrics:', e);
+    }
+
+    // Extract cognitive profile
+    const cognitiveProfile = {
+      phonological: parsedMetrics.phonological || 50,
+      visual: parsedMetrics.visual || 50,
+      workingMemory: parsedMetrics.memory || parsedMetrics.workingMemory || 50,
+      processingSpeed: parsedMetrics.processing_speed || parsedMetrics.processingSpeed || 50,
+      orthographic: parsedMetrics.orthographic || 50,
+      executive: parsedMetrics.executive || 50
+    };
+
+    // Initialize ML adaptive parameters
+    const adaptiveParams = await initializeMLAdaptiveParams(userId, cognitiveProfile);
+
+    if (adaptiveParams) {
+      res.json({
+        success: true,
+        message: 'Adaptive parameters initialized successfully',
+        params: adaptiveParams
+      });
+    } else {
+      res.status(503).json({
+        success: false,
+        message: 'ML service unavailable, but will retry on next session'
+      });
+    }
+  } catch (error) {
+    console.error('ML init adaptive params error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });

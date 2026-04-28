@@ -14,6 +14,7 @@ import { linkedinRouter } from './routes/linkedin';
 import { brainRouter } from './routes/brain';
 import { googleAuthRouter } from './routes/googleAuth';
 import { emailAuthRouter } from './routes/emailAuth';
+import { mlRouter } from './routes/ml';
 
 const PORT = process.env.PORT || 4000;
 const geminiKey = process.env.GEMINI_API_KEY;
@@ -53,6 +54,7 @@ app.use('/api/auth/email', emailAuthRouter);
 app.use('/api/llm', llmRouter);
 app.use('/api/linkedin', linkedinRouter);
 app.use('/api/brain', brainRouter);
+app.use('/api/ml', mlRouter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
