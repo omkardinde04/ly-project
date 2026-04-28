@@ -33,7 +33,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
   const [allMetrics, setAllMetrics] = useState<VoiceAlphabetMetrics[]>([]);
   
   const recognitionRef = useRef<any>(null);
-  const autoStopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTime = useRef<number>(0);
   
   const transcriptRef = useRef('');
