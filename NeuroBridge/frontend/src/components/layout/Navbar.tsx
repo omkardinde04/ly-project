@@ -12,7 +12,7 @@ export function Navbar({ links = [], showLogin = true }: { links?: string[], sho
       'Learn': '/learn',
       'Opportunities': '/opportunities',
       'Community': '/community',
-      'About': '/about'
+      'About': '/about',
     };
     if (routeMap[link]) {
       navigate(routeMap[link]);
