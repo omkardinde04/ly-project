@@ -9,7 +9,7 @@ export function Hero() {
   const t = getTranslation(language);
 
   return (
-    <div className="bg-[#F5F9FD] rounded-[40px] p-8 md:p-12 lg:p-16 shadow-sm mx-auto max-w-7xl mt-4 border border-white/50">
+    <div className="bg-bg rounded-[40px] p-8 md:p-12 lg:p-16 shadow-sm mx-auto max-w-7xl border border-border">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
         
         {/* Left Content */}
@@ -33,12 +33,12 @@ export function Hero() {
           </motion.div>
 
           {/* Heading */}
-          <h1 className="text-4xl md:text-5xl lg:text-[56px] font-black text-[#1A2639] leading-[1.15] tracking-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-[56px] font-black text-text leading-[1.15] tracking-tight">
             {t.heroTitle}
           </h1>
 
           {/* Subheading */}
-          <p className="text-[#566B85] text-lg font-medium leading-relaxed max-w-xl">
+          <p className="text-text-muted text-lg font-medium leading-relaxed max-w-xl">
             {t.heroSubtitle}
           </p>
 
@@ -58,14 +58,14 @@ export function Hero() {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 bg-white border-2 border-[#E7F0FD] text-[#306CBE] hover:border-[#4A90E2] hover:bg-[#F8FAFC] px-8 py-3.5 rounded-full font-bold transition-all"
+              className="flex items-center gap-2 bg-surface border-2 border-[#E7F0FD] text-[#306CBE] hover:border-[#4A90E2] hover:bg-[#F8FAFC] px-8 py-3.5 rounded-full font-bold transition-all"
             >
               {t.exploreGrowth}
             </motion.button>
           </div>
 
           {/* Stats Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8 w-full pt-6 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-10 mt-8 w-full pt-6 border-t border-border">
             {/* Stat 1 */}
             <div className="flex items-start gap-3">
               <div className="bg-blue-100 p-2 rounded-lg">
@@ -75,7 +75,7 @@ export function Hero() {
               </div>
               <div>
                 <div className="text-3xl font-black text-[#4A90E2] mb-1">92%</div>
-                <p className="text-[#566B85] text-sm font-bold leading-tight pr-4">{t.usersReportBetterFocus}</p>
+                <p className="text-text-muted text-sm font-bold leading-tight">{t.usersReportBetterFocus}</p>
               </div>
             </div>
             {/* Stat 2 */}
@@ -87,7 +87,7 @@ export function Hero() {
               </div>
               <div>
                 <div className="text-3xl font-black text-[#38B2AC] mb-1">+38%</div>
-                <p className="text-[#566B85] text-sm font-bold leading-tight pr-2">{t.confidenceGrowth}</p>
+                <p className="text-text-muted text-sm font-bold leading-tight">{t.confidenceGrowth}</p>
               </div>
             </div>
             {/* Stat 3 */}
@@ -99,7 +99,7 @@ export function Hero() {
               </div>
               <div>
                 <div className="text-3xl font-black text-[#ED8936] mb-1">1,200+</div>
-                <p className="text-[#566B85] text-sm font-bold leading-tight">{t.skillBasedOpportunities}</p>
+                <p className="text-text-muted text-sm font-bold leading-tight">{t.skillBasedOpportunities}</p>
               </div>
             </div>
           </div>

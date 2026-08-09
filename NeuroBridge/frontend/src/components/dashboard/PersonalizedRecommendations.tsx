@@ -72,7 +72,7 @@ function MatchBar({ value }: { value: number }) {
           className={`h-full rounded-full bg-gradient-to-r ${color}`}
         />
       </div>
-      <span className="text-xs font-black text-gray-600 w-10 text-right">{value}%</span>
+      <span className="text-xs font-black text-text-muted w-10 text-right">{value}%</span>
     </div>
   );
 }
@@ -106,7 +106,7 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
           <button
             onClick={onRegenerate}
             disabled={isRegenerating}
-            className="text-xs font-bold bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-all disabled:opacity-50"
+            className="text-xs font-bold bg-surface/ hover:bg-surface/ px-4 py-2 rounded-xl transition-all disabled:opacity-50"
           >
             {isRegenerating ? '⏳ Refreshing…' : '🔄 Refresh'}
           </button>
@@ -131,10 +131,10 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
               className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-2xl p-5"
             >
               <div className="text-3xl mb-2">{c.icon}</div>
-              <h3 className="font-black text-gray-800 text-base mb-1">{c.title}</h3>
-              <p className="text-xs text-gray-500 font-medium leading-relaxed mb-2">{c.reason}</p>
+              <h3 className="font-black text-text text-base mb-1">{c.title}</h3>
+              <p className="text-xs text-text-muted font-medium leading-relaxed mb-2">{c.reason}</p>
               <MatchBar value={c.match} />
-              <p className="text-xs text-gray-400 mt-1">Match score</p>
+              <p className="text-xs text-text-muted mt-1">Match score</p>
             </motion.div>
           ))}
         </div>
@@ -154,18 +154,18 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
                 transition={{ delay: 0.15 + i * 0.08 }}
                 className="flex items-start gap-4 relative"
               >
-                <div className="w-12 h-12 rounded-2xl bg-white border-2 border-blue-200 flex items-center justify-center text-xl flex-shrink-0 shadow-sm z-10">
+                <div className="w-12 h-12 rounded-2xl bg-surface border-2 border-blue-200 flex items-center justify-center text-xl flex-shrink-0 shadow-sm z-10">
                   {step.icon}
                 </div>
-                <div className="flex-1 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+                <div className="flex-1 bg-surface border border-border rounded-2xl p-4 shadow-sm">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-black text-blue-500">Step {step.step}</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[step.type] ?? 'bg-gray-100 text-gray-600'}`}>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[step.type] ?? 'bg-gray-100 text-text-muted'}`}>
                       {step.type}
                     </span>
                   </div>
-                  <p className="font-bold text-gray-800 text-sm">{step.title}</p>
-                  <p className="text-xs text-gray-400 font-medium mt-0.5">⏱ {step.duration}</p>
+                  <p className="font-bold text-text text-sm">{step.title}</p>
+                  <p className="text-xs text-text-muted font-medium mt-0.5">⏱ {step.duration}</p>
                 </div>
               </motion.div>
             ))}
@@ -186,7 +186,7 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
                 transition={{ delay: 0.2 + i * 0.06 }}
                 className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-100 rounded-2xl p-4"
               >
-                <div className="font-bold text-gray-800 text-sm mb-0.5">{item.title}</div>
+                <div className="font-bold text-text text-sm mb-0.5">{item.title}</div>
                 <div className="text-xs text-teal-700 font-semibold mb-2">{item.org}</div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {item.tags.map((tag, ti) => (
@@ -195,7 +195,7 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
                     </span>
                   ))}
                 </div>
-                <div className="text-xs text-gray-400 font-medium">📅 Deadline: {item.deadline}</div>
+                <div className="text-xs text-text-muted font-medium">📅 Deadline: {item.deadline}</div>
               </motion.div>
             ))}
           </div>
@@ -212,7 +212,7 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
                 transition={{ delay: 0.25 + i * 0.07 }}
                 className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-2xl p-4"
               >
-                <div className="font-bold text-gray-800 text-sm mb-1">{comp.title}</div>
+                <div className="font-bold text-text text-sm mb-1">{comp.title}</div>
                 <div className="text-base font-black text-amber-600 mb-2">🎁 {comp.prize}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {comp.tags.map((tag, ti) => (
@@ -236,11 +236,11 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + i * 0.07 }}
-              className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm"
+              className="bg-surface border border-border rounded-2xl p-4 shadow-sm"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-gray-800 text-sm">{gap.skill}</span>
-                <span className="text-xs text-gray-400 font-medium">
+                <span className="font-bold text-text text-sm">{gap.skill}</span>
+                <span className="text-xs text-text-muted font-medium">
                   {gap.currentLevel}% → {gap.targetLevel}%
                 </span>
               </div>
@@ -259,16 +259,16 @@ export function PersonalizedRecommendations({ recommendations, userName, onDisco
                   className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"
                 />
               </div>
-              <p className="text-xs text-gray-500 font-medium mt-1.5 italic">💡 {gap.tip}</p>
+              <p className="text-xs text-text-muted font-medium mt-1.5 italic">💡 {gap.tip}</p>
             </motion.div>
           ))}
         </div>
       </Section>
 
       {/* Privacy notice */}
-      <div className="text-center text-xs text-gray-400 font-medium py-2">
+      <div className="text-center text-xs text-text-muted font-medium py-2">
         🔒 Data used only for personalisation · Not shared externally ·{' '}
-        <button onClick={onDisconnect} className="underline hover:text-gray-600 transition-colors">
+        <button onClick={onDisconnect} className="underline hover:text-text-muted transition-colors">
           Disconnect LinkedIn
         </button>
       </div>
@@ -282,9 +282,9 @@ function Section({ title, children, delay = 0 }: { title: string; children: Reac
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6"
+      className="bg-surface rounded-3xl shadow-lg border border-border p-6"
     >
-      <h3 className="text-lg font-black text-gray-800 mb-4">{title}</h3>
+      <h3 className="text-lg font-black text-text mb-4">{title}</h3>
       {children}
     </motion.div>
   );

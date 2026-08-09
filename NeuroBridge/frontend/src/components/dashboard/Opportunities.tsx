@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
-import { AudioControl } from '../ui/AudioControl';
 import { AccountConnector } from './AccountConnector';
 import { AIAssistedJobCard } from './AIAssistedJobCard';
 
@@ -41,8 +40,6 @@ export function Opportunities() {
 
   // Jobs data state is managed via hooks above
 
-  const pageContent = `Opportunities Platform. Access job listings from LinkedIn and competitions from Unstop. All content is simplified for dyslexia-friendly reading with audio summaries available.`;
-
   const renderLinkedInClone = () => {
     if (!isLinkedInConnected) {
       return (
@@ -65,7 +62,7 @@ export function Opportunities() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100"
+          className="bg-surface rounded-2xl shadow-lg p-6 border-2 border-blue-100"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
@@ -75,8 +72,8 @@ export function Opportunities() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">LinkedIn Jobs</h2>
-                <p className="text-sm text-gray-600">Professional opportunities tailored for you</p>
+                <h2 className="text-2xl font-bold text-text">LinkedIn Jobs</h2>
+                <p className="text-sm text-text-muted">Professional opportunities tailored for you</p>
               </div>
             </div>
             
@@ -86,7 +83,7 @@ export function Opportunities() {
               className={`px-4 py-2 rounded-full font-bold transition-all whitespace-nowrap ${
                 dyslexiaModeEnabled
                   ? 'bg-green-500 text-white shadow-md'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-200 text-text hover:bg-gray-300'
               }`}
             >
               {dyslexiaModeEnabled ? '✓ Reading Mode ON' : 'Reading Mode OFF'}
@@ -101,7 +98,7 @@ export function Opportunities() {
               className={`flex-1 px-4 py-3 rounded-xl border-2 ${
                 dyslexiaModeEnabled 
                   ? 'border-blue-400 bg-blue-50 text-lg' 
-                  : 'border-gray-200'
+                  : 'border-border'
               } focus:border-blue-400 focus:outline-none font-medium`}
             />
             <button className="bg-[#0A66C2] hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md">
@@ -135,7 +132,7 @@ export function Opportunities() {
               </motion.div>
             ))
           ) : (
-            <div className="text-center py-12 text-gray-500">No opportunities found right now. Check back later!</div>
+            <div className="text-center py-12 text-text-muted">No opportunities found right now. Check back later!</div>
           )}
         </div>
 
@@ -143,7 +140,7 @@ export function Opportunities() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center pt-6 border-t border-gray-200"
+          className="text-center pt-6 border-t border-border"
         >
           <button
             onClick={() => window.open('https://www.linkedin.com/jobs/', '_blank')}
@@ -181,7 +178,7 @@ export function Opportunities() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6 border-2 border-purple-100"
+          className="bg-surface rounded-2xl shadow-lg p-6 border-2 border-border"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
@@ -191,8 +188,8 @@ export function Opportunities() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Unstop Opportunities</h2>
-                <p className="text-sm text-gray-600">Competitions, hackathons, and internships</p>
+                <h2 className="text-2xl font-bold text-text">Unstop Opportunities</h2>
+                <p className="text-sm text-text-muted">Competitions, hackathons, and internships</p>
               </div>
             </div>
             
@@ -202,7 +199,7 @@ export function Opportunities() {
               className={`px-4 py-2 rounded-full font-bold transition-all whitespace-nowrap ${
                 dyslexiaModeEnabled
                   ? 'bg-green-500 text-white shadow-md'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-200 text-text hover:bg-gray-300'
               }`}
             >
               {dyslexiaModeEnabled ? '✓ Reading Mode ON' : 'Reading Mode OFF'}
@@ -235,7 +232,7 @@ export function Opportunities() {
               </motion.div>
             ))
           ) : (
-            <div className="text-center py-12 text-gray-500">No opportunities found right now. Check back later!</div>
+            <div className="text-center py-12 text-text-muted">No opportunities found right now. Check back later!</div>
           )}
         </div>
 
@@ -243,7 +240,7 @@ export function Opportunities() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center pt-6 border-t border-gray-200"
+          className="text-center pt-6 border-t border-border"
         >
           <button
             onClick={() => window.open('https://unstop.com', '_blank')}
@@ -271,19 +268,18 @@ export function Opportunities() {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-800">Opportunities</h1>
+          <h1 className="text-4xl md:text-5xl font-black text-text">Opportunities</h1>
         </div>
-        <AudioControl text={pageContent} />
       </motion.div>
 
       {/* Section Tabs */}
-      <div className="flex gap-3 bg-white rounded-2xl p-2 shadow-sm border border-blue-50">
+      <div className="flex gap-3 bg-surface rounded-2xl p-2 shadow-sm border border-border">
         <button
           onClick={() => setActiveSection('overview')}
           className={`flex-1 py-3 px-6 rounded-xl font-bold transition-all ${
             activeSection === 'overview'
               ? 'bg-[#4A90E2] text-white shadow-md'
-              : 'text-gray-600 hover:bg-blue-50'
+              : 'text-text-muted hover:bg-blue-50'
           }`}
         >
           📋 Overview
@@ -293,7 +289,7 @@ export function Opportunities() {
           className={`flex-1 py-3 px-6 rounded-xl font-bold transition-all ${
             activeSection === 'linkedin'
               ? 'bg-[#0A66C2] text-white shadow-md'
-              : 'text-gray-600 hover:bg-blue-50'
+              : 'text-text-muted hover:bg-blue-50'
           }`}
         >
           💼 LinkedIn
@@ -303,7 +299,7 @@ export function Opportunities() {
           className={`flex-1 py-3 px-6 rounded-xl font-bold transition-all ${
             activeSection === 'unstop'
               ? 'bg-[#E93E30] text-white shadow-md'
-              : 'text-gray-600 hover:bg-blue-50'
+              : 'text-text-muted hover:bg-blue-50'
           }`}
         >
           🏆 Unstop
@@ -315,9 +311,9 @@ export function Opportunities() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-2 border-blue-100"
+          className="bg-surface rounded-3xl shadow-xl p-8 mb-6 border-2 border-blue-100"
         >
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+          <h2 className="text-3xl font-bold text-text mb-6 flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -325,19 +321,19 @@ export function Opportunities() {
           </h2>
 
           <div className="prose prose-lg max-w-none">
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
+            <p className="text-lg text-text leading-relaxed mb-6">
               Our Opportunities platform connects you directly to real job listings from LinkedIn and competitions from Unstop, all with dyslexia-friendly enhancements.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
               <div className="bg-blue-50 rounded-2xl p-6">
-                <h3 className="font-bold text-xl text-gray-800 mb-3 flex items-center gap-2">
+                <h3 className="font-bold text-xl text-text mb-3 flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                   LinkedIn Integration
                 </h3>
-                <ul className="space-y-2 text-gray-700">
+                <ul className="space-y-2 text-text">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-500 font-bold mt-1">•</span>
                     Real-time job listings
@@ -358,13 +354,13 @@ export function Opportunities() {
               </div>
 
               <div className="bg-purple-50 rounded-2xl p-6">
-                <h3 className="font-bold text-xl text-gray-800 mb-3 flex items-center gap-2">
+                <h3 className="font-bold text-xl text-text mb-3 flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                   </svg>
                   Unstop Integration
                 </h3>
-                <ul className="space-y-2 text-gray-700">
+                <ul className="space-y-2 text-text">
                   <li className="flex items-start gap-2">
                     <span className="text-purple-500 font-bold mt-1">•</span>
                     Latest competitions and hackathons

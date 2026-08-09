@@ -5,6 +5,10 @@ export type Language = 'en' | 'hi' | 'mr';
 export type DyslexiaLevel = 'none' | 'mild' | 'moderate' | 'severe';
 export type CognitiveDimension = 'phonological' | 'visual' | 'workingMemory' | 'processingSpeed' | 'orthographic' | 'executive';
 
+export type LineSpacing = 'normal' | 'comfortable' | 'spacious';
+export type LetterSpacing = 'normal' | 'comfortable' | 'wide';
+export type ContentWidth = 'normal' | 'comfortable' | 'narrow';
+
 interface CognitiveProfile {
   phonological: number; // 0-100
   visual: number;
@@ -19,6 +23,12 @@ interface DyslexiaSettings {
   language: Language;
   audioSpeed: number;
   fontSize: number;
+  textSize: number;
+  lineSpacing: LineSpacing;
+  letterSpacing: LetterSpacing;
+  highContrast: boolean;
+  reduceMotion: boolean;
+  contentWidth: ContentWidth;
   dyslexiaLevel: DyslexiaLevel;
   isTestCompleted: boolean;
   testScore: number | null;
@@ -32,6 +42,13 @@ interface DyslexiaContextType extends DyslexiaSettings {
   setLanguage: (lang: Language) => void;
   setAudioSpeed: (speed: number) => void;
   setFontSize: (size: number) => void;
+  setTextSize: (size: number) => void;
+  setLineSpacing: (spacing: LineSpacing) => void;
+  setLetterSpacing: (spacing: LetterSpacing) => void;
+  setHighContrast: (enabled: boolean) => void;
+  setReduceMotion: (enabled: boolean) => void;
+  setContentWidth: (width: ContentWidth) => void;
+  resetVisualPreferences: () => void;
   setDyslexiaLevel: (level: DyslexiaLevel) => void;
   markTestCompleted: (score: number) => void;
   completeCognitiveTasks: (profile: CognitiveProfile) => void;
@@ -43,6 +60,12 @@ const defaultSettings: DyslexiaSettings = {
   language: 'en',
   audioSpeed: 1,
   fontSize: 16,
+  textSize: 100,
+  lineSpacing: 'comfortable',
+  letterSpacing: 'normal',
+  highContrast: false,
+  reduceMotion: false,
+  contentWidth: 'normal',
   dyslexiaLevel: 'none',
   isTestCompleted: false,
   testScore: null,
@@ -56,7 +79,15 @@ const DyslexiaContext = createContext<DyslexiaContextType | undefined>(undefined
 export function DyslexiaProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<DyslexiaSettings>(() => {
     const saved = localStorage.getItem('dyslexiaSettings');
-    return saved ? JSON.parse(saved) : defaultSettings;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return { ...defaultSettings, ...parsed };
+      } catch (e) {
+        return defaultSettings;
+      }
+    }
+    return defaultSettings;
   });
 
   useEffect(() => {
@@ -77,6 +108,42 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
 
   const setFontSize = (size: number) => {
     setSettings(prev => ({ ...prev, fontSize: size }));
+  };
+
+  const setTextSize = (size: number) => {
+    setSettings(prev => ({ ...prev, textSize: size }));
+  };
+
+  const setLineSpacing = (spacing: LineSpacing) => {
+    setSettings(prev => ({ ...prev, lineSpacing: spacing }));
+  };
+
+  const setLetterSpacing = (spacing: LetterSpacing) => {
+    setSettings(prev => ({ ...prev, letterSpacing: spacing }));
+  };
+
+  const setHighContrast = (enabled: boolean) => {
+    setSettings(prev => ({ ...prev, highContrast: enabled }));
+  };
+
+  const setReduceMotion = (enabled: boolean) => {
+    setSettings(prev => ({ ...prev, reduceMotion: enabled }));
+  };
+
+  const setContentWidth = (width: ContentWidth) => {
+    setSettings(prev => ({ ...prev, contentWidth: width }));
+  };
+
+  const resetVisualPreferences = () => {
+    setSettings(prev => ({
+      ...prev,
+      textSize: 100,
+      lineSpacing: 'comfortable',
+      letterSpacing: 'normal',
+      highContrast: false,
+      reduceMotion: false,
+      contentWidth: 'normal'
+    }));
   };
 
   const setDyslexiaLevel = (level: DyslexiaLevel) => {
@@ -137,6 +204,13 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       setLanguage,
       setAudioSpeed,
       setFontSize,
+      setTextSize,
+      setLineSpacing,
+      setLetterSpacing,
+      setHighContrast,
+      setReduceMotion,
+      setContentWidth,
+      resetVisualPreferences,
       setDyslexiaLevel,
       markTestCompleted,
       completeCognitiveTasks,

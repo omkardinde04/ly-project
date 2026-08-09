@@ -52,7 +52,7 @@ const TIPS = [
 ];
 
 const SECTION_SPEAK_TEXT =
-  'Community Support. Connect with others, share learning strategies, and explore dyslexia-friendly experiences. ' +
+  'Community Support. Connect, share, and explore strategies together. ' +
   'Preview cards include: Reading Strategies, Learning Preferences, Shared Experiences, and Tools That Help.';
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export function CommunitySectionPreview() {
       aria-label="Community Support Preview"
     >
       {/* ── Outer container ── */}
-      <div className="bg-[#F5F9FD] rounded-[40px] p-8 md:p-12 lg:p-16 border border-white/50 shadow-sm">
+      <div className="bg-bg rounded-[40px] p-8 md:p-12 lg:p-16 border border-white/50 shadow-sm">
 
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
@@ -91,17 +91,17 @@ export function CommunitySectionPreview() {
             <div className="inline-flex items-center gap-1.5 border border-[#75A1DF] text-[#306CBE] bg-transparent px-5 py-1.5 rounded-full text-sm font-bold shadow-sm mb-4">
               <span>👥</span> Community
             </div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-[#1A2639] tracking-tight leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-text tracking-tight leading-tight">
               Learn from others<br className="hidden md:block" /> like you
             </h2>
-            <p className="text-[#566B85] text-base md:text-lg font-medium mt-3 max-w-xl leading-relaxed">
-              Connect with others, share learning strategies, and explore dyslexia-friendly experiences.
+            <p className="text-text-muted text-base md:text-lg font-medium mt-3 max-w-xl leading-relaxed">
+              Connect, share, and explore strategies together.
             </p>
           </div>
 
           <button
             onClick={handleSpeak}
-            className="shrink-0 flex items-center gap-2 bg-white hover:bg-blue-50 border-2 border-[#D1E4F9] hover:border-blue-300 text-[#306CBE] font-semibold px-5 py-2.5 rounded-full transition-all shadow-sm text-sm"
+            className="shrink-0 flex items-center gap-2 bg-surface hover:bg-blue-50 border-2 border-[#D1E4F9] hover:border-blue-300 text-[#306CBE] font-semibold px-5 py-2.5 rounded-full transition-all shadow-sm text-sm"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
@@ -123,15 +123,15 @@ export function CommunitySectionPreview() {
               whileHover={{ y: -4, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveCard(activeCard === card.id ? null : card.id)}
-              className={`group text-left bg-white rounded-2xl p-6 shadow-sm border-2 transition-all ring-4 ring-transparent ${card.ringColor} ${
-                activeCard === card.id ? 'border-blue-400 shadow-md' : 'border-gray-100 hover:border-blue-200'
+              className={`group text-left bg-surface rounded-2xl p-6 shadow-sm border-2 transition-all ring-4 ring-transparent ${card.ringColor} ${
+                activeCard === card.id ? 'border-blue-400 shadow-md' : 'border-border hover:border-blue-200'
               }`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 ${card.color} group-hover:scale-110 transition-transform`}>
                 {card.icon}
               </div>
-              <h3 className="font-bold text-[#1A2639] text-base mb-1.5 leading-tight">{card.title}</h3>
-              <p className="text-[#566B85] text-sm leading-relaxed">{card.desc}</p>
+              <h3 className="font-bold text-text text-base mb-1.5 leading-tight">{card.title}</h3>
+              <p className="text-text-muted text-sm leading-relaxed">{card.desc}</p>
               {activeCard === card.id && (
                 <motion.p
                   initial={{ opacity: 0, height: 0 }}
@@ -147,7 +147,7 @@ export function CommunitySectionPreview() {
 
         {/* ── Quick interaction chips ── */}
         <div className="mb-10">
-          <p className="text-xs font-bold text-[#566B85] uppercase tracking-wider mb-3">
+          <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">
             What community members say helps them:
           </p>
           <div className="flex flex-wrap gap-2">
@@ -160,7 +160,7 @@ export function CommunitySectionPreview() {
                   className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
                     active
                       ? 'bg-[#4A90E2] text-white border-[#4A90E2] shadow-sm'
-                      : 'bg-white text-[#306CBE] border-[#D1E4F9] hover:border-[#4A90E2] hover:bg-blue-50'
+                      : 'bg-surface text-[#306CBE] border-[#D1E4F9] hover:border-[#4A90E2] hover:bg-blue-50'
                   }`}
                 >
                   <span>{chip.icon}</span>
@@ -182,7 +182,7 @@ export function CommunitySectionPreview() {
 
         {/* ── Static tip previews ── */}
         <div className="mb-10">
-          <p className="text-xs font-bold text-[#566B85] uppercase tracking-wider mb-3">
+          <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">
             From the community:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -193,16 +193,16 @@ export function CommunitySectionPreview() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.12, duration: 0.45 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-start gap-4"
+                className="bg-surface rounded-2xl border border-border shadow-sm p-5 flex items-start gap-4"
               >
                 <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-lg shrink-0">
                   💡
                 </div>
                 <div>
-                  <p className="text-[#1A2639] text-sm font-medium leading-relaxed">
+                  <p className="text-text text-sm font-medium leading-relaxed">
                     "{tip.text}"
                   </p>
-                  <p className="text-[#566B85] text-xs mt-1.5">— {tip.author}</p>
+                  <p className="text-text-muted text-xs mt-1.5">— {tip.author}</p>
                 </div>
               </motion.div>
             ))}
@@ -248,7 +248,7 @@ export function CommunitySectionPreview() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+            className="relative bg-surface rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
           >
             {/* ── Gradient header ── */}
             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 pt-8 pb-12">
@@ -284,8 +284,8 @@ export function CommunitySectionPreview() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className="font-black text-gray-800 text-base">Login to your account</div>
-                  <div className="text-gray-500 text-sm mt-0.5">Already have an account? Sign in to continue.</div>
+                  <div className="font-black text-text text-base">Login to your account</div>
+                  <div className="text-text-muted text-sm mt-0.5">Already have an account? Sign in to continue.</div>
                 </div>
                 <svg className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -295,7 +295,7 @@ export function CommunitySectionPreview() {
               {/* Divider */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider">or</span>
+                <span className="text-text-muted text-xs font-semibold uppercase tracking-wider">or</span>
                 <div className="flex-1 h-px bg-gray-100" />
               </div>
 
@@ -312,8 +312,8 @@ export function CommunitySectionPreview() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className="font-black text-gray-800 text-base">Take the Assessment</div>
-                  <div className="text-gray-500 text-sm mt-0.5">New here? Start with a quick dyslexia assessment.</div>
+                  <div className="font-black text-text text-base">Take the Assessment</div>
+                  <div className="text-text-muted text-sm mt-0.5">New here? Start with a quick dyslexia assessment.</div>
                 </div>
                 <svg className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -324,7 +324,7 @@ export function CommunitySectionPreview() {
 
             {/* Footer */}
             <div className="px-8 pb-6 text-center">
-              <p className="text-gray-400 text-xs">
+              <p className="text-text-muted text-xs">
                 🔒 Your data is private and secure. We never share personal information.
               </p>
             </div>

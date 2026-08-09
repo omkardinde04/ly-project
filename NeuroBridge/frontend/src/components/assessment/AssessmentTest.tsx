@@ -262,7 +262,7 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
            <button onClick={stopListening} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 animate-pulse transition-all">
              🛑 Stop & Finish
            </button>
-           <p className="text-sm text-gray-500 mt-2 font-medium">Recording... read the paragraph aloud.</p>
+           <p className="text-sm text-text-muted mt-2 font-medium">Recording... read the paragraph aloud.</p>
          </div>
        )}
        {phase === 'done' && (
@@ -271,9 +271,9 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
          </div>
        )}
 
-       <div className="text-2xl leading-relaxed max-w-lg text-left p-6 bg-white rounded-2xl border-2 border-gray-100 shadow-inner" style={{ lineHeight: '2.5' }}>
+       <div className="text-2xl leading-relaxed max-w-lg text-left p-6 bg-surface rounded-2xl border-2 border-border shadow-inner" style={{ lineHeight: '2.5' }}>
          {words.map((word, idx) => {
-           let statusClass = 'text-gray-700';
+           let statusClass = 'text-text';
            if (wordStatuses[idx] === 'correct') statusClass = 'text-green-600 bg-green-100 font-bold';
            if (wordStatuses[idx] === 'wrong') statusClass = 'text-red-600 bg-red-100 font-bold';
 
@@ -564,12 +564,12 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             </motion.div>
             <h2 className="text-4xl font-black mb-4 tracking-tight">Leveling Up!</h2>
             <p className="text-xl font-medium opacity-90 max-w-sm">
-              Great progress! Now let's explore some <span className="bg-white/20 px-2 py-1 rounded">Brain Puzzles</span>...
+              Great progress! Now let's explore some <span className="bg-surface/ px-2 py-1 rounded">Brain Puzzles</span>...
             </p>
             <div className="mt-8 flex gap-2">
-              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+              <div className="w-3 h-3 bg-surface rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-3 h-3 bg-surface rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <div className="w-3 h-3 bg-surface rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
             </div>
           </motion.div>
         ) : null}
@@ -579,7 +579,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         {/* TOP BAR: progress */}
       <div className="flex-none pb-2">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-semibold text-gray-400 tracking-widest uppercase">
+          <span className="text-xs font-semibold text-text-muted tracking-widest uppercase">
             Q {currentQuestion + 1} of {partAQuestions.length}
           </span>
           <div className="flex items-center gap-2">
@@ -612,12 +612,12 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -32 }}
           transition={{ duration: 0.22, ease: 'easeInOut' }}
-          className="flex-1 min-h-0 flex flex-col bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
+          className="flex-1 min-h-0 flex flex-col bg-surface rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
         >
           {/* QUESTION TEXT */}
           <div className="flex-none px-5 pt-4 pb-3 border-b border-slate-100">
             <p
-              className="font-semibold text-gray-800"
+              className="font-semibold text-text"
               style={{
                 fontSize: 'clamp(0.875rem, 1.6vw, 1.05rem)',
                 lineHeight: 1.4,
@@ -729,7 +729,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                     <IllustrationComponent question={currentQ} />
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center gap-1 text-gray-400">
+                  <div className="flex flex-col items-center justify-center gap-1 text-text-muted">
                     <span className="text-4xl">🎯</span>
                     <span className="text-xs font-medium">Visual Context</span>
                   </div>
@@ -737,7 +737,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               </div>
 
               {/* ANSWER OPTIONS — 4 frequency buttons */}
-              <div className="flex-none px-4 pt-3 pb-2 border-t border-slate-100 bg-white">
+              <div className="flex-none px-4 pt-3 pb-2 border-t border-slate-100 bg-surface">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                   {currentQ.options.map((option, index) => {
                     const isSelected = answers[currentQuestion] === index;
@@ -750,7 +750,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                         className={`relative py-3 px-2 rounded-xl text-sm font-semibold transition-all border-2 ${
                           isSelected
                             ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-500 shadow-md'
-                            : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                            : 'bg-gray-50 text-text border-border hover:border-blue-300 hover:bg-blue-50'
                         }`}
                       >
                         {option.text}
@@ -758,7 +758,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                           <motion.span
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow text-green-500 text-xs font-black border border-green-200"
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-surface rounded-full flex items-center justify-center shadow text-green-500 text-xs font-black border border-green-200"
                           >
                             ✓
                           </motion.span>
@@ -772,14 +772,14 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
           )}
 
           {/* NAVIGATION */}
-          <div className="flex-none px-4 py-3 bg-white flex items-center justify-between gap-2 border-t border-slate-100">
+          <div className="flex-none px-4 py-3 bg-surface flex items-center justify-between gap-2 border-t border-slate-100">
             <button
               onClick={handlePrevious}
               disabled={currentQuestion === 0}
               className={`flex items-center gap-1 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
                 currentQuestion === 0
                   ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95'
+                  : 'bg-gray-100 text-text-muted hover:bg-gray-200 active:scale-95'
               }`}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -788,7 +788,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               Back
             </button>
 
-            <p className="text-xs text-gray-400 font-medium hidden sm:block">
+            <p className="text-xs text-text-muted font-medium hidden sm:block">
               🌟 No right or wrong answers
             </p>
 
@@ -797,7 +797,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               disabled={!isAnswered}
               className={`flex items-center gap-1 px-6 py-2 rounded-full font-bold text-sm transition-all shadow-sm ${
                 !isAnswered
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gray-200 text-text-muted cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 active:scale-95 shadow-blue-400/30'
               }`}
             >

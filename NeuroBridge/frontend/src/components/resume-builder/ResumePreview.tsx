@@ -24,19 +24,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, theme, onSav
   };
 
   return (
-    <div className="flex flex-col h-full rounded-3xl overflow-hidden bg-white/50 border border-white/70">
+    <div className="flex flex-col h-full rounded-3xl overflow-hidden bg-surface/ border border-border">
       {/* Toolbar */}
-      <div className="px-5 py-4 flex items-center justify-between bg-white/40 backdrop-blur-sm border-b border-white/50 text-gray-800">
+      <div className="px-5 py-4 flex items-center justify-between bg-surface/ backdrop-blur-sm border-b border-white/50 text-text">
         <div className="flex items-center gap-2">
           <Laptop size={18} className="text-blue-600" />
-          <span className="font-black tracking-wide text-sm" style={{ fontFamily: 'OpenDyslexic, Inter, sans-serif' }}>Live Preview</span>
+          <span className="font-black tracking-wide text-sm" >Live Preview</span>
         </div>
         <div className="flex items-center gap-2">
           {onDownload && (
             <button
               onClick={onDownload}
               title="Download PDF"
-              className="flex items-center justify-center p-2 rounded-full bg-white border border-gray-100 text-gray-700 hover:bg-gray-50 transition active:scale-90"
+              className="flex items-center justify-center p-2 rounded-full bg-surface border border-border text-text hover:bg-gray-50 transition active:scale-90"
             >
               <Download size={18} />
             </button>
@@ -48,7 +48,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, theme, onSav
               saveStatus === 'success' ? 'bg-green-500 text-white' : 
               'bg-blue-600 text-white hover:bg-blue-700'
             }`}
-            style={{ fontFamily: 'OpenDyslexic, Inter, sans-serif' }}
+            
           >
             {saveStatus === 'saving' ? (
               <span className="flex items-center gap-2 px-2">Saving...</span>
@@ -65,7 +65,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, theme, onSav
       <div className="flex-1 overflow-auto p-6 bg-gray-100/30">
         <div 
           ref={previewRef}
-          className="w-full max-w-[800px] bg-white shadow-xl mx-auto origin-top transition-transform duration-300 rounded-lg overflow-hidden border border-gray-200"
+          className="w-full max-w-[800px] bg-surface shadow-xl mx-auto origin-top transition-transform duration-300 rounded-lg overflow-hidden border border-border"
           id="resume-container"
         >
           {renderTemplate()}

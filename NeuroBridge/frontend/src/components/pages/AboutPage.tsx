@@ -15,75 +15,73 @@ export function AboutPage() {
 
       {/* ── Page Header ── */}
       <motion.div {...fade(0)}>
-        <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 font-bold text-sm px-4 py-1.5 rounded-full mb-3">
+        <div className="inline-flex items-center gap-2 bg-coral-soft text-coral font-bold text-sm px-4 py-1.5 rounded-full mb-3">
           🧠 About NeuroBridge
         </div>
-        <h1 className={`font-black text-gray-900 leading-tight ${isDyslexiaMode ? 'text-4xl' : 'text-4xl md:text-5xl'}`}>
+        <h1 className={`font-black text-text leading-tight ${isDyslexiaMode ? 'text-4xl' : 'text-4xl md:text-5xl'}`}>
           About Us
         </h1>
-        <p className="text-gray-500 text-lg mt-2 max-w-2xl leading-relaxed">
-          We're dedicated to making education and career opportunities accessible for individuals with dyslexia through evidence-based, personalised technology.
+        <p className="text-text-muted text-lg mt-2 max-w-2xl leading-relaxed">
+          Making education and careers accessible for individuals with dyslexia.
         </p>
       </motion.div>
 
       {/* ── Mission ── */}
-      <motion.div {...fade(0.1)} className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Our Mission</h2>
-        <p className="text-gray-500 text-base mb-6">
-          NeuroBridge is committed to creating a more inclusive world for individuals with dyslexia. We believe that with the right tools and support, every person can thrive academically and professionally.
+      <motion.div {...fade(0.1)} className="bg-surface rounded-2xl border border-border shadow-sm p-6">
+        <h2 className="text-2xl font-bold text-text mb-2">Our Mission</h2>
+        <p className="text-text-muted text-base mb-6">
+          Building a more inclusive world with the right tools and support.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="bg-blue-50 rounded-xl p-5">
-            <h3 className="font-bold text-base text-gray-800 mb-3 flex items-center gap-2">
-              <span className="text-blue-500">🎯</span> What We Do
+          <div className="bg-surface-2 rounded-xl border border-border p-5">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-coral">🎯</span> What We Do
             </h3>
-            <ul className="space-y-2 text-gray-700 text-sm">
+            <ul className="space-y-2 text-text text-sm">
               {[
-                'Provide comprehensive dyslexia assessments',
-                'Offer personalised learning recommendations',
-                'Connect users with job opportunities',
-                'Build supportive communities',
-                'Advocate for accessibility in education',
+                'Dyslexia assessments',
+                'Personalised learning',
+                'Job opportunities',
+                'Supportive communities',
               ].map((f, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="text-blue-400 font-bold mt-0.5">•</span>{f}
+                  <span className="text-coral font-bold mt-0.5">•</span>{f}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="bg-purple-50 rounded-xl p-5">
-            <h3 className="font-bold text-base text-gray-800 mb-3 flex items-center gap-2">
-              <span className="text-purple-500">💎</span> Our Values
+          <div className="bg-surface-2 rounded-xl border border-border p-5">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-coral">💎</span> Our Values
             </h3>
-            <ul className="space-y-2 text-gray-700 text-sm">
+            <ul className="space-y-2 text-text text-sm">
               {[
-                'Inclusivity and accessibility first',
-                'Evidence-based approaches',
-                'User-centered design',
-                'Privacy and data security',
-                'Continuous improvement',
+                'Inclusivity first',
+                'Evidence-based',
+                'User-centered',
+                'Privacy & security',
               ].map((f, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="text-purple-400 font-bold mt-0.5">•</span>{f}
+                  <span className="text-primary font-bold mt-0.5">•</span>{f}
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <div className="mt-5 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-5 border border-blue-100">
-          <h3 className="text-lg font-bold text-gray-800 mb-3">Platform Features</h3>
+        <div className="mt-5 bg-surface-2 rounded-xl p-5 border border-border">
+          <h3 className="text-lg font-bold text-text mb-3">Platform Features</h3>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Assess', sub: 'Comprehensive dyslexia testing', color: 'text-blue-600' },
-              { label: 'Learn', sub: 'Personalised recommendations', color: 'text-purple-600' },
-              { label: 'Connect', sub: 'Jobs and community support', color: 'text-green-600' },
+              { label: 'Assess', sub: 'Comprehensive testing' },
+              { label: 'Learn', sub: 'Personalised paths' },
+              { label: 'Connect', sub: 'Jobs and community' },
             ].map((c, i) => (
-              <div key={i} className="bg-white rounded-xl p-4 text-center shadow-sm">
-                <div className={`text-xl font-black mb-1 ${c.color}`}>{c.label}</div>
-                <p className="text-gray-500 text-xs">{c.sub}</p>
+              <div key={i} className="bg-surface rounded-xl p-4 text-center shadow-sm border border-border">
+                <div className={`text-xl font-black mb-1 text-text`}>{c.label}</div>
+                <p className="text-text-muted text-xs">{c.sub}</p>
               </div>
             ))}
           </div>
@@ -92,30 +90,30 @@ export function AboutPage() {
 
       {/* ── Stats ── */}
       <motion.div {...fade(0.2)}>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Our Impact</h2>
+        <h2 className="text-2xl font-bold text-text mb-4">Our Impact</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
           {[
-            { value: '10K+', label: 'Users supported', color: 'from-blue-500 to-blue-600' },
-            { value: '92%', label: 'Report better focus', color: 'from-purple-500 to-purple-600' },
-            { value: '3', label: 'Languages supported', color: 'from-pink-500 to-pink-600' },
-            { value: '1,200+', label: 'Opportunities listed', color: 'from-green-500 to-green-600' },
+            { value: '10K+', label: 'Users supported' },
+            { value: '92%', label: 'Report better focus' },
+            { value: '3', label: 'Languages supported' },
+            { value: '1,200+', label: 'Opportunities listed' },
           ].map((stat, i) => (
-            <div key={i} className={`bg-gradient-to-br ${stat.color} rounded-2xl p-5 text-white shadow-md`}>
-              <div className="text-2xl font-black mb-1">{stat.value}</div>
-              <div className="text-xs font-medium opacity-90 leading-snug">{stat.label}</div>
+            <div key={i} className={`bg-surface border border-border rounded-2xl p-5 text-text shadow-sm`}>
+              <div className="text-2xl font-black mb-1 text-text">{stat.value}</div>
+              <div className="text-xs font-medium text-text-muted leading-snug">{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Contact */}
-        <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Contact Us</h2>
-          <p className="text-gray-500 text-base mb-4">Have questions or feedback? We'd love to hear from you.</p>
-          <div className="inline-flex items-center gap-3 bg-blue-50 rounded-xl px-5 py-3 border border-blue-100">
-            <span className="text-blue-500 text-lg">✉️</span>
+        <div className="bg-surface rounded-2xl border border-border shadow-sm p-6">
+          <h2 className="text-2xl font-bold text-text mb-2">Contact Us</h2>
+          <p className="text-text-muted text-base mb-4">Have questions? We'd love to hear from you.</p>
+          <div className="inline-flex items-center gap-3 bg-surface-2 rounded-xl px-5 py-3 border border-border">
+            <span className="text-text text-lg">✉️</span>
             <div>
-              <div className="text-xs text-gray-500 font-medium">Email</div>
-              <div className="font-bold text-blue-600 text-sm">contact@neurobridge.com</div>
+              <div className="text-xs text-text-muted font-medium">Email</div>
+              <div className="font-bold text-text text-sm">contact@neurobridge.com</div>
             </div>
           </div>
         </div>

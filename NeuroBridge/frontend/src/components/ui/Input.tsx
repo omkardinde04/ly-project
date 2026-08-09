@@ -7,7 +7,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export function Input({ label, ...props }: InputProps) {
   return (
     <div>
-      <label htmlFor={props.id} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={props.id} className="block text-sm font-medium text-text">
         {label}
       </label>
       <div className="mt-1">

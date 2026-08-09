@@ -186,7 +186,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
           <SpotlightOverlay active={isTourMode} targetId={spotlightTarget} />
 
           <motion.div
-            className={`fixed z-50 w-[95%] sm:w-[500px] flex flex-col max-h-[85vh] sm:rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(147,51,234,0.3)] border border-white/20 bg-white/90 backdrop-blur-xl ${isTourMode ? 'sm:w-96' : ''
+            className={`fixed z-50 w-[95%] sm:w-[500px] flex flex-col max-h-[85vh] sm:rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(147,51,234,0.3)] border border-border bg-surface/95 backdrop-blur-xl ${isTourMode ? 'sm:w-96' : ''
               }`}
             initial={{
               opacity: 0,
@@ -213,7 +213,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
           >
             {needsActivation ? (
               <div
-                className="p-8 flex flex-col items-center justify-center text-center space-y-6 cursor-pointer hover:bg-white/50 transition duration-300 min-h-[300px]"
+                className="p-8 flex flex-col items-center justify-center text-center space-y-6 cursor-pointer hover:bg-surface-2 transition duration-300 min-h-[300px]"
                 onClick={handleActivateJarvis}
               >
                 <motion.div
@@ -221,11 +221,11 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                   animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <div className="w-8 h-8 rounded-full bg-white animate-pulse" />
+                  <div className="w-8 h-8 rounded-full bg-surface animate-pulse" />
                 </motion.div>
                 <div>
                   <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Jarvis is ready</h2>
-                  <p className="text-gray-500 mt-2">Tap anywhere to wake up your assistant</p>
+                  <p className="text-text-muted mt-2">Tap anywhere to wake up your assistant</p>
                 </div>
               </div>
             ) : (
@@ -243,13 +243,13 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                      className="px-2 py-1 text-sm bg-white/20 rounded hover:bg-white/30 transition"
+                      className="px-2 py-1 text-sm bg-surface/20 rounded hover:bg-surface/30 transition"
                     >
                       {language.toUpperCase()}
                     </button>
                     <button
                       onClick={closeAssistant}
-                      className="p-1 hover:bg-white/20 rounded transition"
+                      className="p-1 hover:bg-surface/30 rounded transition"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -270,7 +270,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                         onClick={() => handleLanguageChange(lang)}
                         className={`px-3 py-1 rounded text-sm font-medium transition ${language === lang
                           ? 'bg-purple-600 text-white'
-                          : 'bg-white text-purple-600 border border-purple-300 hover:bg-purple-50'
+                          : 'bg-surface text-purple-600 border border-purple-300 hover:bg-purple-50'
                           }`}
                       >
                         {lang === 'en' ? 'English' : lang === 'hi' ? 'हिंदी' : 'मराठी'}
@@ -290,7 +290,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                     >
                       <div
                         className={`max-w-xs px-4 py-2 rounded-lg text-sm leading-relaxed whitespace-pre-wrap ${msg.type === 'assistant'
-                          ? 'bg-gradient-to-r from-purple-100 to-blue-100 text-gray-800 rounded-bl-none'
+                          ? 'bg-gradient-to-r from-purple-100 to-blue-100 text-text rounded-bl-none'
                           : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-br-none'
                           }`}
                       >
@@ -302,7 +302,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                 </div>
 
                 {/* Input Area */}
-                <div className="bg-white border-t border-gray-200 p-4 space-y-3">
+                <div className="bg-surface border-t border-border p-4 space-y-3">
                   {/* Visual feedback for listening/speaking */}
                   {(isListening || isSpeaking) && (
                     <motion.div

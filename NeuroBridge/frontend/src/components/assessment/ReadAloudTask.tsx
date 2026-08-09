@@ -180,9 +180,9 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl p-10 border border-blue-50 shadow-sm font-sans flex flex-col items-center justify-center min-h-[480px]">
+    <div className="w-full max-w-2xl mx-auto bg-surface rounded-3xl p-10 border border-border shadow-sm font-sans flex flex-col items-center justify-center min-h-[480px]">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">Read this aloud</h2>
+        <h2 className="text-xl font-bold text-text mb-2">Read this aloud</h2>
         <p className="text-[#7A8CAA]">Read the paragraph below out loud.</p>
       </div>
 
@@ -210,7 +210,7 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
               >
                 <span className="text-3xl text-blue-400 group-hover:scale-110 transition-transform">🎤</span>
               </motion.button>
-              <p className="text-sm font-medium text-gray-400">Tap the mic and start speaking</p>
+              <p className="text-sm font-medium text-text-muted">Tap the mic and start speaking</p>
             </motion.div>
           )}
 
@@ -233,7 +233,7 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
                 </div>
               </div>
               <p className="text-sm font-bold text-blue-400 animate-pulse uppercase tracking-wider">Listening...</p>
-              <div className="italic text-gray-400 font-medium h-4 max-w-md truncate overflow-hidden">
+              <div className="italic text-text-muted font-medium h-4 max-w-md truncate overflow-hidden">
                 {transcript || "Keep reading out loud..."}
               </div>
               <button onClick={stopAndReview} className="text-xs text-blue-500 font-bold hover:underline">Stop manually</button>
@@ -248,14 +248,14 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
               className="flex flex-col items-center gap-6 w-full"
             >
               <div className="flex flex-col items-center gap-2">
-                <p className="text-sm font-medium text-gray-500">This is what we heard:</p>
+                <p className="text-sm font-medium text-text-muted">This is what we heard:</p>
                 <div className="px-6 py-4 bg-blue-50 rounded-2xl border border-blue-100 text-[#1A2340] font-medium text-lg max-w-lg italic shadow-inner">
                   "{transcript || "..."}"
                 </div>
               </div>
               
               <div className="flex gap-4">
-                <button onClick={() => setPhase('ready')} className="text-sm text-gray-500 underline">Retry</button>
+                <button onClick={() => setPhase('ready')} className="text-sm text-text-muted underline">Retry</button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -276,7 +276,7 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
               className="h-20 flex flex-col items-center justify-center text-center"
             >
               <div className="text-2xl font-bold text-blue-400 mb-1">Excellent! ✨</div>
-              <p className="text-gray-400 text-sm italic">Saving your progress...</p>
+              <p className="text-text-muted text-sm italic">Saving your progress...</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -290,7 +290,7 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
             time_to_start_ms: 0,
             total_time_ms: 0
           })}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-xs text-text-muted hover:text-text-muted transition-colors"
         >
           Microphone issues? Skip this task
         </button>

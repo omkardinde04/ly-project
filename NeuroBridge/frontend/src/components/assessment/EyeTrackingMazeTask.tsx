@@ -267,7 +267,7 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
       )}
       
       {phase === 'standby' && (
-        <div className="flex flex-col items-center justify-center p-8 bg-white border-2 border-blue-200 rounded-2xl shadow-lg z-20 w-full max-w-md my-auto">
+        <div className="flex flex-col items-center justify-center p-8 bg-surface border-2 border-blue-200 rounded-2xl shadow-lg z-20 w-full max-w-md my-auto">
           <span className="text-5xl mb-4">🎯</span>
           <h3 className="text-xl font-bold text-slate-800 mb-2">Calibration Complete!</h3>
           <p className="text-slate-600 mb-6 text-sm">Take a moment to read the question. When you are ready to start drawing the path, click the button below. Your eye movements will be tracked once you start.</p>
@@ -282,10 +282,10 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
           <div className="flex justify-between items-center mb-2 px-4">
             <div className="flex items-center gap-2">
               <span className={`w-3 h-3 rounded-full ${headDirection === 'left' ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-              <span className="text-xs font-semibold text-gray-500">Looking Left: {lookLeftCount}</span>
+              <span className="text-xs font-semibold text-text-muted">Looking Left: {lookLeftCount}</span>
             </div>
             <div className="flex gap-2">
-              <button onClick={clearCanvas} className="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full text-sm font-bold hover:bg-gray-300">
+              <button onClick={clearCanvas} className="bg-gray-200 text-text px-4 py-1.5 rounded-full text-sm font-bold hover:bg-gray-300">
                 Clear
               </button>
               <button onClick={handleFinish} className="bg-blue-600 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow hover:bg-blue-700">
@@ -296,8 +296,8 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
           
           <div className="flex flex-1 gap-16 md:gap-24 w-full min-h-[300px] max-w-5xl mx-auto px-4">
             {/* Left Canvas: Reference */}
-            <div className="flex-1 bg-white border-2 border-gray-300 rounded-xl overflow-hidden relative shadow-sm" style={gridStyle}>
-              <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-bold text-gray-700 shadow-sm z-10">Reference Map</div>
+            <div className="flex-1 bg-surface border-2 border-gray-300 rounded-xl overflow-hidden relative shadow-sm" style={gridStyle}>
+              <div className="absolute top-2 left-2 bg-surface/ px-2 py-1 rounded text-xs font-bold text-text shadow-sm z-10">Reference Map</div>
               <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
                 {referencePath.length > 0 && (
                   <>
@@ -317,8 +317,8 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
             </div>
             
             {/* Right Canvas: User Drawing */}
-            <div className="flex-1 bg-white border-2 border-blue-300 rounded-xl overflow-hidden relative shadow-inner cursor-crosshair" style={gridStyle}>
-               <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-bold text-blue-700 shadow-sm z-10 pointer-events-none">Draw Here</div>
+            <div className="flex-1 bg-surface border-2 border-blue-300 rounded-xl overflow-hidden relative shadow-inner cursor-crosshair" style={gridStyle}>
+               <div className="absolute top-2 left-2 bg-surface/ px-2 py-1 rounded text-xs font-bold text-blue-700 shadow-sm z-10 pointer-events-none">Draw Here</div>
                <canvas 
                  ref={drawingCanvasRef}
                  className="w-full h-full block touch-none cursor-crosshair"

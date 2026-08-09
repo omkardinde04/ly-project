@@ -89,7 +89,7 @@ export function SituationSeriesTask({ onComplete, scenarios, title = "Imagine th
                 whileHover={{ scale: 1.02, backgroundColor: '#EBF4FF' }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleOptionSelect(option.id)}
-                className="w-full py-4 px-6 bg-white border border-[#DCEBFF] rounded-xl text-[#1A2340] font-semibold text-left transition-colors shadow-sm hover:border-[#4DA6FF] flex items-center justify-between group"
+                className="w-full py-4 px-6 bg-surface border border-[#DCEBFF] rounded-xl text-[#1A2340] font-semibold text-left transition-colors shadow-sm hover:border-[#4DA6FF] flex items-center justify-between group"
               >
                 <span>{option.text}</span>
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[#4DA6FF]">→</span>

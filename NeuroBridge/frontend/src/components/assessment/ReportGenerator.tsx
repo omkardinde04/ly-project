@@ -142,7 +142,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
       >
-        <h1 className="text-4xl md:text-5xl font-black text-gray-800 mb-4">
+        <h1 className="text-4xl md:text-5xl font-black text-text mb-4">
           📊 {t.reportTitle}
         </h1>
         <AudioControl text={reportText} />
@@ -153,18 +153,18 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-2 border-blue-100"
+        className="bg-surface rounded-3xl shadow-xl p-8 mb-6 border-2 border-blue-100"
       >
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">{t.yourLevel}</h2>
+            <h2 className="text-2xl font-bold text-text mb-2">{t.yourLevel}</h2>
             <div className={`inline-block px-6 py-3 rounded-full font-bold text-xl ${getLevelColor(level)}`}>
               {getLevelText(level)}
             </div>
           </div>
           <div className="text-center">
             <div className="text-6xl font-black text-blue-600 mb-2">{score}</div>
-            <div className="text-gray-500 font-medium">Total Score</div>
+            <div className="text-text-muted font-medium">Total Score</div>
           </div>
         </div>
       </motion.div>
@@ -175,50 +175,50 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl shadow-xl p-8 mb-6 border-2 border-purple-100"
+          className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl shadow-xl p-8 mb-6 border-2 border-border"
         >
-          <h2 className="text-3xl font-black text-gray-800 mb-6 text-center flex items-center justify-center gap-3">
+          <h2 className="text-3xl font-black text-text mb-6 text-center flex items-center justify-center gap-3">
             <span className="text-4xl">📈</span>
             Your Activity Insights
           </h2>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-6 text-center border border-purple-100">
+            <div className="bg-surface rounded-2xl p-6 text-center border border-border">
               <div className="text-4xl mb-2">⏱️</div>
               <div className="text-3xl font-black text-purple-600 mb-1">
                 {Math.round(metrics.totalTime)}s
               </div>
-              <div className="text-sm font-bold text-gray-600">Total Time</div>
+              <div className="text-sm font-bold text-text-muted">Total Time</div>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 text-center border border-blue-100">
+            <div className="bg-surface rounded-2xl p-6 text-center border border-blue-100">
               <div className="text-4xl mb-2">🎯</div>
               <div className="text-3xl font-black text-blue-600 mb-1">
                 {Math.round(metrics.averageTimePerQuestion)}s
               </div>
-              <div className="text-sm font-bold text-gray-600">Avg per Activity</div>
+              <div className="text-sm font-bold text-text-muted">Avg per Activity</div>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 text-center border border-yellow-100">
+            <div className="bg-surface rounded-2xl p-6 text-center border border-yellow-100">
               <div className="text-4xl mb-2">🤔</div>
               <div className="text-3xl font-black text-yellow-600 mb-1">
                 {metrics.confusionCount}
               </div>
-              <div className="text-sm font-bold text-gray-600">Mind Changes</div>
+              <div className="text-sm font-bold text-text-muted">Mind Changes</div>
             </div>
             
-            <div className="bg-white rounded-2xl p-6 text-center border border-green-100">
+            <div className="bg-surface rounded-2xl p-6 text-center border border-green-100">
               <div className="text-4xl mb-2">🔊</div>
               <div className="text-3xl font-black text-green-600 mb-1">
                 {metrics.audioReplayCount}
               </div>
-              <div className="text-sm font-bold text-gray-600">Audio Replays</div>
+              <div className="text-sm font-bold text-text-muted">Audio Replays</div>
             </div>
           </div>
 
           {metrics.confusionCount > 3 && (
             <div className="mt-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
-              <p className="text-sm text-gray-700 font-medium flex items-start gap-2">
+              <p className="text-sm text-text font-medium flex items-start gap-2">
                 <span className="text-xl">💡</span>
                 <span>
                   <strong>Insight:</strong> You changed your answer several times. This might mean you were carefully 
@@ -230,7 +230,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
 
           {metrics.audioReplayCount > 5 && (
             <div className="mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-              <p className="text-sm text-gray-700 font-medium flex items-start gap-2">
+              <p className="text-sm text-text font-medium flex items-start gap-2">
                 <span className="text-xl">🎧</span>
                 <span>
                   <strong>Audio Preference Detected:</strong> You listened to instructions multiple times. 
@@ -247,9 +247,9 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-2 border-purple-100"
+        className="bg-surface rounded-3xl shadow-xl p-8 mb-6 border-2 border-border"
       >
-        <h2 className="text-3xl font-black text-gray-800 mb-6 text-center">🧠 Your Cognitive Profile</h2>
+        <h2 className="text-3xl font-black text-text mb-6 text-center">🧠 Your Cognitive Profile</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
@@ -269,13 +269,13 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-4xl">{dim.icon}</span>
                   <div>
-                    <h3 className="font-bold text-gray-800">{dim.name}</h3>
-                    <p className="text-xs text-gray-600">{dim.desc}</p>
+                    <h3 className="font-bold text-text">{dim.name}</h3>
+                    <p className="text-xs text-text-muted">{dim.desc}</p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-gray-700">Performance</span>
+                    <span className="font-medium text-text">Performance</span>
                     <span className={`font-bold ${
                       levelStr === 'High' ? 'text-green-600' :
                       levelStr === 'Medium' ? 'text-yellow-600' : 'text-red-600'
@@ -304,7 +304,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+          className="bg-surface rounded-2xl shadow-lg p-6 border border-border"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-blue-100 p-3 rounded-xl">
@@ -313,22 +313,22 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-800">{t.recommendedSettings}</h3>
+            <h3 className="text-xl font-bold text-text">{t.recommendedSettings}</h3>
           </div>
           <ul className="space-y-3">
-            <li className="flex items-start gap-2 text-gray-700">
+            <li className="flex items-start gap-2 text-text">
               <span className="text-green-500 mt-1">✓</span>
               {recommendations.fontSize}
             </li>
-            <li className="flex items-start gap-2 text-gray-700">
+            <li className="flex items-start gap-2 text-text">
               <span className="text-green-500 mt-1">✓</span>
               {recommendations.contrast}
             </li>
-            <li className="flex items-start gap-2 text-gray-700">
+            <li className="flex items-start gap-2 text-text">
               <span className="text-green-500 mt-1">✓</span>
               {recommendations.audio}
             </li>
-            <li className="flex items-start gap-2 text-gray-700">
+            <li className="flex items-start gap-2 text-text">
               <span className="text-green-500 mt-1">✓</span>
               {recommendations.spacing}
             </li>
@@ -340,7 +340,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+          className="bg-surface rounded-2xl shadow-lg p-6 border border-border"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-purple-100 p-3 rounded-xl">
@@ -348,15 +348,15 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-800">{t.learningStyle}</h3>
+            <h3 className="text-xl font-bold text-text">{t.learningStyle}</h3>
           </div>
           <div className="mb-4">
             <div className="font-bold text-lg text-blue-600 mb-2">{learningStyle.primary}</div>
-            <p className="text-gray-700">{learningStyle.description}</p>
+            <p className="text-text">{learningStyle.description}</p>
           </div>
           <ul className="space-y-2">
             {learningStyle.tips.map((tip, index) => (
-              <li key={index} className="flex items-start gap-2 text-gray-700">
+              <li key={index} className="flex items-start gap-2 text-text">
                 <span className="text-purple-500 mt-1">•</span>
                 {tip}
               </li>
@@ -373,41 +373,41 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-6 mb-6 border border-blue-100"
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="bg-white p-3 rounded-xl shadow-sm">
+          <div className="bg-surface p-3 rounded-xl shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-gray-800">{t.recommendations}</h3>
+          <h3 className="text-xl font-bold text-text">{t.recommendations}</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl p-4">
-            <h4 className="font-bold text-gray-800 mb-2">📖 Reading</h4>
-            <ul className="space-y-1 text-sm text-gray-700">
+          <div className="bg-surface rounded-xl p-4">
+            <h4 className="font-bold text-text mb-2">📖 Reading</h4>
+            <ul className="space-y-1 text-sm text-text">
               <li>• Use text-to-speech regularly</li>
               <li>• Take breaks every 20 minutes</li>
               <li>• Use a reading guide or ruler</li>
             </ul>
           </div>
-          <div className="bg-white rounded-xl p-4">
-            <h4 className="font-bold text-gray-800 mb-2">✍️ Writing</h4>
-            <ul className="space-y-1 text-sm text-gray-700">
+          <div className="bg-surface rounded-xl p-4">
+            <h4 className="font-bold text-text mb-2">✍️ Writing</h4>
+            <ul className="space-y-1 text-sm text-text">
               <li>• Use spell-check tools</li>
               <li>• Dictate before writing</li>
               <li>• Break writing into steps</li>
             </ul>
           </div>
-          <div className="bg-white rounded-xl p-4">
-            <h4 className="font-bold text-gray-800 mb-2">🎯 Focus</h4>
-            <ul className="space-y-1 text-sm text-gray-700">
+          <div className="bg-surface rounded-xl p-4">
+            <h4 className="font-bold text-text mb-2">🎯 Focus</h4>
+            <ul className="space-y-1 text-sm text-text">
               <li>• Minimize visual clutter</li>
               <li>• Use focus timers</li>
               <li>• Work in quiet spaces</li>
             </ul>
           </div>
-          <div className="bg-white rounded-xl p-4">
-            <h4 className="font-bold text-gray-800 mb-2">💡 Memory</h4>
-            <ul className="space-y-1 text-sm text-gray-700">
+          <div className="bg-surface rounded-xl p-4">
+            <h4 className="font-bold text-text mb-2">💡 Memory</h4>
+            <ul className="space-y-1 text-sm text-text">
               <li>• Use mnemonics</li>
               <li>• Create visual associations</li>
               <li>• Practice active recall</li>
@@ -427,7 +427,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <p className="text-sm text-gray-700 font-medium">{t.disclaimer}</p>
+          <p className="text-sm text-text font-medium">{t.disclaimer}</p>
         </div>
       </motion.div>
 
@@ -440,7 +440,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
       >
         <button
           onClick={onRetake}
-          className="flex items-center gap-2 px-8 py-3 rounded-full bg-gray-200 text-gray-700 font-bold hover:bg-gray-300 transition-all"
+          className="flex items-center gap-2 px-8 py-3 rounded-full bg-gray-200 text-text font-bold hover:bg-gray-300 transition-all"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

@@ -54,10 +54,10 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-white rounded-2xl p-8 border border-blue-50 shadow-sm font-sans flex flex-col items-center justify-center min-h-[400px]">
+    <div className="w-full max-w-lg mx-auto bg-surface rounded-2xl p-8 border border-border shadow-sm font-sans flex flex-col items-center justify-center min-h-[400px]">
       <div className="text-center mb-10">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">Pop Quiz Activity</h2>
-        <p className="text-sm text-gray-500">Tap the correct answer</p>
+        <h2 className="text-xl font-bold text-text mb-2">Pop Quiz Activity</h2>
+        <p className="text-sm text-text-muted">Tap the correct answer</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -80,7 +80,7 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
                 whileHover={{ scale: 1.05, backgroundColor: '#F0F7FF' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleSelect(option)}
-                className="py-6 bg-[#F8FBFF] border-2 border-[#EBF4FF] rounded-2xl text-2xl font-bold text-gray-700 hover:border-[#4DA6FF] hover:text-[#4DA6FF] transition-all shadow-sm"
+                className="py-6 bg-[#F8FBFF] border-2 border-[#EBF4FF] rounded-2xl text-2xl font-bold text-text hover:border-[#4DA6FF] hover:text-[#4DA6FF] transition-all shadow-sm"
               >
                 {option}
               </motion.button>

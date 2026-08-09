@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -9,8 +9,8 @@
 
 :root {
   /* ── Typography ── */
-  --font-body:        'Outfit', 'Lexend', Arial, sans-serif;
-  --font-heading:     'Outfit', 'Lexend', Arial, sans-serif;
+  --font-body:        'Nunito', Arial, sans-serif;
+  --font-heading:     'Nunito', Arial, sans-serif;
 
   --text-xs:     0.75rem;
   --text-sm:     0.875rem;
@@ -29,13 +29,16 @@
   --max-prose-width:     800px;
 
   /* ── Colors ── */
-  --color-bg:          #F4F8FF;
+  --color-bg:          #F0F7FA;
   --color-surface:     #FFFFFF;
-  --color-surface-2:   #F0F5FF;
-  --color-text:        #1F2937;
-  --color-text-muted:  #4B5563;
-  --color-accent:      #3B82F6;
-  --color-accent-soft: #DCEEFF;
+  --color-surface-2:   #F8FAFC;
+  --color-text:        #1A202C;
+  --color-text-muted:  #4A5568;
+  --color-accent:      #E0F0FA;
+  --color-accent-soft: #EEF5FB;
+  --color-primary:     #2563EB;
+  --color-coral:       #F87171;
+  --color-coral-soft:  #FEE2E2;
   --color-border:      #E2E8F0;
 
   /* ── Spacing & sizing ── */
@@ -51,43 +54,36 @@
 ───────────────────────────────────────────────────────────────────────────── */
 
 body.dyslexia-mode {
-  /* ── Font switch — Lexend is research-backed for dyslexia ── */
-  --font-body:    'Lexend', 'Atkinson Hyperlegible', Arial, sans-serif;
-  --font-heading: 'Lexend', 'Atkinson Hyperlegible', Arial, sans-serif;
+  /* ── Font switch ── */
+  --font-body:    'Lexend', 'Nunito', Arial, sans-serif;
+  --font-heading: 'Lexend', 'Nunito', Arial, sans-serif;
 
-  /* ── Size increase ~20% ── */
+  /* ── Size increase ~15% (less aggressive) ── */
   --text-xs:     0.85rem;
   --text-sm:     1rem;
-  --text-base:   1.15rem;     /* ≈18.4px */
-  --text-lg:     1.3rem;
-  --text-xl:     1.45rem;
-  --text-2xl:    1.7rem;
-  --text-3xl:    2.1rem;
-  --text-4xl:    2.6rem;
+  --text-base:   1.1rem;     
+  --text-lg:     1.25rem;
+  --text-xl:     1.4rem;
+  --text-2xl:    1.6rem;
+  --text-3xl:    2rem;
+  --text-4xl:    2.4rem;
 
-  /* ── Spacing — research shows 1.8× line height maximises legibility ── */
-  --line-height-body:    1.85;
+  /* ── Spacing (cleaner) ── */
+  --line-height-body:    1.65;
   --line-height-heading: 1.4;
-  --letter-spacing-body: 0.05em;
-  --word-spacing-body:   0.12em;
-  --paragraph-spacing:   1rem;
+  --letter-spacing-body: 0.025em;
+  --word-spacing-body:   0.05em;
+  --paragraph-spacing:   1.25rem;
   --max-prose-width:     640px;
 
-  /* ── Soft tinted background — avoids harsh white glare ── */
-  --color-bg:          #EEF4FF;
-  --color-surface:     #FAFCFF;
-  --color-surface-2:   #E6EFFF;
-  --color-text:        #1A1A2E;
-  --color-text-muted:  #3D4466;
-  --color-accent:      #2563EB;
-  --color-accent-soft: #D4E5FF;
-  --color-border:      #C7D9F0;
+  /* ── Colors ── */
+  /* Keep the exact same colors in Dyslexia Mode (no overrides here) */
 
   /* ── Larger buttons — easier to tap / click ── */
-  --btn-height:      52px;
+  --btn-height:      48px;
   --btn-padding:     0.75rem 1.25rem;
   --btn-font-size:   1rem;
-  --card-gap:        1.5rem;
+  --card-gap:        1.25rem;
   --section-gap:     2.5rem;
 }
 
@@ -107,10 +103,7 @@ html {
     line-height: var(--line-height-body);
     letter-spacing: var(--letter-spacing-body);
     word-spacing: var(--word-spacing-body);
-    text-align: left;
     -webkit-font-smoothing: antialiased;
-    /* Space for floating GlobalReader bar */
-    padding-bottom: 5rem;
     transition:
       background-color 0.35s ease,
       color 0.35s ease,
@@ -125,7 +118,6 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   line-height: var(--line-height-heading);
   color: var(--color-text);
-  text-align: left;
 }
 
 h1 { font-size: var(--text-4xl); }
@@ -137,35 +129,7 @@ h6 { font-size: var(--text-base); }
 
 p {
   margin-bottom: var(--paragraph-spacing);
-  max-width: var(--max-prose-width);
   font-size: var(--text-base);
-}
-
-/* ── ALL text elements respond to the token switch ── */
-body.dyslexia-mode *:not(svg):not(path):not(circle):not(rect):not(line):not(polygon):not(g) {
-  font-family: var(--font-body) !important;
-  letter-spacing: var(--letter-spacing-body);
-  word-spacing: var(--word-spacing-body);
-  /* No italic in dyslexia mode — harder to read */
-  font-style: normal;
-}
-
-body.dyslexia-mode h1, body.dyslexia-mode h2,
-body.dyslexia-mode h3, body.dyslexia-mode h4,
-body.dyslexia-mode h5, body.dyslexia-mode h6 {
-  font-family: var(--font-heading) !important;
-  line-height: var(--line-height-heading) !important;
-}
-
-body.dyslexia-mode p,
-body.dyslexia-mode span,
-body.dyslexia-mode li,
-body.dyslexia-mode a,
-body.dyslexia-mode button,
-body.dyslexia-mode label,
-body.dyslexia-mode td,
-body.dyslexia-mode th {
-  line-height: var(--line-height-body) !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -207,7 +171,7 @@ body.dyslexia-mode th {
 
 .nb-btn-primary {
   background-color: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-text);
   border: 2px solid transparent;
 }
 
@@ -242,9 +206,7 @@ body.dyslexia-mode .dx-single-col {
 }
 
 /* Increase padding on cards */
-body.dyslexia-mode .nb-surface,
-body.dyslexia-mode [class*="rounded-2xl"],
-body.dyslexia-mode [class*="rounded-xl"] {
+body.dyslexia-mode .nb-surface {
   padding: 1.5rem !important;
 }
 
@@ -330,7 +292,19 @@ body.dyslexia-mode * {
 ───────────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  --color-primary:   #3b82f6;
-  --color-secondary: #8b5cf6;
-  --font-sans: 'Outfit', 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-border: var(--color-border);
+  
+  --color-primary: var(--color-primary);
+  --color-coral: var(--color-coral);
+  --color-coral-soft: var(--color-coral-soft);
+  
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
 }

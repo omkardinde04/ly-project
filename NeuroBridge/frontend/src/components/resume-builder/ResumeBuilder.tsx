@@ -36,13 +36,13 @@ function UnderlineField({
     <div className="relative py-3">
       <div className="flex items-end gap-3">
         <div className="relative flex-1">
-          <label className={`absolute left-0 transition-all text-sm font-bold text-gray-500 ${hasValue ? '-top-2' : 'top-3'}`}>{label}</label>
+          <label className={`absolute left-0 transition-all text-sm font-bold text-text-muted ${hasValue ? '-top-2' : 'top-3'}`}>{label}</label>
           <input
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={hasValue ? '' : (placeholder ?? '')}
-            className="w-full bg-transparent pt-6 pb-2 outline-none text-lg text-gray-800 placeholder:text-gray-400 border-b border-gray-200 focus:border-blue-400"
-            style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif', lineHeight: 1.8 }}
+            className="w-full bg-transparent pt-6 pb-2 outline-none text-lg text-text placeholder:text-text-muted border-b border-border focus:border-blue-400"
+            
           />
         </div>
         {onMicClick && (
@@ -52,14 +52,14 @@ function UnderlineField({
               e.preventDefault();
               onMicClick();
             }}
-            className={`h-10 w-10 rounded-full border text-blue-600 flex items-center justify-center transition ${listening ? 'bg-red-50 border-red-200 animate-pulse' : 'bg-white/70 hover:bg-white border-gray-100'}`}
+            className={`h-10 w-10 rounded-full border text-blue-600 flex items-center justify-center transition ${listening ? 'bg-red-50 border-red-200 animate-pulse' : 'bg-surface/ hover:bg-surface border-border'}`}
             title="Speak"
           >
             <Mic size={18} />
           </button>
         )}
       </div>
-      {listening && <div className="text-xs text-red-500 font-bold mt-1" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Listening...</div>}
+      {listening && <div className="text-xs text-red-500 font-bold mt-1" >Listening...</div>}
     </div>
   );
 }
@@ -68,24 +68,24 @@ function ProgressBar({ stepIndex }: { stepIndex: number }) {
   const pct = Math.round(((stepIndex + 1) / 7) * 100);
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between text-xs font-bold text-gray-500 mb-2" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>
+      <div className="flex items-center justify-between text-xs font-bold text-text-muted mb-2" >
         <span>Progress</span><span>{pct}%</span>
       </div>
-      <div className="h-2 rounded-full bg-white/70 border border-gray-100 overflow-hidden">
+      <div className="h-2 rounded-full bg-surface/ border border-border overflow-hidden">
         <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500" style={{ width: `${pct}%` }} />
       </div>
-      <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500 font-bold" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>
-        {['Personal', 'Education', 'Skills', 'Projects', 'Preview'].map((s, i) => <span key={s} className={i <= Math.min(stepIndex, 4) ? 'text-gray-700' : ''}>{s}</span>)}
+      <div className="mt-3 flex items-center justify-between text-[11px] text-text-muted font-bold" >
+        {['Personal', 'Education', 'Skills', 'Projects', 'Preview'].map((s, i) => <span key={s} className={i <= Math.min(stepIndex, 4) ? 'text-text' : ''}>{s}</span>)}
       </div>
     </div>
   );
 }
 
 const SectionShell = ({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) => (
-  <div className="bg-white/70 rounded-3xl px-7 py-7 border border-white/70">
+  <div className="bg-surface/ rounded-3xl px-7 py-7 border border-border">
     <div className="mb-6">
-      <div className="text-3xl font-black text-gray-900" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>{title}</div>
-      <div className="text-gray-500 mt-2 text-sm leading-relaxed" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>{subtitle}</div>
+      <div className="text-3xl font-black text-text" >{title}</div>
+      <div className="text-text-muted mt-2 text-sm leading-relaxed" >{subtitle}</div>
     </div>
     {children}
   </div>
@@ -207,16 +207,16 @@ export const ResumeBuilder: React.FC = () => {
 
     try {
       const opt = {
-        margin: [0.35, 0.35, 0.35, 0.35],
+        margin: 0.35,
         filename: getFileName(),
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
           scale: 2, 
           useCORS: true, 
           backgroundColor: '#ffffff',
           logging: false
         },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+        jsPDF: { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const },
         pagebreak: { mode: ['css', 'legacy'] }
       };
       
@@ -284,15 +284,15 @@ export const ResumeBuilder: React.FC = () => {
       case 2:
         return <SectionShell title="Step 3 — Skills" subtitle="Add at least 1 skill."><div className="flex items-end gap-3">
           <div className="flex-1"><UnderlineField label="Add a skill" value={skillDraft} onChange={setSkillDraft} placeholder="Type or speak a skill" onMicClick={() => toggleMic('skills', (t) => setSkillDraft(prev => (prev ? `${prev} ${t}` : t)))} listening={activeMicField === 'skills'} /></div>
-          <button type="button" onClick={() => addSkill(skillDraft)} disabled={!isFilled(skillDraft)} className="h-10 px-5 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition disabled:opacity-40" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Add</button>
+          <button type="button" onClick={() => addSkill(skillDraft)} disabled={!isFilled(skillDraft)} className="h-10 px-5 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition disabled:opacity-40" >Add</button>
         </div>
-        {suggestedSkills.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestedSkills.map(s => <button key={s} type="button" onClick={() => addSkill(s)} className="px-3 py-1.5 rounded-full bg-white/70 border border-gray-100 text-gray-700 font-bold text-sm hover:bg-white transition" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>+ {s}</button>)}</div>}
-        <div className="mt-5 flex flex-wrap gap-2">{resumeData.skills.map(s => <span key={s} className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-blue-50 text-blue-800 border border-blue-100 text-sm font-bold" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>{s}<button type="button" onClick={() => removeSkill(s)} className="h-5 w-5 rounded-full bg-white/70 border border-blue-100 text-blue-700 flex items-center justify-center hover:bg-white">×</button></span>)}</div>
+        {suggestedSkills.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestedSkills.map(s => <button key={s} type="button" onClick={() => addSkill(s)} className="px-3 py-1.5 rounded-full bg-surface/ border border-border text-text font-bold text-sm hover:bg-surface transition" >+ {s}</button>)}</div>}
+        <div className="mt-5 flex flex-wrap gap-2">{resumeData.skills.map(s => <span key={s} className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-blue-50 text-blue-800 border border-blue-100 text-sm font-bold" >{s}<button type="button" onClick={() => removeSkill(s)} className="h-5 w-5 rounded-full bg-surface/ border border-blue-100 text-blue-700 flex items-center justify-center hover:bg-surface">×</button></span>)}</div>
         </SectionShell>;
       case 3:
         return <SectionShell title="Step 4 — Projects + Experience" subtitle="Add project details. Link/PDF optional."><div className="space-y-5">
-          <div className="rounded-3xl bg-white/60 border border-gray-100 px-6 py-4">
-            <div className="text-sm font-black text-gray-700 mb-2" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Experience (optional)</div>
+          <div className="rounded-3xl bg-surface/ border border-border px-6 py-4">
+            <div className="text-sm font-black text-text mb-2" >Experience (optional)</div>
             <div className="grid md:grid-cols-3 gap-x-6">
               <UnderlineField label="Internship" value={resumeData.experience.internship} onChange={(v) => setResumeData(p => ({ ...p, experience: { ...p.experience, internship: v } }))} placeholder="Internship" onMicClick={() => toggleMic('exp-internship', (t) => setResumeData(p => ({ ...p, experience: { ...p.experience, internship: p.experience.internship ? `${p.experience.internship} ${t}` : t } })))} listening={activeMicField === 'exp-internship'} />
               <UnderlineField label="Project" value={resumeData.experience.project} onChange={(v) => setResumeData(p => ({ ...p, experience: { ...p.experience, project: v } }))} placeholder="Project" onMicClick={() => toggleMic('exp-project', (t) => setResumeData(p => ({ ...p, experience: { ...p.experience, project: p.experience.project ? `${p.experience.project} ${t}` : t } })))} listening={activeMicField === 'exp-project'} />
@@ -300,8 +300,8 @@ export const ResumeBuilder: React.FC = () => {
             </div>
           </div>
           {resumeData.projects.map((p) => (
-            <div key={p.id} className="rounded-3xl bg-white/70 border border-gray-100 px-6 py-5">
-              <div className="flex items-center justify-between mb-2"><div className="text-sm font-black text-gray-700" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Project</div><button type="button" onClick={() => deleteProject(p.id)} className="p-2 rounded-full hover:bg-red-50 text-red-500"><Trash2 size={18} /></button></div>
+            <div key={p.id} className="rounded-3xl bg-surface/ border border-border px-6 py-5">
+              <div className="flex items-center justify-between mb-2"><div className="text-sm font-black text-text" >Project</div><button type="button" onClick={() => deleteProject(p.id)} className="p-2 rounded-full hover:bg-red-50 text-red-500"><Trash2 size={18} /></button></div>
               <UnderlineField label="Project title" value={p.name} onChange={(v) => updateProject(p.id, { name: v })} placeholder="Project title" onMicClick={() => toggleMic(`project-title-${p.id}`, (t) => updateProject(p.id, { name: p.name ? `${p.name} ${t}` : t }))} listening={activeMicField === `project-title-${p.id}`} />
               <UnderlineField label="Description" value={p.description} onChange={(v) => updateProject(p.id, { description: v })} placeholder="Project description" onMicClick={() => toggleMic(`project-desc-${p.id}`, (t) => updateProject(p.id, { description: p.description ? `${p.description} ${t}` : t }))} listening={activeMicField === `project-desc-${p.id}`} />
               <UnderlineField label="Tech stack" value={p.techStack} onChange={(v) => updateProject(p.id, { techStack: v })} placeholder="React, Node, SQL" onMicClick={() => toggleMic(`project-tech-${p.id}`, (t) => updateProject(p.id, { techStack: p.techStack ? `${p.techStack} ${t}` : t }))} listening={activeMicField === `project-tech-${p.id}`} />
@@ -313,15 +313,15 @@ export const ResumeBuilder: React.FC = () => {
                   if (file.type !== 'application/pdf') { alert('Please upload PDF only.'); e.target.value = ''; return; }
                   updateProject(p.id, { reportFileName: file.name });
                 }} />
-                <button type="button" onClick={() => fileRefs.current[p.id]?.click()} className="px-4 py-2 rounded-full bg-white border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 flex items-center gap-2" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}><Upload size={15} /> Upload PDF</button>
-                {p.reportFileName && <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-sm font-bold" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>{p.reportFileName}<button type="button" onClick={() => updateProject(p.id, { reportFileName: '' })} className="text-blue-700"><X size={14} /></button></div>}
+                <button type="button" onClick={() => fileRefs.current[p.id]?.click()} className="px-4 py-2 rounded-full bg-surface border border-border text-text font-bold hover:bg-gray-50 flex items-center gap-2" ><Upload size={15} /> Upload PDF</button>
+                {p.reportFileName && <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-sm font-bold" >{p.reportFileName}<button type="button" onClick={() => updateProject(p.id, { reportFileName: '' })} className="text-blue-700"><X size={14} /></button></div>}
               </div>
             </div>
           ))}
-          <button type="button" onClick={addProject} className="w-full rounded-full bg-white/70 hover:bg-white border border-gray-100 py-4 font-black text-gray-700 transition flex items-center justify-center gap-2" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}><Plus size={18} className="text-blue-600" />Add Project</button>
+          <button type="button" onClick={addProject} className="w-full rounded-full bg-surface/ hover:bg-surface border border-border py-4 font-black text-text transition flex items-center justify-center gap-2" ><Plus size={18} className="text-blue-600" />Add Project</button>
         </div></SectionShell>;
       case 4:
-        return <SectionShell title="Step 5 — Preview Resume" subtitle="Switch templates at top to update preview instantly."><div className="text-gray-700 text-sm leading-relaxed font-bold" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Preview looks live on the right.</div></SectionShell>;
+        return <SectionShell title="Step 5 — Preview Resume" subtitle="Switch templates at top to update preview instantly."><div className="text-text text-sm leading-relaxed font-bold" >Preview looks live on the right.</div></SectionShell>;
       case 5:
         return (
           <SectionShell title="Step 6 — Download & Save" subtitle="Download PDF or save resume to your profile.">
@@ -330,7 +330,7 @@ export const ResumeBuilder: React.FC = () => {
                 type="button" 
                 onClick={downloadPDF} 
                 className="w-full py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-black transition flex items-center justify-center gap-2" 
-                style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}
+                
               >
                 Download PDF
               </button>
@@ -342,9 +342,9 @@ export const ResumeBuilder: React.FC = () => {
                 className={`w-full py-4 rounded-full border-2 font-black transition flex items-center justify-center gap-2 ${
                   saveStatus === 'success' ? 'bg-green-50 border-green-500 text-green-700' : 
                   saveStatus === 'error' ? 'bg-red-50 border-red-500 text-red-700' :
-                  'bg-white border-blue-100 text-blue-600 hover:bg-blue-50'
+                  'bg-surface border-blue-100 text-blue-600 hover:bg-blue-50'
                 }`}
-                style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}
+                
               >
                 {saveStatus === 'saving' ? 'Saving...' : 
                  saveStatus === 'success' ? 'Resume saved successfully!' :
@@ -355,24 +355,24 @@ export const ResumeBuilder: React.FC = () => {
           </SectionShell>
         );
       case 6:
-        return <SectionShell title="Step 7 — Apply" subtitle="Apply redirects to dashboard opportunities."><button type="button" onClick={handleApply} disabled={!canApply} className="w-full py-4 rounded-full bg-white border border-gray-200 text-gray-800 font-black transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Apply to Opportunities</button>{!canApply && <div className="text-xs text-gray-500 font-bold leading-relaxed mt-3" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Complete Personal, Education and Skills to enable Apply.</div>}</SectionShell>;
+        return <SectionShell title="Step 7 — Apply" subtitle="Apply redirects to dashboard opportunities."><button type="button" onClick={handleApply} disabled={!canApply} className="w-full py-4 rounded-full bg-surface border border-border text-text font-black transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50" >Apply to Opportunities</button>{!canApply && <div className="text-xs text-text-muted font-bold leading-relaxed mt-3" >Complete Personal, Education and Skills to enable Apply.</div>}</SectionShell>;
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F4F9FD] via-[#F7FBFF] to-[#F9F7FF] text-gray-900 overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#F4F9FD] via-[#F7FBFF] to-[#F9F7FF] text-text overflow-hidden flex flex-col">
       <div className="px-8 pt-8 pb-5">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between gap-6 flex-wrap">
             <div>
-              <div className="text-4xl font-black text-gray-900" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Resume Builder</div>
-              <div className="text-gray-500 text-sm mt-2 font-bold" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Calm, step-by-step, dyslexia-friendly.</div>
+              <div className="text-4xl font-black text-text" >Resume Builder</div>
+              <div className="text-text-muted text-sm mt-2 font-bold" >Calm, step-by-step, dyslexia-friendly.</div>
             </div>
-            <div className="flex items-center gap-2 bg-white/70 border border-white/70 rounded-full p-1">
+            <div className="flex items-center gap-2 bg-surface/ border border-border rounded-full p-1">
               {([{ id: 'minimal', label: 'Template 1' }, { id: 'soft', label: 'Template 2' }, { id: 'student', label: 'Template 3' }] as { id: ThemeType; label: string }[]).map((t) => (
-                <button key={t.id} type="button" onClick={() => setTemplate(t.id)} className={`px-4 py-2 rounded-full text-sm font-black transition ${template === t.id ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-white'}`} style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>{t.label}</button>
+                <button key={t.id} type="button" onClick={() => setTemplate(t.id)} className={`px-4 py-2 rounded-full text-sm font-black transition ${template === t.id ? 'bg-blue-600 text-white' : 'text-text hover:bg-surface'}`} >{t.label}</button>
               ))}
             </div>
           </div>
@@ -397,14 +397,14 @@ export const ResumeBuilder: React.FC = () => {
                     }
                     setStepIndex(0);
                     setStarted(true);
-                  }} className="px-6 py-3 rounded-full bg-blue-600 text-white font-black hover:bg-blue-700 transition" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Edit Resume</button>
+                  }} className="px-6 py-3 rounded-full bg-blue-600 text-white font-black hover:bg-blue-700 transition" >Edit Resume</button>
                   <button type="button" onClick={() => {
                     setResumeData(initialResumeData);
                     setTemplate('minimal');
                     setStepIndex(0);
                     localStorage.removeItem(STORAGE_KEY);
                     setStarted(true);
-                  }} className="px-6 py-3 rounded-full bg-white border border-gray-200 text-gray-800 font-black hover:bg-gray-50 transition" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Create New Resume</button>
+                  }} className="px-6 py-3 rounded-full bg-surface border border-border text-text font-black hover:bg-gray-50 transition" >Create New Resume</button>
                 </div>
               </SectionShell>
             ) : (
@@ -412,10 +412,10 @@ export const ResumeBuilder: React.FC = () => {
                 <div className="space-y-6 pb-24">{renderStep()}</div>
                 <div className="sticky bottom-0 mt-6 pt-4 pb-4 bg-gradient-to-t from-[#F4F9FD] to-transparent">
                   <div className="flex items-center justify-between gap-4">
-                    <button type="button" onClick={handleBack} disabled={stepIndex === 0} className="px-6 py-3 rounded-full bg-white/70 border border-white/70 text-gray-700 font-black hover:bg-white transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}><ArrowLeft size={18} />Back</button>
-                    <button type="button" onClick={handleNext} disabled={nextDisabled} className="px-7 py-3 rounded-full bg-blue-600 text-white font-black hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Next<ArrowRight size={18} /></button>
+                    <button type="button" onClick={handleBack} disabled={stepIndex === 0} className="px-6 py-3 rounded-full bg-surface/ border border-border text-text font-black hover:bg-surface transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2" ><ArrowLeft size={18} />Back</button>
+                    <button type="button" onClick={handleNext} disabled={nextDisabled} className="px-7 py-3 rounded-full bg-blue-600 text-white font-black hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2" >Next<ArrowRight size={18} /></button>
                   </div>
-                  {activeMicField && <div className="mt-3 text-xs font-black text-blue-700" style={{ fontFamily: 'OpenDyslexic, Inter, system-ui, sans-serif' }}>Listening... click mic again to stop.</div>}
+                  {activeMicField && <div className="mt-3 text-xs font-black text-blue-700" >Listening... click mic again to stop.</div>}
                 </div>
               </>
             )}

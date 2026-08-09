@@ -122,8 +122,8 @@ const translations: Record<Language, Translation> = {
     
     // Hero Section
     inclusiveLearning: 'Inclusive learning for dyslexic and general users',
-    heroTitle: 'A calm, clear platform to learn skills and unlock careers confidently.',
-    heroSubtitle: 'ClearPath replaces text-heavy friction with visual learning, assistive tools, and opportunity matching designed for the way you think.',
+    heroTitle: 'Learn skills. Unlock careers.',
+    heroSubtitle: 'Visual learning and opportunities designed for the way you think.',
     getStarted: 'Get Started',
     exploreGrowth: 'Explore Growth',
     usersReportBetterFocus: 'users report better focus',

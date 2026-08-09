@@ -52,7 +52,7 @@ export function ForgotPassword() {
             <div className="fixed inset-0 bg-[#DBEAF5] -z-10" />
 
             <div className="flex justify-center items-center min-h-screen py-8 px-4">
-                <div className="bg-white rounded-[40px] p-8 sm:p-10 w-full max-w-[480px] shadow-sm">
+                <div className="bg-surface rounded-[40px] p-8 sm:p-10 w-full max-w-[480px] shadow-sm">
 
                     {/* Back button */}
                     <button
@@ -99,7 +99,7 @@ export function ForgotPassword() {
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="Enter your registered email"
                                             required
-                                            className="w-full pl-14 pr-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-colors"
+                                            className="w-full pl-14 pr-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-surface transition-colors"
                                         />
                                     </div>
                                 </div>
@@ -107,7 +107,7 @@ export function ForgotPassword() {
                                 <button
                                     type="submit"
                                     disabled={isLoading || !email}
-                                    className="w-full py-3.5 bg-[#1D64D8] hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-3.5 bg-primary hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? (
                                         <span className="flex items-center justify-center gap-2">
@@ -159,13 +159,13 @@ export function ForgotPassword() {
                             <div className="space-y-3">
                                 <button
                                     onClick={() => { setSent(false); setEmail(''); }}
-                                    className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-2xl transition-colors text-[15px]"
+                                    className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-text font-bold rounded-2xl transition-colors text-[15px]"
                                 >
                                     Try a Different Email
                                 </button>
                                 <button
                                     onClick={() => navigate('/login')}
-                                    className="w-full py-3 text-[#1D64D8] font-bold text-[15px] hover:underline"
+                                    className="w-full py-3 text-primary font-bold text-[15px] hover:underline"
                                 >
                                     Back to Login →
                                 </button>

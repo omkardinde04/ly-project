@@ -191,9 +191,9 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
          </div>
        )}
 
-       <div className="text-2xl leading-relaxed max-w-3xl text-left p-8 bg-white rounded-2xl border-2 border-slate-200 shadow-sm" style={{ lineHeight: '2.5' }}>
+       <div className="text-2xl leading-relaxed max-w-3xl text-left p-8 bg-surface rounded-2xl border-2 border-slate-200 shadow-sm" style={{ lineHeight: '2.5' }}>
          {words.map((word, idx) => {
-           let statusClass = 'text-gray-400';
+           let statusClass = 'text-text-muted';
            if (wordStatuses[idx] === 'green') statusClass = 'text-green-600 bg-green-50 rounded px-1 font-semibold';
            if (wordStatuses[idx] === 'red') statusClass = 'text-red-600 bg-red-100 rounded px-1 font-bold line-through decoration-red-400 decoration-2';
            if (wordStatuses[idx] === 'yellow') statusClass = 'text-yellow-600 bg-yellow-100 rounded px-1 font-semibold';

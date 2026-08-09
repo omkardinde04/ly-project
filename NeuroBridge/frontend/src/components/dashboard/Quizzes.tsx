@@ -76,8 +76,8 @@ export function Quizzes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-800 mb-2">Tests & Quizzes</h1>
-          <p className="text-gray-600 font-medium">Challenge yourself and practice your skills</p>
+          <h1 className="text-3xl font-black text-text mb-2">Tests & Quizzes</h1>
+          <p className="text-text-muted font-medium">Challenge yourself and practice your skills</p>
         </div>
         <AudioControl 
           text="Tests and Quizzes section. Select a quiz to practice your skills and track your progress." 
@@ -98,21 +98,21 @@ export function Quizzes() {
             {QUIZZES.map((quiz) => (
               <div 
                 key={quiz.id} 
-                className="bg-white p-8 rounded-[32px] shadow-sm border-2 border-transparent hover:border-blue-100 hover:shadow-md transition-all group flex flex-col md:flex-row items-start gap-6"
+                className="bg-surface p-8 rounded-[32px] shadow-sm border-2 border-transparent hover:border-blue-100 hover:shadow-md transition-all group flex flex-col md:flex-row items-start gap-6"
               >
                 <div className="w-20 h-20 shrink-0 bg-[#F4F9FD] rounded-2xl flex items-center justify-center text-4xl shadow-inner">
                   {quiz.icon}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{quiz.title}</h3>
-                  <p className="text-gray-600 font-medium mb-6">{quiz.description}</p>
+                  <h3 className="text-xl font-bold text-text mb-2">{quiz.title}</h3>
+                  <p className="text-text-muted font-medium mb-6">{quiz.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                       {quiz.questions.length} Questions
                     </span>
                     <button 
                       onClick={() => handleStart(quiz)}
-                      className="bg-[#1D64D8] text-white px-6 py-2.5 rounded-full font-bold hover:bg-blue-700 transition-colors shadow-sm inline-flex items-center gap-2"
+                      className="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-blue-700 transition-colors shadow-sm inline-flex items-center gap-2"
                     >
                       Start Test
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -130,19 +130,19 @@ export function Quizzes() {
             key="results"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white p-12 rounded-[40px] shadow-lg text-center max-w-3xl border-2 border-blue-50 relative overflow-hidden"
+            className="bg-surface p-12 rounded-[40px] shadow-lg text-center max-w-3xl border-2 border-border relative overflow-hidden"
           >
             <div className="absolute top-0 inset-x-0 h-4 bg-linear-to-r from-blue-400 to-green-400"></div>
             <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-inner">
               🎉
             </div>
-            <h2 className="text-4xl font-black text-gray-800 mb-4">Quiz Completed!</h2>
-            <p className="text-xl text-gray-600 font-medium mb-8">
+            <h2 className="text-4xl font-black text-text mb-4">Quiz Completed!</h2>
+            <p className="text-xl text-text-muted font-medium mb-8">
               Great job on completing <span className="text-blue-600 font-bold">{activeQuiz.title}</span>.
             </p>
             <div className="inline-block bg-[#F4F9FD] border border-blue-100 rounded-3xl p-6 mb-10 w-full max-w-sm">
-              <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Your Score</div>
-              <div className="text-6xl font-black text-[#1D64D8]">
+              <div className="text-sm font-bold text-text-muted uppercase tracking-wider mb-2">Your Score</div>
+              <div className="text-6xl font-black text-primary">
                 {Math.round(((score + (selectedAnswer === activeQuiz.questions[currentQuestionIdx].correct ? 1 : 0)) / activeQuiz.questions.length) * 100)}%
               </div>
             </div>
@@ -161,17 +161,17 @@ export function Quizzes() {
             key="quiz"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white p-8 md:p-12 rounded-[40px] shadow-sm max-w-4xl border border-blue-50"
+            className="bg-surface p-8 md:p-12 rounded-[40px] shadow-sm max-w-4xl border border-border"
           >
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-border">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setActiveQuiz(null)}
-                  className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                  className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-text-muted hover:bg-gray-100 transition-colors"
                 >
                   &larr;
                 </button>
-                <h2 className="text-2xl font-bold text-gray-800">{activeQuiz.title}</h2>
+                <h2 className="text-2xl font-bold text-text">{activeQuiz.title}</h2>
               </div>
               <div className="bg-blue-50 text-blue-700 font-bold px-4 py-1.5 rounded-full text-sm">
                 Question {currentQuestionIdx + 1} of {activeQuiz.questions.length}
@@ -194,7 +194,7 @@ export function Quizzes() {
                     className={`p-6 rounded-2xl border-2 text-left font-bold text-lg transition-all duration-200 ${
                       selectedAnswer === optIdx 
                         ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md transform scale-[1.02]' 
-                        : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-[#F4F9FD]'
+                        : 'border-border text-text hover:border-blue-300 hover:bg-[#F4F9FD]'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -210,14 +210,14 @@ export function Quizzes() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-6 border-t border-gray-100">
+            <div className="flex justify-end pt-6 border-t border-border">
               <button
                 disabled={selectedAnswer === null}
                 onClick={handleNext}
                 className={`px-10 py-4 rounded-full font-bold text-lg transition-all ${
                   selectedAnswer !== null 
                     ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-100 text-text-muted cursor-not-allowed'
                 }`}
               >
                 {currentQuestionIdx === activeQuiz.questions.length - 1 ? 'Submit Answers' : 'Next Question'} &rarr;

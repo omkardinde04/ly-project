@@ -36,7 +36,7 @@ export function AudioControl({ text = '', showControls = true, overrideLanguage,
   };
 
   return (
-    <div className="flex items-center gap-2 lg:gap-3 bg-white/60 backdrop-blur-md rounded-full px-3 py-1.5 shadow-sm border border-gray-100/50 transition-all hover:bg-white/80 hover:shadow">
+    <div className="flex items-center gap-2 lg:gap-3 bg-surface/ backdrop-blur-md rounded-full px-3 py-1.5 shadow-sm border border-border/50 transition-all hover:bg-surface/ hover:shadow">
       {/* Play/Pause Button */}
       <button
         onClick={handlePlay}
@@ -70,15 +70,15 @@ export function AudioControl({ text = '', showControls = true, overrideLanguage,
 
       {/* Sleek Segmented Speed Controls */}
       {showControls && (
-        <div className="flex items-center bg-gray-100/50 rounded-full p-0.5 border border-gray-100">
+        <div className="flex items-center bg-gray-100/50 rounded-full p-0.5 border border-border">
           {[0.5, 1.0, 1.5].map(speedVal => (
             <button
               key={speedVal}
               onClick={() => handleSpeedChange(speedVal)}
               className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
                 audioSpeed === speedVal
-                  ? 'bg-white text-blue-600 shadow-sm shadow-blue-900/5'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                  ? 'bg-surface text-blue-600 shadow-sm shadow-blue-900/5'
+                  : 'text-text-muted hover:text-text hover:bg-gray-200/50'
               }`}
             >
               {speedVal}x
@@ -87,18 +87,22 @@ export function AudioControl({ text = '', showControls = true, overrideLanguage,
         </div>
       )}
 
-      {/* Vertical Divider */}
-      <div className="h-4 w-px bg-gray-200/80 mx-1"></div>
+      {showControls && (
+        <>
+          {/* Vertical Divider */}
+          <div className="h-4 w-px bg-gray-200/80 mx-1"></div>
 
-      {/* Compact Language Indicator */}
-      <div className="flex items-center gap-1.5 px-2">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-        </svg>
-        <span className="text-[11px] font-black text-gray-500 uppercase tracking-widest">
-          {language === 'en' ? 'EN' : language === 'hi' ? 'HI' : 'MR'}
-        </span>
-      </div>
+          {/* Compact Language Indicator */}
+          <div className="flex items-center gap-1.5 px-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            </svg>
+            <span className="text-[11px] font-black text-text-muted uppercase tracking-widest">
+              {language === 'en' ? 'EN' : language === 'hi' ? 'HI' : 'MR'}
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }

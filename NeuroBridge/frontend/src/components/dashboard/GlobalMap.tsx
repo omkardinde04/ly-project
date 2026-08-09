@@ -20,19 +20,19 @@ export function GlobalMap() {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-black text-gray-800 mb-2">Global Dyslexia Insights</h1>
-        <p className="text-gray-600 font-medium">See how learners worldwide are succeeding with NeuroBridge</p>
+        <h1 className="text-3xl font-black text-text mb-2">Global Dyslexia Insights</h1>
+        <p className="text-text-muted font-medium">See how learners worldwide are succeeding with NeuroBridge</p>
       </div>
 
       {/* World Map Visualization */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-xl p-6 border-2 border-blue-100"
+        className="bg-surface rounded-2xl shadow-xl p-6 border-2 border-blue-100"
       >
         <div className="flex items-center gap-3 mb-6">
           <span className="text-2xl">🌍</span>
-          <h3 className="text-xl font-bold text-gray-800">Worldwide User Distribution</h3>
+          <h3 className="text-xl font-bold text-text">Worldwide User Distribution</h3>
         </div>
 
         {/* Simplified Map Representation */}
@@ -55,9 +55,9 @@ export function GlobalMap() {
                       'bg-green-500'
                     } group-hover:scale-150 transition-transform`}
                   />
-                  <div className="opacity-0 group-hover:opacity-100 absolute -mt-16 bg-white shadow-lg rounded-lg px-4 py-2 text-xs z-10 whitespace-nowrap">
+                  <div className="opacity-0 group-hover:opacity-100 absolute -mt-16 bg-surface shadow-lg rounded-lg px-4 py-2 text-xs z-10 whitespace-nowrap">
                     <div className="font-bold">{data.region}</div>
-                    <div className="text-gray-600">{data.users.toLocaleString()} users</div>
+                    <div className="text-text-muted">{data.users.toLocaleString()} users</div>
                   </div>
                 </motion.div>
               ))}
@@ -69,15 +69,15 @@ export function GlobalMap() {
         <div className="flex items-center justify-center gap-6 mt-6">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-red-500" />
-            <span className="text-sm font-semibold text-gray-700">1000+ users</span>
+            <span className="text-sm font-semibold text-text">1000+ users</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-orange-500" />
-            <span className="text-sm font-semibold text-gray-700">500-999 users</span>
+            <span className="text-sm font-semibold text-text">500-999 users</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-green-500" />
-            <span className="text-sm font-semibold text-gray-700">&lt;500 users</span>
+            <span className="text-sm font-semibold text-text">&lt;500 users</span>
           </div>
         </div>
       </motion.div>
@@ -90,11 +90,11 @@ export function GlobalMap() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + index * 0.1 }}
-            className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-50 hover:border-blue-300 transition-all cursor-pointer"
+            className="bg-surface rounded-2xl shadow-lg p-6 border-2 border-border hover:border-blue-300 transition-all cursor-pointer"
           >
             {/* Region Header */}
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-bold text-gray-800">{data.region}</h4>
+              <h4 className="text-lg font-bold text-text">{data.region}</h4>
               <span className="text-2xl">
                 {data.region === 'North America' ? '🇺🇸' :
                  data.region === 'Europe' ? '🇪🇺' :
@@ -107,12 +107,12 @@ export function GlobalMap() {
             {/* Stats */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-600">Users</span>
+                <span className="text-sm font-semibold text-text-muted">Users</span>
                 <span className="font-bold text-blue-600">{data.users.toLocaleString()}</span>
               </div>
               
               <div>
-                <div className="text-sm font-semibold text-gray-600 mb-2">Common Challenges:</div>
+                <div className="text-sm font-semibold text-text-muted mb-2">Common Challenges:</div>
                 <div className="flex flex-wrap gap-2">
                   {data.challenges.map((challenge) => (
                     <span key={challenge} className="px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-semibold">
@@ -123,7 +123,7 @@ export function GlobalMap() {
               </div>
 
               <div>
-                <div className="text-sm font-semibold text-gray-600 mb-2">Popular Careers:</div>
+                <div className="text-sm font-semibold text-text-muted mb-2">Popular Careers:</div>
                 <div className="flex flex-wrap gap-2">
                   {data.popular.map((career) => (
                     <span key={career} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold">
@@ -145,18 +145,18 @@ export function GlobalMap() {
       >
         <div className="flex items-center gap-3 mb-6">
           <span className="text-2xl">📊</span>
-          <h3 className="text-xl font-bold text-gray-800">Global Trends & Insights</h3>
+          <h3 className="text-xl font-bold text-text">Global Trends & Insights</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl p-5">
-            <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <div className="bg-surface rounded-xl p-5">
+            <h4 className="font-bold text-text mb-3 flex items-center gap-2">
               <span className="text-xl">🎯</span>
               Most Common Challenges Worldwide
             </h4>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-gray-700">Reading Speed</span>
+                <span className="text-text">Reading Speed</span>
                 <span className="font-bold text-blue-600">42%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -164,7 +164,7 @@ export function GlobalMap() {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-gray-700">Focus & Concentration</span>
+                <span className="text-text">Focus & Concentration</span>
                 <span className="font-bold text-green-600">38%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -172,7 +172,7 @@ export function GlobalMap() {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-gray-700">Comprehension</span>
+                <span className="text-text">Comprehension</span>
                 <span className="font-bold text-purple-600">35%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -181,8 +181,8 @@ export function GlobalMap() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-5">
-            <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <div className="bg-surface rounded-xl p-5">
+            <h4 className="font-bold text-text mb-3 flex items-center gap-2">
               <span className="text-xl">💼</span>
               Top Career Paths
             </h4>
@@ -195,7 +195,7 @@ export function GlobalMap() {
               ].map((item) => (
                 <div key={item.career}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-gray-700 text-sm">{item.career}</span>
+                    <span className="text-text text-sm">{item.career}</span>
                     <span className="font-bold text-orange-600">{item.percent}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -217,19 +217,19 @@ export function GlobalMap() {
         <div className="flex items-start gap-3">
           <span className="text-2xl">🌟</span>
           <div>
-            <h3 className="font-bold text-gray-800 mb-3">Success Stories from Around the World</h3>
+            <h3 className="font-bold text-text mb-3">Success Stories from Around the World</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-xl p-4">
-                <div className="font-bold text-gray-800 mb-1">Sarah, USA</div>
-                <div className="text-sm text-gray-600">Overcame reading challenges → Now a Software Engineer at Google</div>
+              <div className="bg-surface rounded-xl p-4">
+                <div className="font-bold text-text mb-1">Sarah, USA</div>
+                <div className="text-sm text-text-muted">Overcame reading challenges → Now a Software Engineer at Google</div>
               </div>
-              <div className="bg-white rounded-xl p-4">
-                <div className="font-bold text-gray-800 mb-1">Raj, India</div>
-                <div className="text-sm text-gray-600">Used audio learning → Founded successful startup</div>
+              <div className="bg-surface rounded-xl p-4">
+                <div className="font-bold text-text mb-1">Raj, India</div>
+                <div className="text-sm text-text-muted">Used audio learning → Founded successful startup</div>
               </div>
-              <div className="bg-white rounded-xl p-4">
-                <div className="font-bold text-gray-800 mb-1">Emma, UK</div>
-                <div className="text-sm text-gray-600">Visual learner → Award-winning graphic designer</div>
+              <div className="bg-surface rounded-xl p-4">
+                <div className="font-bold text-text mb-1">Emma, UK</div>
+                <div className="text-sm text-text-muted">Visual learner → Award-winning graphic designer</div>
               </div>
             </div>
           </div>

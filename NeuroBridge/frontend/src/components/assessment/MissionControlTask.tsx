@@ -207,15 +207,7 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
         background: '#F5F9FF',
         borderRadius: '20px',
         padding: '32px 28px',
-        boxShadow: '0 8px 32px rgba(77,166,255,0.10)',
-        fontFamily: "'Inter', 'Segoe UI', sans-serif",
-        minHeight: '480px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '24px',
-      }}
+        boxShadow: '0 8px 32px rgba(77,166,255,0.10)'}}
     >
       {/* Header */}
       <div style={{ textAlign: 'center' }}>

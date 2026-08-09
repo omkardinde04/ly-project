@@ -221,11 +221,11 @@ export function LinkedInConnect() {
                 ⚠️ {error}
               </div>
             )}
-            <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-100 overflow-hidden">
+            <div className="bg-surface rounded-3xl shadow-xl border-2 border-border overflow-hidden">
               {/* Hero */}
               <div className="bg-gradient-to-r from-[#0077B5] to-[#00a0dc] p-8 text-white text-center">
                 <div className="flex justify-center mb-4">
-                  <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm">
+                  <div className="w-20 h-20 bg-surface/ rounded-3xl flex items-center justify-center backdrop-blur-sm">
                     <svg viewBox="0 0 24 24" className="w-11 h-11 fill-white">
                       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                     </svg>
@@ -248,8 +248,8 @@ export function LinkedInConnect() {
                   ].map((f, i) => (
                     <div key={i} className="bg-blue-50 rounded-2xl p-4 text-center border border-blue-100">
                       <div className="text-2xl mb-2">{f.icon}</div>
-                      <div className="text-sm font-bold text-gray-800">{f.title}</div>
-                      <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{f.desc}</div>
+                      <div className="text-sm font-bold text-text">{f.title}</div>
+                      <div className="text-xs text-text-muted mt-0.5 leading-relaxed">{f.desc}</div>
                     </div>
                   ))}
                 </div>
@@ -281,9 +281,9 @@ export function LinkedInConnect() {
                   )}
                 </button>
 
-                <p className="text-center text-xs text-gray-400 mt-3 font-medium">
+                <p className="text-center text-xs text-text-muted mt-3 font-medium">
                   Connecting is optional — you can also{' '}
-                  <button onClick={() => setPhase('skill_confirm')} className="underline hover:text-gray-600">
+                  <button onClick={() => setPhase('skill_confirm')} className="underline hover:text-text-muted">
                     enter skills manually
                   </button>
                 </p>
@@ -295,17 +295,17 @@ export function LinkedInConnect() {
         {/* ── Phase: Token expired ─────────────────────────────────────────── */}
         {phase === 'token_expired' && (
           <motion.div key="expired" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="bg-white rounded-3xl shadow-xl border-2 border-orange-200 p-8 text-center">
+            <div className="bg-surface rounded-3xl shadow-xl border-2 border-orange-200 p-8 text-center">
               <div className="text-5xl mb-4">🔁</div>
-              <h2 className="text-xl font-black text-gray-800 mb-2">Reconnect LinkedIn</h2>
-              <p className="text-gray-500 text-sm font-medium mb-6 max-w-sm mx-auto">
+              <h2 className="text-xl font-black text-text mb-2">Reconnect LinkedIn</h2>
+              <p className="text-text-muted text-sm font-medium mb-6 max-w-sm mx-auto">
                 Your LinkedIn session expired. Reconnect to refresh your personalised recommendations.
               </p>
               <button onClick={handleConnect} disabled={isConnecting}
                 className="px-8 py-3 bg-[#0077B5] hover:bg-[#005fa3] text-white font-bold rounded-2xl transition-all shadow-md disabled:opacity-50">
                 {isConnecting ? 'Reconnecting…' : '🔗 Reconnect LinkedIn'}
               </button>
-              <button onClick={handleDisconnect} className="block mx-auto mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+              <button onClick={handleDisconnect} className="block mx-auto mt-3 text-xs text-text-muted hover:text-text-muted transition-colors">
                 Clear & start over
               </button>
             </div>
@@ -318,7 +318,7 @@ export function LinkedInConnect() {
             <div className="space-y-5">
               {/* Profile mini-card (if connected) */}
               {profile && (
-                <div className="bg-white rounded-3xl shadow-md border-2 border-[#0077B5]/20 p-5 flex items-center gap-4">
+                <div className="bg-surface rounded-3xl shadow-md border-2 border-[#0077B5]/20 p-5 flex items-center gap-4">
                   {profile.profile_photo ? (
                     <img src={profile.profile_photo} alt={profile.name}
                       className="w-14 h-14 rounded-full object-cover border-2 border-[#0077B5]" />
@@ -329,12 +329,12 @@ export function LinkedInConnect() {
                   )}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="font-black text-gray-800">{profile.name ?? 'LinkedIn User'}</h3>
+                      <h3 className="font-black text-text">{profile.name ?? 'LinkedIn User'}</h3>
                       <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">✓ Connected</span>
                     </div>
-                    {profile.email && <p className="text-sm text-gray-500">{profile.email}</p>}
+                    {profile.email && <p className="text-sm text-text-muted">{profile.email}</p>}
                   </div>
-                  <button onClick={handleDisconnect} className="text-xs text-gray-400 hover:text-red-500 transition-colors font-medium">
+                  <button onClick={handleDisconnect} className="text-xs text-text-muted hover:text-red-500 transition-colors font-medium">
                     Disconnect
                   </button>
                 </div>
@@ -358,9 +358,9 @@ export function LinkedInConnect() {
               )}
 
               {/* Skills selection */}
-              <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6">
-                <h2 className="text-lg font-black text-gray-800 mb-1">Confirm Your Skills</h2>
-                <p className="text-sm text-gray-500 font-medium mb-5 leading-relaxed">
+              <div className="bg-surface rounded-3xl shadow-lg border border-border p-6">
+                <h2 className="text-lg font-black text-text mb-1">Confirm Your Skills</h2>
+                <p className="text-sm text-text-muted font-medium mb-5 leading-relaxed">
                   We auto-suggested some skills from your profile and assessment.
                   Select what fits you best, then add your own.
                 </p>
@@ -373,7 +373,7 @@ export function LinkedInConnect() {
                       className={`px-3 py-1.5 rounded-full text-sm font-bold border-2 transition-all ${
                         selectedSkills.includes(skill)
                           ? 'bg-[#0077B5] border-[#0077B5] text-white'
-                          : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-blue-300'
+                          : 'bg-gray-50 border-border text-text-muted hover:border-blue-300'
                       }`}
                     >
                       {selectedSkills.includes(skill) ? '✓ ' : ''}{skill}
@@ -389,7 +389,7 @@ export function LinkedInConnect() {
                     onChange={e => setCustomSkill(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && addCustomSkill()}
                     placeholder="Add your own skill…"
-                    className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:outline-none text-sm font-medium"
+                    className="flex-1 px-4 py-2.5 border-2 border-border rounded-xl focus:border-blue-400 focus:outline-none text-sm font-medium"
                   />
                   <button onClick={addCustomSkill}
                     className="px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold rounded-xl text-sm transition-all">
@@ -398,16 +398,16 @@ export function LinkedInConnect() {
                 </div>
 
                 {selectedSkills.length > 0 && (
-                  <p className="text-xs text-gray-400 font-medium">
+                  <p className="text-xs text-text-muted font-medium">
                     {selectedSkills.length} skill{selectedSkills.length !== 1 ? 's' : ''} selected
                   </p>
                 )}
               </div>
 
               {/* Interests */}
-              <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6">
-                <h2 className="text-lg font-black text-gray-800 mb-1">Your Interests</h2>
-                <p className="text-sm text-gray-500 font-medium mb-4">
+              <div className="bg-surface rounded-3xl shadow-lg border border-border p-6">
+                <h2 className="text-lg font-black text-text mb-1">Your Interests</h2>
+                <p className="text-sm text-text-muted font-medium mb-4">
                   Pick the areas you're most drawn to.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -418,7 +418,7 @@ export function LinkedInConnect() {
                       className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all text-center ${
                         selectedInterests.includes(label)
                           ? 'bg-purple-100 border-purple-400 text-purple-800'
-                          : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-purple-200'
+                          : 'bg-gray-50 border-border text-text-muted hover:border-purple-200'
                       }`}
                     >
                       <span className="text-xl">{icon}</span>
@@ -445,7 +445,7 @@ export function LinkedInConnect() {
         {/* ── Phase: Loading ───────────────────────────────────────────────── */}
         {phase === 'loading' && (
           <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 text-center">
+            <div className="bg-surface rounded-3xl shadow-xl border border-border p-12 text-center">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
@@ -453,8 +453,8 @@ export function LinkedInConnect() {
               >
                 <span className="text-3xl">🧠</span>
               </motion.div>
-              <h2 className="text-2xl font-black text-gray-800 mb-3">Building Your Plan…</h2>
-              <p className="text-gray-500 font-medium max-w-xs mx-auto leading-relaxed">
+              <h2 className="text-2xl font-black text-text mb-3">Building Your Plan…</h2>
+              <p className="text-text-muted font-medium max-w-xs mx-auto leading-relaxed">
                 Our AI is analysing your cognitive profile and skills to create your personalised roadmap.
               </p>
               <div className="mt-6 flex justify-center gap-1.5">

@@ -46,7 +46,7 @@ interface AIAssistedJobCardProps {
 function Section({ title, color, children }: { title: string; color: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-lg font-black text-gray-900 mb-3 pb-1 border-b-2" style={{ borderColor: color }}>
+      <h3 className="text-lg font-black text-text mb-3 pb-1 border-b-2" style={{ borderColor: color }}>
         {title}
       </h3>
       <div className="space-y-2">{children}</div>
@@ -58,14 +58,14 @@ function BulletItem({ text, icon = '•' }: { text: string; icon?: string }) {
   return (
     <div className="flex items-start gap-3 bg-gray-50 rounded-xl p-3">
       <span className="text-lg flex-shrink-0 mt-0.5">{icon}</span>
-      <span className="text-gray-800 font-medium leading-relaxed">{text}</span>
+      <span className="text-text font-medium leading-relaxed">{text}</span>
     </div>
   );
 }
 
 function Pill({ children, colorKey = 'gray' }: { children: React.ReactNode; colorKey?: string }) {
   const styles: Record<string, string> = {
-    gray: 'bg-gray-100 text-gray-600',
+    gray: 'bg-gray-100 text-text-muted',
     orange: 'bg-orange-50 text-orange-600 border border-orange-100',
     green: 'bg-green-50 text-green-600 border border-green-100',
   };
@@ -155,21 +155,21 @@ function JobModal({
         initial={{ scale: 0.92, y: 40 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.92, y: 40 }}
-        className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-surface rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {/* ── Modal Header ── */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-8 pt-6 pb-4 rounded-t-3xl z-10">
+        <div className="sticky top-0 bg-surface border-b border-border px-8 pt-6 pb-4 rounded-t-3xl z-10">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-3xl">{s?.badge || job.logo || '🚀'}</span>
-                <h2 className="text-2xl font-black text-gray-900">{s?.title || job.title}</h2>
+                <h2 className="text-2xl font-black text-text">{s?.title || job.title}</h2>
               </div>
               <p className="text-lg font-semibold mt-1" style={{ color }}>
                 {s?.company || job.company || job.organization}
                 {(s?.location || job.location) && (
-                  <span className="text-gray-500 font-normal ml-3 text-base">
+                  <span className="text-text-muted font-normal ml-3 text-base">
                     📍 {s?.location || job.location}
                   </span>
                 )}
@@ -177,7 +177,7 @@ function JobModal({
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-lg font-bold flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-text-muted text-lg font-bold flex-shrink-0"
             >
               ✕
             </button>
@@ -221,7 +221,7 @@ function JobModal({
                   <>✨ Simplify with AI — Make it easy to read</>
                 )}
               </button>
-              <p className="text-gray-400 text-sm mt-2">Tap to get short, clear bullet points</p>
+              <p className="text-text-muted text-sm mt-2">Tap to get short, clear bullet points</p>
             </div>
           )}
 
@@ -253,7 +253,7 @@ function JobModal({
 
                 <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-5">
                   <p className="text-sm font-black text-yellow-700 mb-2">🎯 Why it's good for you</p>
-                  <p className="text-gray-800 font-medium leading-relaxed">{s.whyItsGood}</p>
+                  <p className="text-text font-medium leading-relaxed">{s.whyItsGood}</p>
                 </div>
 
                 {/* Re-simplify option */}
@@ -268,11 +268,11 @@ function JobModal({
             ) : !isSimplifying ? (
               <motion.div key="raw" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                 <Section title="📄 Description" color={color}>
-                  <p className="text-gray-700 leading-relaxed">{job.description}</p>
+                  <p className="text-text leading-relaxed">{job.description}</p>
                 </Section>
                 {job.eligibility && (
                   <Section title="📋 Who can apply" color={color}>
-                    <p className="text-gray-700 leading-relaxed">{job.eligibility}</p>
+                    <p className="text-text leading-relaxed">{job.eligibility}</p>
                   </Section>
                 )}
               </motion.div>
@@ -283,7 +283,7 @@ function JobModal({
           {job.skills && job.skills.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {job.skills.map((sk, i) => (
-                <span key={i} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg font-semibold text-sm">
+                <span key={i} className="px-3 py-1 bg-gray-100 text-text rounded-lg font-semibold text-sm">
                   {sk}
                 </span>
               ))}
@@ -292,7 +292,7 @@ function JobModal({
         </div>
 
         {/* ── Sticky Apply Footer ── */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-8 pb-6 pt-4 rounded-b-3xl">
+        <div className="sticky bottom-0 bg-surface border-t border-border px-8 pb-6 pt-4 rounded-b-3xl">
           <button
             onClick={handleApply}
             disabled={isApplying || hasApplied}
@@ -316,7 +316,7 @@ function JobModal({
               <>🚀 Apply Now — Stay on NeuroBridge</>
             )}
           </button>
-          <p className="text-center text-gray-400 text-sm mt-2">
+          <p className="text-center text-text-muted text-sm mt-2">
             You will not leave this page. We handle everything here 😊
           </p>
         </div>
@@ -369,7 +369,7 @@ export function AIAssistedJobCard({ job, dyslexiaModeEnabled, platform }: AIAssi
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.10)' }}
-        className="bg-white rounded-2xl shadow-md border-2 overflow-hidden transition-all"
+        className="bg-surface rounded-2xl shadow-md border-2 overflow-hidden transition-all"
         style={{ borderColor: `${color}33` }}
       >
         {/* Top accent */}
@@ -390,7 +390,7 @@ export function AIAssistedJobCard({ job, dyslexiaModeEnabled, platform }: AIAssi
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className={`font-black text-gray-900 mb-1 ${dyslexiaModeEnabled ? 'text-2xl' : 'text-xl'}`}>
+            <h3 className={`font-black text-text mb-1 ${dyslexiaModeEnabled ? 'text-2xl' : 'text-xl'}`}>
               {s?.title || job.title}
             </h3>
             <p className="font-bold mb-2" style={{ color }}>
@@ -408,11 +408,11 @@ export function AIAssistedJobCard({ job, dyslexiaModeEnabled, platform }: AIAssi
 
             {/* Preview bullet if simplified */}
             {s?.whatYouWillDo?.[0] ? (
-              <p className={`text-gray-600 line-clamp-2 ${dyslexiaModeEnabled ? 'text-base' : 'text-sm'}`}>
+              <p className={`text-text-muted line-clamp-2 ${dyslexiaModeEnabled ? 'text-base' : 'text-sm'}`}>
                 ✨ {s.whatYouWillDo[0].replace(/^[•\-]\s*/, '')}
               </p>
             ) : (
-              <p className={`text-gray-500 line-clamp-2 ${dyslexiaModeEnabled ? 'text-base' : 'text-sm'}`}>
+              <p className={`text-text-muted line-clamp-2 ${dyslexiaModeEnabled ? 'text-base' : 'text-sm'}`}>
                 {job.description?.substring(0, 120)}…
               </p>
             )}
@@ -454,7 +454,7 @@ export function AIAssistedJobCard({ job, dyslexiaModeEnabled, platform }: AIAssi
             )}
           </button>
 
-          <p className="text-xs text-gray-400 font-medium">
+          <p className="text-xs text-text-muted font-medium">
             👆 Tap card to see full details
           </p>
         </div>

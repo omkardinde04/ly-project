@@ -121,18 +121,18 @@ export function Brain() {
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] max-w-5xl mx-auto space-y-4">
       {/* Header & Status */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-blue-100 shadow-sm">
+      <div className="flex items-center justify-between bg-surface p-4 rounded-2xl border border-blue-100 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-2xl">🧠</div>
           <div>
-            <h2 className="font-black text-gray-800">Research Brain</h2>
+            <h2 className="font-black text-text">Research Brain</h2>
             <div className="flex items-center gap-2 text-xs font-bold">
               <span className={`w-2 h-2 rounded-full ${status?.status === 'online' ? 'bg-green-500' : 'bg-red-500'}`} />
               <span className={status?.status === 'online' ? 'text-green-600' : 'text-red-600'}>
                 {status?.status === 'online' ? 'Service Online' : 'Service Offline'}
               </span>
               {status?.documents_indexed !== undefined && (
-                <span className="text-gray-400 ml-2">
+                <span className="text-text-muted ml-2">
                   • {status.documents_indexed} Documents • {status.total_chunks} Chunks
                 </span>
               )}
@@ -148,7 +148,7 @@ export function Brain() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+      <div className="flex-1 bg-surface rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
@@ -161,7 +161,7 @@ export function Brain() {
                 <div className={`max-w-[80%] rounded-2xl p-4 ${
                   msg.role === 'user' 
                     ? 'bg-indigo-600 text-white rounded-br-none' 
-                    : 'bg-gray-50 border border-gray-100 text-gray-800 rounded-bl-none'
+                    : 'bg-gray-50 border border-border text-text rounded-bl-none'
                 }`}>
                   <div className="text-sm font-medium leading-relaxed whitespace-pre-wrap">
                     {msg.text}
@@ -174,11 +174,11 @@ export function Brain() {
                   )}
 
                   {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">Sources Grounding</div>
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <div className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-2">Sources Grounding</div>
                       <div className="space-y-2">
                         {msg.sources.map((src, i) => (
-                          <div key={i} className="text-[11px] bg-white p-2 rounded-lg border border-gray-100 text-gray-500 italic line-clamp-2">
+                          <div key={i} className="text-[11px] bg-surface p-2 rounded-lg border border-border text-text-muted italic line-clamp-2">
                             "{src}"
                           </div>
                         ))}
@@ -186,7 +186,7 @@ export function Brain() {
                     </div>
                   )}
                   
-                  <div className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-indigo-200' : 'text-gray-400'}`}>
+                  <div className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-indigo-200' : 'text-text-muted'}`}>
                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export function Brain() {
           </AnimatePresence>
           {isTyping && (
             <div className="flex justify-start">
-              <div className="bg-gray-50 border border-gray-100 px-4 py-2 rounded-2xl flex gap-1">
+              <div className="bg-gray-50 border border-border px-4 py-2 rounded-2xl flex gap-1">
                 {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: `${i*0.2}s` }} />)}
               </div>
             </div>
@@ -204,8 +204,8 @@ export function Brain() {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-          <div className="flex gap-2 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
+        <div className="p-4 border-t border-border bg-gray-50/50">
+          <div className="flex gap-2 bg-surface p-2 rounded-2xl border border-border shadow-sm">
             <input
               type="text"
               value={input}

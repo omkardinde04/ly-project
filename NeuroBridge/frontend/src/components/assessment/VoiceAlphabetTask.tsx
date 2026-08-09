@@ -162,9 +162,9 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
   }, []);
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-white rounded-3xl p-10 border border-blue-50 shadow-sm font-sans flex flex-col items-center justify-center min-h-[460px]">
+    <div className="w-full max-w-lg mx-auto bg-surface rounded-3xl p-10 border border-border shadow-sm font-sans flex flex-col items-center justify-center min-h-[460px]">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">Say the letters</h2>
+        <h2 className="text-xl font-bold text-text mb-2">Say the letters</h2>
         <div className="h-1 w-12 bg-blue-400 rounded-full mx-auto opacity-50" />
       </div>
 
@@ -178,7 +178,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
           >
             <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-3xl mb-2">🚀</div>
             <p className="text-xl font-bold text-[#1A2340]">Great progress!</p>
-            <p className="text-gray-500 italic">Moving to next puzzle...</p>
+            <p className="text-text-muted italic">Moving to next puzzle...</p>
           </motion.div>
         ) : (
           <motion.div
@@ -188,7 +188,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
             exit={{ opacity: 0, y: -10 }}
             className="w-full flex flex-col items-center text-center"
           >
-            <p className="text-gray-500 text-lg mb-4">{SCENARIOS[currentIdx].instruction}</p>
+            <p className="text-text-muted text-lg mb-4">{SCENARIOS[currentIdx].instruction}</p>
             <div className="text-4xl font-bold text-[#1A2340] mb-12 tracking-wider h-12">
               {SCENARIOS[currentIdx].display}
             </div>
@@ -204,7 +204,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
                   >
                     <span className="text-3xl text-blue-400 group-hover:scale-110 transition-transform">🎤</span>
                   </motion.button>
-                  <p className="text-sm font-medium text-gray-400">Tap the mic and start speaking</p>
+                  <p className="text-sm font-medium text-text-muted">Tap the mic and start speaking</p>
                 </div>
               )}
 
@@ -221,7 +221,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
                     </div>
                   </div>
                   <p className="text-sm font-bold text-blue-400 animate-pulse uppercase tracking-wider">Listening...</p>
-                  <div className="italic text-gray-400 font-medium h-4 max-w-xs truncate overflow-hidden">
+                  <div className="italic text-text-muted font-medium h-4 max-w-xs truncate overflow-hidden">
                     {transcript || "Wait, we're listening..."}
                   </div>
                   <button onClick={stopAndReview} className="text-xs text-blue-500 font-bold hover:underline">Stop manually</button>
@@ -235,7 +235,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
                   className="flex flex-col items-center gap-6 w-full"
                 >
                   <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm font-medium text-gray-500">This is what we heard:</p>
+                    <p className="text-sm font-medium text-text-muted">This is what we heard:</p>
                     <div className="px-6 py-3 bg-blue-50 rounded-2xl border border-blue-100 text-[#1A2340] font-bold text-xl min-w-[120px]">
                       {transcript || "..."}
                     </div>
@@ -243,7 +243,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
                   </div>
                   
                   <div className="flex gap-4">
-                    <button onClick={() => setPhase('ready')} className="text-sm text-gray-500 underline">Retry</button>
+                    <button onClick={() => setPhase('ready')} className="text-sm text-text-muted underline">Retry</button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -271,7 +271,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
         </div>
         <button 
           onClick={() => onComplete(allMetrics)}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-xs text-text-muted hover:text-text-muted transition-colors"
         >
           Can't use microphone? Skip task
         </button>

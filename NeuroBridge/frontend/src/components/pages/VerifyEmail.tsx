@@ -45,7 +45,7 @@ export function VerifyEmail() {
 
   return (
     <div className="fixed inset-0 bg-[#DBEAF5] -z-10 flex justify-center items-center py-4 px-4 sm:px-0">
-      <div className="bg-white rounded-[40px] p-8 sm:p-10 w-full max-w-[480px] shadow-sm">
+      <div className="bg-surface rounded-[40px] p-8 sm:p-10 w-full max-w-[480px] shadow-sm">
         <div className="mb-6 text-center">
           <h1 className="text-[26px] font-black text-[#1A202C] mb-2">Email Verification</h1>
           <p className="text-[#5b6b79] text-[15px] font-medium leading-relaxed">
@@ -100,7 +100,7 @@ export function VerifyEmail() {
         {status === 'success' && (
           <button
             onClick={() => navigate('/login')}
-            className="w-full py-3.5 bg-[#1D64D8] hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
+            className="w-full py-3.5 bg-primary hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
           >
             Go to Login →
           </button>
@@ -110,13 +110,13 @@ export function VerifyEmail() {
           <div className="space-y-3">
             <button
               onClick={() => navigate('/login')}
-              className="w-full py-3.5 bg-[#1D64D8] hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
+              className="w-full py-3.5 bg-primary hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
             >
               Back to Login →
             </button>
             <button
               onClick={() => navigate('/login', { state: { createAccount: true } })}
-              className="w-full py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
+              className="w-full py-3.5 bg-gray-200 hover:bg-gray-300 text-text font-bold rounded-2xl shadow-sm transition-colors text-[16px]"
             >
               Try Again with Different Email
             </button>

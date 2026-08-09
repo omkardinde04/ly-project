@@ -47,7 +47,7 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Cognitive Tasks</h2>
+          <h2 className="text-2xl font-bold text-text">Cognitive Tasks</h2>
           <span className="text-sm font-semibold text-blue-600">
             Task {currentTask + 1} of {tasks.length}
           </span>
@@ -62,7 +62,7 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
                   ? 'bg-blue-500 text-white scale-110 shadow-lg'
                   : index < currentTask
                   ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-400'
+                  : 'bg-gray-100 text-text-muted'
               }`}
             >
               <span className="text-2xl mb-1">{task.icon}</span>
@@ -84,7 +84,7 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
       {isLoading && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600 text-lg font-medium">Loading next task…</p>
+          <p className="mt-4 text-text-muted text-lg font-medium">Loading next task…</p>
         </div>
       )}
 
@@ -174,12 +174,12 @@ function PhonologicalTask({ onComplete }: { onComplete: (score: number) => void 
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-blue-50">
+    <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-border">
       {/* Centered header */}
       <div className="flex flex-col items-center mb-6">
         <div className="text-5xl mb-3">🔊</div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-2">Sound Blending</h3>
-        <p className="text-gray-500 text-base font-medium">Listen to the sounds and choose the correct word.</p>
+        <h3 className="text-2xl font-bold text-text mb-2">Sound Blending</h3>
+        <p className="text-text-muted text-base font-medium">Listen to the sounds and choose the correct word.</p>
       </div>
 
       {/* Centered Play button */}
@@ -196,11 +196,11 @@ function PhonologicalTask({ onComplete }: { onComplete: (score: number) => void 
 
       <div className="grid grid-cols-3 gap-4">
         {options.map((word, idx) => {
-          let style = 'bg-gray-100 hover:bg-blue-50 text-gray-800 border-2 border-gray-200 hover:border-blue-300';
+          let style = 'bg-gray-100 hover:bg-blue-50 text-text border-2 border-border hover:border-blue-300';
           if (attempted) {
             if (word === currentSet.word) style = 'bg-green-500 text-white border-2 border-green-500';
             else if (word === selectedAnswer) style = 'bg-red-400 text-white border-2 border-red-400';
-            else style = 'bg-gray-100 text-gray-400 border-2 border-gray-200';
+            else style = 'bg-gray-100 text-text-muted border-2 border-border';
           }
           return (
             <button key={idx} onClick={() => handleAnswer(word)} disabled={attempted}
@@ -211,7 +211,7 @@ function PhonologicalTask({ onComplete }: { onComplete: (score: number) => void 
         })}
       </div>
 
-      <div className="mt-6 text-sm text-gray-400 font-medium">
+      <div className="mt-6 text-sm text-text-muted font-medium">
         Question {currentIndex + 1} of {wordSets.length}
       </div>
     </div>
@@ -333,7 +333,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
   const timerColor = timeLeft > 10 ? 'bg-blue-500' : timeLeft > 5 ? 'bg-orange-400' : 'bg-red-500';
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-blue-50 relative min-h-[420px]">
+    <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-border relative min-h-[420px]">
       {/* Timer — Top Right */}
       {phase === 'answering' && (
         <div className={`absolute top-5 right-5 ${timerColor} text-white px-4 py-2 rounded-full font-black text-base shadow-md transition-colors duration-300`}>
@@ -344,8 +344,8 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
       {/* Centered header */}
       <div className="flex flex-col items-center mb-6">
         <div className="text-4xl mb-3">👁️</div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-1">Visual Attention</h3>
-        <p className="text-gray-500 text-sm font-medium">Find the word that exactly matches the target.</p>
+        <h3 className="text-2xl font-bold text-text mb-1">Visual Attention</h3>
+        <p className="text-text-muted text-sm font-medium">Find the word that exactly matches the target.</p>
       </div>
 
       {/* Phase: Answering */}
@@ -353,7 +353,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
         <>
           {/* Target Word */}
           <div className="mb-6">
-            <p className="text-xs uppercase tracking-widest text-gray-400 font-bold mb-3">Match this word</p>
+            <p className="text-xs uppercase tracking-widest text-text-muted font-bold mb-3">Match this word</p>
             <div className="inline-flex items-center justify-center px-10 py-5 rounded-3xl bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 shadow-inner">
               <span className="text-4xl font-black text-blue-700 tracking-widest">{q.target}</span>
             </div>
@@ -365,14 +365,14 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
               <button
                 key={idx}
                 onClick={() => handleAnswer(word)}
-                className="py-4 px-6 rounded-2xl bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-400 text-xl font-black text-gray-700 transition-all shadow-sm hover:scale-105"
+                className="py-4 px-6 rounded-2xl bg-gray-50 hover:bg-blue-50 border-2 border-border hover:border-blue-400 text-xl font-black text-text transition-all shadow-sm hover:scale-105"
               >
                 {word}
               </button>
             ))}
           </div>
 
-          <div className="text-xs text-gray-400 font-medium mb-2">
+          <div className="text-xs text-text-muted font-medium mb-2">
             Question {currentIdx + 1} of {TOTAL_QUESTIONS}
           </div>
 
@@ -380,17 +380,17 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
           {!showSkipConfirm ? (
             <button
               onClick={handleSkip}
-              className="absolute bottom-5 right-5 bg-gray-100 hover:bg-gray-200 text-gray-500 px-5 py-2 rounded-full font-semibold text-sm transition-all"
+              className="absolute bottom-5 right-5 bg-gray-100 hover:bg-gray-200 text-text-muted px-5 py-2 rounded-full font-semibold text-sm transition-all"
             >
               Skip →
             </button>
           ) : (
-            <div className="absolute bottom-4 right-4 bg-white border-2 border-orange-200 rounded-2xl shadow-lg px-5 py-4 flex flex-col items-center gap-3 min-w-[200px]">
-              <p className="text-gray-700 font-semibold text-sm text-center">Skip this question?</p>
+            <div className="absolute bottom-4 right-4 bg-surface border-2 border-orange-200 rounded-2xl shadow-lg px-5 py-4 flex flex-col items-center gap-3 min-w-[200px]">
+              <p className="text-text font-semibold text-sm text-center">Skip this question?</p>
               <div className="flex gap-2 w-full">
                 <button
                   onClick={cancelSkip}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-2 rounded-xl font-semibold text-sm transition-all"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-text-muted py-2 rounded-xl font-semibold text-sm transition-all"
                 >
                   No, stay
                 </button>
@@ -411,7 +411,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
         <div className="flex flex-col items-center justify-center py-8 gap-3">
           <div className="text-5xl">✅</div>
           <p className="text-green-600 font-black text-2xl">Correct!</p>
-          <p className="text-gray-400 text-sm font-medium">Loading next word…</p>
+          <p className="text-text-muted text-sm font-medium">Loading next word…</p>
         </div>
       )}
 
@@ -420,10 +420,10 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
         <div className="flex flex-col items-center justify-center py-8 gap-3">
           <div className="text-5xl">💙</div>
           <p className="text-purple-600 font-black text-2xl">No worries!</p>
-          <p className="text-gray-500 text-sm font-medium">
+          <p className="text-text-muted text-sm font-medium">
             The correct answer was: <span className="font-black text-blue-600">"{q.target}"</span>
           </p>
-          <p className="text-gray-400 text-xs mt-1">Loading next word…</p>
+          <p className="text-text-muted text-xs mt-1">Loading next word…</p>
         </div>
       )}
 
@@ -432,7 +432,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
         <div className="flex flex-col items-center justify-center py-8 gap-3">
           <div className="text-5xl">⏰</div>
           <p className="text-orange-500 font-black text-2xl">Time's Up!</p>
-          <p className="text-gray-500 text-sm font-medium">Moving to the next word…</p>
+          <p className="text-text-muted text-sm font-medium">Moving to the next word…</p>
         </div>
       )}
     </div>
@@ -524,12 +524,12 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
   const handleSubmit = () => submitAnswer(selected);
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-purple-50">
+    <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-purple-50">
       {/* Centered header */}
       <div className="flex flex-col items-center mb-4">
         <div className="text-4xl mb-3">🧠</div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-1">Memory Game</h3>
-        <p className="text-gray-500 text-sm font-medium">Round {round + 1} of {ROUND_COUNT}</p>
+        <h3 className="text-2xl font-bold text-text mb-1">Memory Game</h3>
+        <p className="text-text-muted text-sm font-medium">Round {round + 1} of {ROUND_COUNT}</p>
       </div>
 
       {/* Phase: Showing */}
@@ -558,8 +558,8 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
       {/* Phase: Hidden */}
       {phase === 'hidden' && (
         <div>
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl px-6 py-3 mb-5 inline-block">
-            <p className="text-gray-600 font-bold text-sm">🫙 Items hidden — get ready…</p>
+          <div className="bg-gray-50 border border-border rounded-2xl px-6 py-3 mb-5 inline-block">
+            <p className="text-text-muted font-bold text-sm">🫙 Items hidden — get ready…</p>
           </div>
           <div className="grid grid-cols-4 gap-4 max-w-xs mx-auto">
             {targetItems.map((_, i) => (
@@ -593,8 +593,8 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
                     isSelected
                       ? 'bg-blue-100 border-blue-500 scale-105 shadow-md'
                       : isFull
-                      ? 'bg-gray-50 border-gray-100 opacity-40 cursor-not-allowed'
-                      : 'bg-gray-100 border-gray-200 hover:border-blue-300'
+                      ? 'bg-gray-50 border-border opacity-40 cursor-not-allowed'
+                      : 'bg-gray-100 border-border hover:border-blue-300'
                   }`}
                 >
                   {emoji}
@@ -606,7 +606,7 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
           <button
             onClick={handleSubmit}
             disabled={selected.length !== SHOW_COUNT}
-            className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 disabled:text-gray-400 text-white px-10 py-3 rounded-2xl font-bold text-base transition-all shadow-md"
+            className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 disabled:text-text-muted text-white px-10 py-3 rounded-2xl font-bold text-base transition-all shadow-md"
           >
             {selected.length === SHOW_COUNT ? 'Submit ✓' : `Select ${SHOW_COUNT - selected.length} more…`}
           </button>
@@ -619,10 +619,10 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
           <div className="text-5xl mb-3">
             {selected.filter(e => targetItems.includes(e)).length === SHOW_COUNT ? '🎉' : selected.filter(e => targetItems.includes(e)).length >= Math.ceil(SHOW_COUNT / 2) ? '👍' : '💪'}
           </div>
-          <p className="text-lg font-bold text-gray-800">
+          <p className="text-lg font-bold text-text">
             {selected.filter(e => targetItems.includes(e)).length} of {SHOW_COUNT} correct
           </p>
-          <p className="text-sm text-gray-500 mt-1">Loading next round…</p>
+          <p className="text-sm text-text-muted mt-1">Loading next round…</p>
         </div>
       )}
     </div>
@@ -724,10 +724,10 @@ function ProcessingSpeedTask({ onComplete }: { onComplete: (score: number) => vo
 
   if (!loaded) {
     return (
-      <div className="bg-white rounded-3xl shadow-xl p-12 text-center max-w-2xl mx-auto border-2 border-yellow-50">
+      <div className="bg-surface rounded-3xl shadow-xl p-12 text-center max-w-2xl mx-auto border-2 border-yellow-50">
         <div className="text-4xl mb-4">⚡</div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-3">Pattern Match</h3>
-        <div className="animate-pulse text-gray-500 font-medium">Loading patterns…</div>
+        <h3 className="text-2xl font-bold text-text mb-3">Pattern Match</h3>
+        <div className="animate-pulse text-text-muted font-medium">Loading patterns…</div>
         <div className="mt-4 w-48 mx-auto bg-gray-200 rounded-full h-2">
           <div className="bg-blue-500 h-2 rounded-full animate-pulse w-3/4"></div>
         </div>
@@ -738,22 +738,22 @@ function ProcessingSpeedTask({ onComplete }: { onComplete: (score: number) => vo
   const pair = pairs[currentIdx];
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-yellow-50">
+    <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-yellow-50">
       {/* Centered header */}
       <div className="flex flex-col items-center mb-6">
         <div className="text-4xl mb-3">⚡</div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-1">Pattern Match</h3>
-        <p className="text-gray-500 text-sm font-medium">Are these patterns the SAME or DIFFERENT?</p>
+        <h3 className="text-2xl font-bold text-text mb-1">Pattern Match</h3>
+        <p className="text-text-muted text-sm font-medium">Are these patterns the SAME or DIFFERENT?</p>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-center gap-6 mb-8">
-        <div className="bg-gray-50 rounded-2xl p-5 border-2 border-gray-100 flex-1">
-          <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3">Pattern A</p>
+        <div className="bg-gray-50 rounded-2xl p-5 border-2 border-border flex-1">
+          <p className="text-xs text-text-muted font-bold uppercase tracking-widest mb-3">Pattern A</p>
           <PatternDisplay pattern={pair.a} />
         </div>
-        <div className="flex items-center justify-center text-2xl font-black text-gray-400">vs</div>
-        <div className="bg-gray-50 rounded-2xl p-5 border-2 border-gray-100 flex-1">
-          <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3">Pattern B</p>
+        <div className="flex items-center justify-center text-2xl font-black text-text-muted">vs</div>
+        <div className="bg-gray-50 rounded-2xl p-5 border-2 border-border flex-1">
+          <p className="text-xs text-text-muted font-bold uppercase tracking-widest mb-3">Pattern B</p>
           <PatternDisplay pattern={pair.b} />
         </div>
       </div>
@@ -769,7 +769,7 @@ function ProcessingSpeedTask({ onComplete }: { onComplete: (score: number) => vo
         </button>
       </div>
 
-      <div className="mt-5 text-xs text-gray-400 font-medium">
+      <div className="mt-5 text-xs text-text-muted font-medium">
         {currentIdx + 1} / {TOTAL}
       </div>
     </div>
@@ -827,12 +827,12 @@ function OrthographicTask({ onComplete }: { onComplete: (score: number) => void 
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-pink-50">
+    <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-pink-50">
       {/* Centered header */}
       <div className="flex flex-col items-center mb-6">
         <div className="text-4xl mb-3">📝</div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-1">Word Recognition</h3>
-        <p className="text-gray-500 text-sm font-medium">Look at the image and choose the correct word.</p>
+        <h3 className="text-2xl font-bold text-text mb-1">Word Recognition</h3>
+        <p className="text-text-muted text-sm font-medium">Look at the image and choose the correct word.</p>
       </div>
 
       {/* Emoji Image */}
@@ -840,18 +840,18 @@ function OrthographicTask({ onComplete }: { onComplete: (score: number) => void 
         <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-pink-50 to-orange-50 border-2 border-pink-100 flex items-center justify-center text-7xl shadow-inner">
           {q.emoji}
         </div>
-        <p className="text-gray-700 font-bold text-lg">{q.prompt}</p>
-        {q.hint && <p className="text-xs text-gray-400 italic">({q.hint})</p>}
+        <p className="text-text font-bold text-lg">{q.prompt}</p>
+        {q.hint && <p className="text-xs text-text-muted italic">({q.hint})</p>}
       </div>
 
       {/* Two Buttons */}
       <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
         {options.map((word, idx) => {
-          let style = 'bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 text-gray-800';
+          let style = 'bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 text-text';
           if (answered) {
             if (word === q.correct) style = 'bg-green-500 border-2 border-green-500 text-white';
             else if (word === selected) style = 'bg-red-400 border-2 border-red-400 text-white';
-            else style = 'bg-gray-100 border-2 border-gray-200 text-gray-400';
+            else style = 'bg-gray-100 border-2 border-border text-text-muted';
           }
           return (
             <button key={idx} onClick={() => handleChoice(word)} disabled={answered}
@@ -862,7 +862,7 @@ function OrthographicTask({ onComplete }: { onComplete: (score: number) => void 
         })}
       </div>
 
-      <div className="mt-6 text-xs text-gray-400 font-medium">
+      <div className="mt-6 text-xs text-text-muted font-medium">
         Question {currentIdx + 1} of {HOMOPHONE_QUESTIONS.length}
       </div>
     </div>
@@ -1021,12 +1021,12 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-teal-50">
+    <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-teal-50">
       {/* Header */}
       <div className="flex flex-col items-center mb-6">
         <div className="text-4xl mb-3">📖</div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-1">Word Reading</h3>
-        <p className="text-gray-500 text-sm font-medium">
+        <h3 className="text-2xl font-bold text-text mb-1">Word Reading</h3>
+        <p className="text-text-muted text-sm font-medium">
           {speechSupported ? 'Read the word aloud — speak clearly into your mic.' : 'Type the word shown below.'}
         </p>
       </div>
@@ -1038,7 +1038,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
             {q.word}
           </p>
         </div>
-        <p className="text-sm text-gray-400 font-medium italic">{q.hint}</p>
+        <p className="text-sm text-text-muted font-medium italic">{q.hint}</p>
       </div>
 
       {/* Voice UI */}
@@ -1059,7 +1059,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
                 {phase === 'error' ? 'Try Again' : 'Tap to Read Aloud'}
               </button>
               {phase === 'idle' && (
-                <p className="text-xs text-gray-400 font-medium">Make sure your browser allows microphone access</p>
+                <p className="text-xs text-text-muted font-medium">Make sure your browser allows microphone access</p>
               )}
             </div>
           )}
@@ -1071,19 +1071,19 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
                 <div className="absolute inset-0 rounded-full bg-teal-300 opacity-40 animate-ping" />
               </div>
               <p className="text-teal-600 font-bold text-sm">Listening — speak now…</p>
-              <p className="text-xs text-gray-400">Say the word clearly into your microphone</p>
+              <p className="text-xs text-text-muted">Say the word clearly into your microphone</p>
             </div>
           )}
 
           {phase === 'processing' && (
-            <div className="text-gray-500 font-medium animate-pulse">Checking…</div>
+            <div className="text-text-muted font-medium animate-pulse">Checking…</div>
           )}
 
           {phase === 'correct' && (
             <div className="flex flex-col items-center gap-2">
               <div className="text-4xl">✅</div>
               <p className="text-green-600 font-bold text-lg">Correct!</p>
-              {transcript && <p className="text-sm text-gray-500 italic">You said: &ldquo;{transcript}&rdquo;</p>}
+              {transcript && <p className="text-sm text-text-muted italic">You said: &ldquo;{transcript}&rdquo;</p>}
             </div>
           )}
 
@@ -1091,8 +1091,8 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
             <div className="flex flex-col items-center gap-2">
               <div className="text-4xl">💙</div>
               <p className="text-purple-600 font-bold text-lg">No worries!</p>
-              <p className="text-gray-500 text-sm">Moving to the next word…</p>
-              {transcript && <p className="text-xs text-gray-400 italic mt-1">You said: &ldquo;{transcript}&rdquo;</p>}
+              <p className="text-text-muted text-sm">Moving to the next word…</p>
+              {transcript && <p className="text-xs text-text-muted italic mt-1">You said: &ldquo;{transcript}&rdquo;</p>}
             </div>
           )}
         </div>
@@ -1106,7 +1106,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
             value={fallbackInput}
             onChange={e => setFallbackInput(e.target.value)}
             placeholder="Type the word above…"
-            className="w-full max-w-xs px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-teal-400 focus:outline-none text-lg font-medium text-center"
+            className="w-full max-w-xs px-4 py-3 border-2 border-border rounded-2xl focus:border-teal-400 focus:outline-none text-lg font-medium text-center"
             onKeyDown={e => e.key === 'Enter' && handleFallbackSubmit()}
           />
           <button onClick={handleFallbackSubmit}
@@ -1116,7 +1116,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
         </div>
       )}
 
-      <div className="mt-6 text-xs text-gray-400 font-medium">
+      <div className="mt-6 text-xs text-text-muted font-medium">
         Word {currentIdx + 1} of {READING_WORDS.length}
       </div>
     </div>

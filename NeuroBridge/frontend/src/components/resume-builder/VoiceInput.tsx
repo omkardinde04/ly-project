@@ -75,9 +75,9 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
   };
 
   return (
-    <div className="flex flex-col space-y-3 p-4 bg-white/50 rounded-2xl border-2 border-dashed border-gray-200 hover:border-blue-300 transition-all">
+    <div className="flex flex-col space-y-3 p-4 bg-surface/ rounded-2xl border-2 border-dashed border-border hover:border-blue-300 transition-all">
       <div className="flex items-center justify-between">
-        <label className="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <label className="text-xl font-bold text-text flex items-center gap-2">
           {label}
         </label>
         <div className="flex gap-2">
@@ -86,7 +86,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
             title="Type manually"
           >
-            <Type size={24} className={showManual ? "text-blue-600" : "text-gray-500"} />
+            <Type size={24} className={showManual ? "text-blue-600" : "text-text-muted"} />
           </button>
           <button
             onClick={readAloud}
@@ -106,8 +106,8 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none min-h-[150px] leading-relaxed"
-              style={{ fontFamily: 'OpenDyslexic, Inter, sans-serif' }}
+              className="w-full p-4 text-xl border-2 border-border rounded-xl focus:border-blue-500 outline-none min-h-[150px] leading-relaxed"
+              
             />
           ) : (
             <input
@@ -115,8 +115,8 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full p-4 text-xl border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none leading-relaxed"
-              style={{ fontFamily: 'OpenDyslexic, Inter, sans-serif' }}
+              className="w-full p-4 text-xl border-2 border-border rounded-xl focus:border-blue-500 outline-none leading-relaxed"
+              
             />
           )
         ) : (
@@ -135,7 +135,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
               <>
                 <Mic size={48} className="text-blue-500" />
                 <span className="text-lg font-bold text-blue-600">Tap to Speak</span>
-                {value && <p className="text-gray-600 text-center text-lg italic mt-2">"{value.substring(0, 50)}{value.length > 50 ? '...' : ''}"</p>}
+                {value && <p className="text-text-muted text-center text-lg italic mt-2">"{value.substring(0, 50)}{value.length > 50 ? '...' : ''}"</p>}
               </>
             )}
           </div>

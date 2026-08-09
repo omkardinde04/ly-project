@@ -160,32 +160,32 @@ export function NotebookLLM() {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-black text-gray-800">AI Notebook</h1>
-            <p className="text-sm text-gray-500 font-medium">Powered by Gemini AI · Dyslexia-friendly</p>
+            <h1 className="text-2xl font-black text-text">AI Notebook</h1>
+            <p className="text-sm text-text-muted font-medium">Powered by Gemini AI · Dyslexia-friendly</p>
           </div>
         </div>
         {messages.length > 0 && (
-          <button onClick={clearAll} className="text-sm text-gray-400 hover:text-red-500 font-medium transition-colors">
+          <button onClick={clearAll} className="text-sm text-text-muted hover:text-red-500 font-medium transition-colors">
             Clear All ✕
           </button>
         )}
       </div>
 
       {/* Input Area */}
-      <div className="bg-white rounded-3xl shadow-lg border-2 border-blue-50 p-6">
+      <div className="bg-surface rounded-3xl shadow-lg border-2 border-border p-6">
         {/* File Upload */}
         <div className="mb-4">
-          <label className="block text-sm font-bold text-gray-600 mb-2 flex items-center gap-2">
+          <label className="block text-sm font-bold text-text-muted mb-2 flex items-center gap-2">
             <span className="text-base">📎</span> Upload a document (optional)
           </label>
-          <div className="border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center hover:border-blue-300 transition-colors">
+          <div className="border-2 border-dashed border-border rounded-2xl p-4 text-center hover:border-blue-300 transition-colors">
             <input type="file" accept=".txt,.pdf,.doc,.docx,audio/*,video/*" onChange={handleFileUpload}
               className="hidden" id="notebook-file" />
             {selectedFile ? (
               <div className="flex items-center justify-between bg-blue-50 rounded-xl p-3">
-                <span className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                <span className="text-sm font-semibold text-text flex items-center gap-2">
                   📄 {selectedFile.name}
-                  <span className="text-xs text-gray-500 font-normal">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
+                  <span className="text-xs text-text-muted font-normal">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
                 </span>
                 <button onClick={() => { setSelectedFile(null); setFileContent(''); setInput(''); }}
                   className="text-red-400 hover:text-red-600 text-sm font-bold transition-colors">✕</button>
@@ -193,7 +193,7 @@ export function NotebookLLM() {
             ) : (
               <label htmlFor="notebook-file" className="cursor-pointer flex flex-col items-center gap-1">
                 <span className="text-2xl">📂</span>
-                <span className="text-sm text-gray-500 font-medium">Click to upload TXT, PDF, DOC, Audio, Video</span>
+                <span className="text-sm text-text-muted font-medium">Click to upload TXT, PDF, DOC, Audio, Video</span>
               </label>
             )}
           </div>
@@ -201,14 +201,14 @@ export function NotebookLLM() {
 
         {/* Text Input */}
         <div className="mb-4">
-          <label className="block text-sm font-bold text-gray-600 mb-2">
+          <label className="block text-sm font-bold text-text-muted mb-2">
             ✍️ Or type / paste your text here
           </label>
           <textarea
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder="Paste your notes, a paragraph, or ask a question…&#10;&#10;Example: 'The child has difficulty reading letters'"
-            className="w-full px-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none font-medium text-gray-800 min-h-[120px] resize-none text-base leading-relaxed"
+            className="w-full px-4 py-4 rounded-2xl border-2 border-border focus:border-blue-400 focus:outline-none font-medium text-text min-h-[120px] resize-none text-base leading-relaxed"
             style={{ lineHeight: '1.8' }}
           />
         </div>
@@ -236,7 +236,7 @@ export function NotebookLLM() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl shadow-lg border-2 border-purple-50 p-6 space-y-4 max-h-[600px] overflow-y-auto"
+            className="bg-surface rounded-3xl shadow-lg border-2 border-purple-50 p-6 space-y-4 max-h-[600px] overflow-y-auto"
           >
             {messages.map(msg => (
               <ChatBubble key={msg.id} message={msg} onRetry={() => handleRetry(msg.id, msg.action)} />
@@ -254,17 +254,17 @@ export function NotebookLLM() {
           className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl p-8 text-center border border-blue-100"
         >
           <div className="text-4xl mb-3">🤖</div>
-          <h3 className="text-lg font-bold text-gray-700 mb-2">How to use AI Notebook</h3>
+          <h3 className="text-lg font-bold text-text mb-2">How to use AI Notebook</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
             {(Object.entries(ACTION_CONFIG) as [LLMAction, typeof ACTION_CONFIG[LLMAction]][]).map(([action, cfg]) => (
-              <div key={action} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+              <div key={action} className="bg-surface rounded-2xl p-3 shadow-sm border border-border">
                 <div className="text-2xl mb-1">{cfg.icon}</div>
-                <div className="text-sm font-bold text-gray-700">{cfg.label}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{cfg.description}</div>
+                <div className="text-sm font-bold text-text">{cfg.label}</div>
+                <div className="text-xs text-text-muted mt-0.5">{cfg.description}</div>
               </div>
             ))}
           </div>
-          <p className="text-sm text-gray-500 mt-4 font-medium">
+          <p className="text-sm text-text-muted mt-4 font-medium">
             Type or paste text above, then click any button to get AI help.
           </p>
         </motion.div>
@@ -352,7 +352,7 @@ function DynamicVideoPlayer({ scenes, onClose }: { scenes: VideoScene[], onClose
     >
       <button 
         onClick={() => { speechSynthesis.cancel(); onClose(); }}
-        className="absolute top-6 right-6 z-50 text-gray-500 hover:text-gray-800 bg-white hover:bg-gray-200 border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center text-lg transition-all shadow-sm"
+        className="absolute top-6 right-6 z-50 text-text-muted hover:text-text bg-surface hover:bg-gray-200 border border-border rounded-full w-10 h-10 flex items-center justify-center text-lg transition-all shadow-sm"
       >
         ✕
       </button>
@@ -363,7 +363,7 @@ function DynamicVideoPlayer({ scenes, onClose }: { scenes: VideoScene[], onClose
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
-        className="relative w-full max-w-5xl aspect-video rounded-xl shadow-xl overflow-hidden flex flex-col bg-white border border-gray-200"
+        className="relative w-full max-w-5xl aspect-video rounded-xl shadow-xl overflow-hidden flex flex-col bg-surface border border-border"
       >
         {/* Top Header Bar */}
         <div className="w-full bg-blue-50 py-3 px-6 border-b border-blue-100 flex items-center">
@@ -371,26 +371,26 @@ function DynamicVideoPlayer({ scenes, onClose }: { scenes: VideoScene[], onClose
         </div>
 
         {/* Content Area - Split Layout */}
-        <div className="flex flex-1 flex-col md:flex-row overflow-hidden bg-white">
+        <div className="flex flex-1 flex-col md:flex-row overflow-hidden bg-surface">
           {/* Left: Text Content */}
           <div className="flex-1 flex flex-col justify-center p-8 md:p-16">
             <motion.h2 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight"
+              className="text-3xl md:text-5xl font-extrabold text-text leading-tight"
             >
               {currentScene?.text}
             </motion.h2>
           </div>
           
           {/* Right: Visual/Image */}
-          <div className="w-full md:w-2/5 lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 border-t md:border-t-0 md:border-l border-gray-200">
+          <div className="w-full md:w-2/5 lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 border-t md:border-t-0 md:border-l border-border">
              <motion.div 
                initial={{ opacity: 0, scale: 0.9 }}
                animate={{ opacity: 1, scale: 1 }}
                transition={{ delay: 0.3 }}
-               className="w-full h-full max-h-80 rounded-2xl overflow-hidden shadow-md border border-gray-200 relative bg-white"
+               className="w-full h-full max-h-80 rounded-2xl overflow-hidden shadow-md border border-border relative bg-surface"
              >
                 <img 
                   key={imageUrl}
@@ -403,7 +403,7 @@ function DynamicVideoPlayer({ scenes, onClose }: { scenes: VideoScene[], onClose
         </div>
 
         {/* Video Controls Footer */}
-        <div className="w-full bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-col gap-3 z-20">
+        <div className="w-full bg-gray-50 border-t border-border px-6 py-4 flex flex-col gap-3 z-20">
           {/* Timeline */}
           <div className="flex gap-1 w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             {scenes.map((_, i) => (
@@ -416,14 +416,14 @@ function DynamicVideoPlayer({ scenes, onClose }: { scenes: VideoScene[], onClose
 
           {/* Buttons */}
           <div className="flex items-center justify-between">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+            <div className="text-xs font-bold text-text-muted uppercase tracking-wider">
                Slide {currentIndex + 1} of {scenes.length}
             </div>
             
             <div className="flex items-center gap-4">
               <button 
                 onClick={restartVideo}
-                className="text-gray-500 hover:text-blue-600 transition-colors"
+                className="text-text-muted hover:text-blue-600 transition-colors"
                 title="Restart"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z" clipRule="evenodd" /></svg>
@@ -481,7 +481,7 @@ function ChatBubble({ message, onRetry }: { message: ChatMessage, onRetry?: () =
             ? 'bg-blue-500 text-white rounded-tr-sm'
             : isError
               ? 'bg-red-50 text-red-600 border border-red-200 rounded-tl-sm'
-              : 'bg-gray-50 border border-gray-200 text-gray-800 rounded-tl-sm'
+              : 'bg-gray-50 border border-border text-text rounded-tl-sm'
         }`}>
           {message.isLoading ? (
             <div className="flex items-center gap-2">
@@ -491,7 +491,7 @@ function ChatBubble({ message, onRetry }: { message: ChatMessage, onRetry?: () =
                     style={{ animationDelay: `${i * 0.15}s` }} />
                 ))}
               </div>
-              <span className="text-gray-500 italic text-xs">Thinking…</span>
+              <span className="text-text-muted italic text-xs">Thinking…</span>
             </div>
           ) : (
             <div>

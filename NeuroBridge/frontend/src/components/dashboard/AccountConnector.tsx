@@ -89,14 +89,14 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
 
   const fieldClass = (err?: string) =>
     `w-full px-4 py-4 rounded-xl border-2 text-lg font-medium outline-none transition-colors ${
-      err ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-blue-400 bg-gray-50'
+      err ? 'border-red-400 bg-red-50' : 'border-border focus:border-blue-400 bg-gray-50'
     }`;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto border-2"
+      className="bg-surface rounded-3xl shadow-xl p-8 max-w-2xl mx-auto border-2"
       style={{ borderColor: color }}
     >
       {/* Header */}
@@ -105,8 +105,8 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
           {icon}
         </div>
         <div>
-          <h2 className="text-2xl font-black text-gray-900">{platform}</h2>
-          <p className="text-gray-500 text-sm">Safe · Private · Everything done here on NeuroBridge</p>
+          <h2 className="text-2xl font-black text-text">{platform}</h2>
+          <p className="text-text-muted text-sm">Safe · Private · Everything done here on NeuroBridge</p>
         </div>
       </div>
 
@@ -116,10 +116,10 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
         {step === 'question' && (
           <motion.div key="question" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="rounded-2xl p-5 mb-5 text-center" style={{ backgroundColor: bgLight }}>
-              <p className="text-2xl font-black text-gray-900 mb-1">
+              <p className="text-2xl font-black text-text mb-1">
                 Do you have a {platform} account?
               </p>
-              <p className="text-gray-500">One question at a time — no rush 😊</p>
+              <p className="text-text-muted">One question at a time — no rush 😊</p>
             </div>
             <AudioControl
               text={`Do you already have a ${platform} account? Press Yes to connect it safely. Press No and we will create one for you right here, without leaving NeuroBridge.`}
@@ -152,8 +152,8 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            <p className="text-xl font-black text-gray-800">Connecting securely…</p>
-            <p className="text-gray-400">This takes just a second</p>
+            <p className="text-xl font-black text-text">Connecting securely…</p>
+            <p className="text-text-muted">This takes just a second</p>
           </motion.div>
         )}
 
@@ -161,10 +161,10 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
         {step === 'register-form' && (
           <motion.div key="register-form" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
             <div className="rounded-2xl p-4 mb-5 text-center" style={{ backgroundColor: bgLight }}>
-              <p className="text-lg font-black text-gray-900">
+              <p className="text-lg font-black text-text">
                 🎉 Create your {platform} account — right here!
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-text-muted mt-1">
                 Fill in the 4 boxes below. That's it. No switching apps.
               </p>
             </div>
@@ -178,7 +178,7 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
               {/* First + Last name */}
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">👤 First name</label>
+                  <label className="block text-sm font-bold text-text mb-1">👤 First name</label>
                   <input
                     type="text"
                     placeholder="e.g. Omkar"
@@ -189,7 +189,7 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
                   {form.errors.firstName && <p className="text-red-500 text-sm mt-1">{form.errors.firstName}</p>}
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">👤 Last name</label>
+                  <label className="block text-sm font-bold text-text mb-1">👤 Last name</label>
                   <input
                     type="text"
                     placeholder="e.g. Dinde"
@@ -203,7 +203,7 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">📧 Email address</label>
+                <label className="block text-sm font-bold text-text mb-1">📧 Email address</label>
                 <input
                   type="email"
                   placeholder="e.g. omkar@email.com"
@@ -216,7 +216,7 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
 
               {/* Password */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">🔑 Password (min 6 letters)</label>
+                <label className="block text-sm font-bold text-text mb-1">🔑 Password (min 6 letters)</label>
                 <div className="relative">
                   <input
                     type={form.showPassword ? 'text' : 'password'}
@@ -228,7 +228,7 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
                   <button
                     type="button"
                     onClick={() => setForm(f => ({ ...f, showPassword: !f.showPassword }))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm font-bold"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-muted text-sm font-bold"
                   >
                     {form.showPassword ? '🙈 Hide' : '👁 Show'}
                   </button>
@@ -239,7 +239,7 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
 
             <div className="flex gap-4 mt-6">
               <button onClick={() => setStep('question')}
-                className="flex-1 py-4 rounded-2xl font-bold text-lg bg-gray-100 hover:bg-gray-200 text-gray-700">
+                className="flex-1 py-4 rounded-2xl font-bold text-lg bg-gray-100 hover:bg-gray-200 text-text">
                 ← Back
               </button>
               <button
@@ -261,8 +261,8 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            <p className="text-xl font-black text-gray-800">Creating your {platform} account…</p>
-            <p className="text-gray-400 text-center">Please wait. You don't need to do anything else.</p>
+            <p className="text-xl font-black text-text">Creating your {platform} account…</p>
+            <p className="text-text-muted text-center">Please wait. You don't need to do anything else.</p>
           </motion.div>
         )}
 
@@ -271,8 +271,8 @@ export function AccountConnector({ platform, color, icon, onConnect }: AccountCo
           <motion.div key="register-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
             className="text-center">
             <div className="text-7xl mb-4">🎉</div>
-            <h3 className="text-2xl font-black text-gray-900 mb-2">Account Created!</h3>
-            <p className="text-gray-600 text-lg mb-6 leading-relaxed">{serverMsg}</p>
+            <h3 className="text-2xl font-black text-text mb-2">Account Created!</h3>
+            <p className="text-text-muted text-lg mb-6 leading-relaxed">{serverMsg}</p>
             <AudioControl
               text={`Great job! Your ${platform} account is ready. Now press the button below to connect it to NeuroBridge and see your opportunities.`}
               showControls={true}

@@ -21,8 +21,8 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({ currentStep, ste
             className={`flex items-center gap-3 px-6 py-4 rounded-2xl border-2 transition-all duration-300 font-bold text-lg shadow-sm
               ${isActive ? 'bg-blue-600 border-blue-600 text-white scale-105 shadow-blue-200' : 
                 isCompleted ? 'bg-green-50 border-green-200 text-green-700' : 
-                'bg-white border-gray-100 text-gray-400 hover:border-blue-200'}`}
-            style={{ fontFamily: 'OpenDyslexic, sans-serif' }}
+                'bg-surface border-border text-text-muted hover:border-blue-200'}`}
+            
           >
             <div className="relative">
               {isCompleted ? (

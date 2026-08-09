@@ -18,7 +18,6 @@ import { AboutPage } from './components/pages/AboutPage'
 import { ForgotPassword } from './components/pages/ForgotPassword'
 import { ResetPassword } from './components/pages/ResetPassword'
 import { VerifyEmail } from './components/pages/VerifyEmail'
-import { GlobalReader } from './components/ui/GlobalReader'
 import { AuthRedirect } from './components/auth/AuthRedirect'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { ResumeBuilderPage } from './components/pages/ResumeBuilderPage'
@@ -118,7 +117,6 @@ function AppContent() {
           </Routes>
         </main>
         {!isDashboard && <Footer />}
-        <GlobalReader />
         <AIAssistant autoStart={true} />
       </div>
     </Layout>

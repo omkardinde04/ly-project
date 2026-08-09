@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
-import { DyslexiaToggle } from '../ui/DyslexiaToggle';
+import { useAuth } from '../../contexts/AuthContext';
+import { LayoutDashboard, TrendingUp, FileText, Briefcase, Bot, Users, Settings, User, LogOut } from 'lucide-react';
+
 import { getTranslation } from '../../utils/translations';
 
 interface SidebarProps {
@@ -10,6 +12,7 @@ interface SidebarProps {
 
 export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
   const { language, resetTest } = useDyslexia();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const t = getTranslation(language);
@@ -25,23 +28,20 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
   };
 
   const menuItems = [
-    { id: 'home', label: 'Dashboard', icon: '🏠' },
-    { id: 'assessment', label: 'Assessment', icon: '🧠' },
-    { id: 'cognitive', label: 'Cognitive Tasks', icon: '🧩' },
-    { id: 'progress', label: 'Progress', icon: '📊' },
-    { id: 'resumeBuilder', label: 'Resume Builder', icon: '📝' },
-    { id: 'opportunities', label: 'Opportunities', icon: '💼' },
-    { id: 'linkedin', label: 'LinkedIn', icon: 'linkedin' },
-    { id: 'notebook', label: 'Notebook LLM', icon: '🤖' },
-    { id: 'community', label: 'Community', icon: '👥' },
-    { id: 'accessibility', label: t.navSettings, icon: '⚙️' },
-    { id: 'profile', label: 'Profile', icon: '👤' },
+    { id: 'home', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'progress', label: 'Progress', icon: TrendingUp },
+    { id: 'resumeBuilder', label: 'Resume Builder', icon: FileText },
+    { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
+    { id: 'notebook', label: 'Notebook LLM', icon: Bot },
+    { id: 'community', label: 'Community', icon: Users },
+    { id: 'accessibility', label: t.navSettings, icon: Settings },
+    { id: 'profile', label: 'Profile', icon: User },
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-blue-100 shadow-sm flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-full w-64 bg-surface border-r border-blue-100 shadow-sm flex flex-col z-40">
       {/* Logo */}
-      <div className="p-6 border-b border-blue-50 shrink-0">
+      <div className="p-6 border-b border-border shrink-0">
         <div className="flex items-center gap-3">
           <div className="bg-[#4A90E2] p-2 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -49,8 +49,8 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
             </svg>
           </div>
           <div>
-            <div className="font-bold text-gray-800">NeuroBridge</div>
-            <div className="text-xs text-gray-500">Learning Platform</div>
+            <div className="font-bold text-text">NeuroBridge</div>
+            <div className="text-xs text-text-muted">Learning Platform</div>
           </div>
         </div>
       </div>
@@ -75,45 +75,44 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
               activeTab === item.id
                 ? 'bg-[#4A90E2] text-white shadow-md'
-                : 'text-gray-700 hover:bg-blue-50'
+                : 'text-text hover:bg-blue-50'
             }`}
           >
-            {item.icon === 'linkedin' ? (
-              <svg viewBox="0 0 24 24" className={`w-5 h-5 flex-shrink-0 ${
-                activeTab === item.id ? 'fill-white' : 'fill-[#0077B5]'
-              }`}>
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
-            ) : (
-              <span className="text-xl">{item.icon}</span>
-            )}
+            <item.icon size={22} className={`shrink-0 ${activeTab === item.id ? 'text-white' : 'text-[#4A90E2]'}`} />
             <span className="text-sm">{item.label}</span>
           </button>
         ))}
       </nav>
-      {/* Quick Dyslexia Toggle */}
-      <div className="shrink-0 px-4 py-3 bg-[#F4F9FD] border-t border-blue-50">
-        <DyslexiaToggle className="shadow-none! border-none! bg-transparent! p-0! w-full! justify-between" />
-      </div>
+
 
       {/* User Profile Snippet */}
-      <div className="shrink-0 p-4 border-t border-blue-50 bg-white">
+      <div 
+        className="shrink-0 p-4 border-t border-border bg-surface cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => onNavigate('profile')}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-lg font-bold text-blue-600">👤</span>
+          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-50 overflow-hidden">
+            {user?.profile_picture ? (
+              <img src={user.profile_picture} alt={user?.name || 'User'} className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-bold text-[#4A90E2]">
+                {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'U'}
+              </span>
+            )}
           </div>
-          <div className="flex-1">
-            <div className="font-semibold text-gray-800 text-sm">Demo User</div>
-            <div className="text-xs text-gray-500">Student Account</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-text text-sm truncate">{user?.name || 'User'}</div>
+            <div className="text-xs text-text-muted truncate">Student Account</div>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLogout();
+            }}
             title="Log Out"
-            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 text-text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <LogOut size={20} />
           </button>
         </div>
       </div>

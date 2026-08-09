@@ -4,8 +4,8 @@ export function DyslexiaToggle({ className = '' }: { className?: string }) {
   const { isDyslexiaMode, toggleDyslexiaMode } = useDyslexia();
 
   return (
-    <div className={`flex items-center gap-3 bg-white/60 backdrop-blur-md px-4 py-2.5 rounded-full shadow-sm border border-blue-100/50 ${className}`}>
-      <span className="text-sm font-bold text-gray-700 select-none">🎨 Dyslexia Mode</span>
+    <div className={`flex items-center gap-3 bg-surface/ backdrop-blur-md px-4 py-2.5 rounded-full shadow-sm border border-blue-100/50 ${className}`}>
+      <span className="text-sm font-bold text-text select-none">🎨 Dyslexia Mode</span>
       <button
         onClick={toggleDyslexiaMode}
         type="button"
@@ -15,7 +15,7 @@ export function DyslexiaToggle({ className = '' }: { className?: string }) {
         aria-label="Toggle Dyslexia Mode"
       >
         <div
-          className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform shadow-sm ${
+          className={`w-4 h-4 rounded-full bg-surface absolute top-1 transition-transform shadow-sm ${
             isDyslexiaMode ? 'translate-x-7' : 'translate-x-1'
           }`}
         />
