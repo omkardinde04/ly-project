@@ -56,9 +56,6 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
     try {
       await speechServiceRef.current.speak(text, {
         language: lang,
-        speed: 0.92,
-        pitch: 0.9,
-        volume: 1.0
       });
     } catch (error) {
       console.warn('Speech synthesis failed:', error);

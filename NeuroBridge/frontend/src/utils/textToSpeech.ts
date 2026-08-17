@@ -1,11 +1,5 @@
 import type { Language } from '../contexts/DyslexiaContext';
-
-export interface VoiceSettings {
-  lang: string;
-  rate: number;
-  pitch: number;
-  volume: number;
-}
+import { getNaturalVoiceConfig, cleanTextForSpeech, getLoadedVoices } from './naturalVoice';
 
 export interface WordToken {
   id: number;
@@ -58,7 +52,6 @@ export class TextToSpeechService {
   private currentLanguage: Language = 'en';
   private currentSpeed: number = 1;
   private callbacks: SpeechCallbacks = {};
-  private voices: SpeechSynthesisVoice[] = [];
   private pacerTimer: number | null = null;
   private isManuallyPaused: boolean = false;
   private boundaryFired: boolean = false;
@@ -66,35 +59,11 @@ export class TextToSpeechService {
   constructor() {
     this.synth = typeof window !== 'undefined' ? window.speechSynthesis : ({} as SpeechSynthesis);
     if (typeof window !== 'undefined' && this.synth) {
-      this.loadVoices();
+      getLoadedVoices();
       if ('onvoiceschanged' in this.synth) {
-        this.synth.onvoiceschanged = () => this.loadVoices();
+        this.synth.onvoiceschanged = () => getLoadedVoices();
       }
     }
-  }
-
-  private loadVoices() {
-    if (this.synth && typeof this.synth.getVoices === 'function') {
-      this.voices = this.synth.getVoices();
-    }
-  }
-
-  public getVoiceSettings(language: Language): VoiceSettings {
-    const voiceMap: Record<Language, VoiceSettings> = {
-      en: { lang: 'en-US', rate: 1, pitch: 1, volume: 1 },
-      hi: { lang: 'hi-IN', rate: 0.9, pitch: 1, volume: 1 },
-      mr: { lang: 'mr-IN', rate: 0.9, pitch: 1, volume: 1 },
-    };
-    return voiceMap[language] || voiceMap.en;
-  }
-
-  private chooseVoice(langCode: string): SpeechSynthesisVoice | null {
-    if (!this.voices.length) {
-      this.loadVoices();
-    }
-    const prefix = langCode.split('-')[0].toLowerCase();
-    const candidate = this.voices.find((v) => v.lang.toLowerCase().startsWith(prefix));
-    return candidate || null;
   }
 
   public setCallbacks(callbacks: SpeechCallbacks) {
@@ -133,19 +102,20 @@ export class TextToSpeechService {
     this.currentWordIndex = safeStartWordIdx;
     const startCharIndex = this.currentTokens[safeStartWordIdx].startIndex;
 
-    const textToSpeak = text.substring(startCharIndex);
-    const settings = this.getVoiceSettings(language);
+    const rawTextToSpeak = text.substring(startCharIndex);
+    const cleanedTextToSpeak = cleanTextForSpeech(rawTextToSpeak) || rawTextToSpeak;
 
-    this.currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
-    this.currentUtterance.lang = settings.lang;
-    this.currentUtterance.rate = settings.rate * speed;
-    this.currentUtterance.pitch = settings.pitch;
-    this.currentUtterance.volume = settings.volume;
+    // Use unified human-like natural voice configuration with Siri cadence
+    const config = getNaturalVoiceConfig(language, speed);
 
-    const preferredVoice = this.chooseVoice(settings.lang);
-    if (preferredVoice) {
-      this.currentUtterance.voice = preferredVoice;
+    this.currentUtterance = new SpeechSynthesisUtterance(cleanedTextToSpeak);
+    this.currentUtterance.lang = config.lang;
+    if (config.voice) {
+      this.currentUtterance.voice = config.voice;
     }
+    this.currentUtterance.rate = config.rate;
+    this.currentUtterance.pitch = config.pitch;
+    this.currentUtterance.volume = config.volume;
 
     // Trigger initial word highlight immediately
     this.notifyWordChange(safeStartWordIdx, startCharIndex);
@@ -225,7 +195,17 @@ export class TextToSpeechService {
 
       const currentToken = this.currentTokens[currentIdx];
       const wordLength = currentToken ? currentToken.word.length : 5;
-      const baseMs = Math.max(160, Math.min(800, (wordLength * 55 + 130) / speed));
+      let baseMs = Math.max(170, Math.min(850, (wordLength * 58 + 140) / speed));
+
+      // Siri-style punctuation halts:
+      if (currentToken) {
+        const lastChar = currentToken.word[currentToken.word.length - 1];
+        if (lastChar === '.' || lastChar === '!' || lastChar === '?') {
+          baseMs += 350 / speed; // sentence halt
+        } else if (lastChar === ',' || lastChar === ';' || lastChar === ':') {
+          baseMs += 160 / speed; // clause pause
+        }
+      }
 
       this.pacerTimer = window.setTimeout(() => {
         if (!this.synth.speaking || this.isManuallyPaused) return;
@@ -317,7 +297,7 @@ export class TextToSpeechService {
   }
 
   public getVoices(): SpeechSynthesisVoice[] {
-    return this.voices;
+    return getLoadedVoices();
   }
 }
 

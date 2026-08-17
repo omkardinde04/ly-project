@@ -1,31 +1,30 @@
-// Speech Service - Handles text-to-speech and speech recognition
+// Speech Service - Handles human-like conversational text-to-speech with Siri-style sentence halts and natural turn-taking
 
 import type { Language, TextToSpeechOptions } from '../types/assistant';
+import {
+  getNaturalVoiceConfig,
+  splitTextIntoSpeechSegments,
+  getLoadedVoices,
+  sleep,
+} from '../utils/naturalVoice';
 
 export class SpeechService {
   private speechSynthesis: SpeechSynthesis;
   private recognition: any = null;
   private isListening: boolean = false;
-  private voices: SpeechSynthesisVoice[] = [];
+  private isSpeakingActive: boolean = false;
+  private cancelCurrentSpeech: boolean = false;
 
   constructor() {
-    this.speechSynthesis = window.speechSynthesis;
-    this.loadVoices();
-    if (this.speechSynthesis) {
-      this.speechSynthesis.onvoiceschanged = () => this.loadVoices();
-    }
-    
-    // Initialize speech recognition if available
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      this.recognition = new SpeechRecognition();
-      this.setupRecognition();
-    }
-  }
+    this.speechSynthesis = typeof window !== 'undefined' ? window.speechSynthesis : ({} as SpeechSynthesis);
 
-  private loadVoices() {
-    if (this.speechSynthesis) {
-      this.voices = this.speechSynthesis.getVoices();
+    // Initialize speech recognition if available
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        this.recognition = new SpeechRecognition();
+        this.setupRecognition();
+      }
     }
   }
 
@@ -41,7 +40,7 @@ export class SpeechService {
   }
 
   /**
-   * Text-to-speech - speak assistant message
+   * Text-to-speech - speak assistant message with Siri-style natural cadence and sentence-level breath pauses
    */
   async speak(
     text: string,
@@ -53,51 +52,79 @@ export class SpeechService {
 
     await this.ensureVoicesLoaded();
 
-    return new Promise((resolve, reject) => {
-      // Cancel any ongoing speech
-      this.speechSynthesis.cancel();
+    // Cancel any ongoing speech
+    this.stopSpeaking();
+    this.cancelCurrentSpeech = false;
+    this.isSpeakingActive = true;
 
-      const utterance = new SpeechSynthesisUtterance(text);
+    const segments = splitTextIntoSpeechSegments(text);
+    if (!segments.length) {
+      this.isSpeakingActive = false;
+      return;
+    }
 
-      // Set language
-      const languageMap: Record<Language, string> = {
-        en: 'en-US',
-        hi: 'hi-IN',
-        mr: 'mr-IN'
-      };
-      const voiceLanguage = options.language || 'en';
-      utterance.lang = languageMap[voiceLanguage as Language] || 'en-US';
+    const voiceLanguage = (options.language || 'en') as Language;
+    const speedMultiplier = options.speed ?? 1.0;
+    const config = getNaturalVoiceConfig(voiceLanguage, speedMultiplier);
 
-      // Choose the most natural available voice for the language
-      const preferredVoice = this.chooseNaturalVoice(voiceLanguage as Language);
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
+    try {
+      for (let i = 0; i < segments.length; i++) {
+        if (this.cancelCurrentSpeech) break;
 
-      // Set voice properties for a more natural tone
-      utterance.rate = options.speed ?? 0.92;
-      utterance.pitch = options.pitch ?? 0.9;
-      utterance.volume = options.volume ?? 1.0;
+        const segment = segments[i];
 
-      // Handle start and completion
-      utterance.onstart = () => {
-        if (this.speechSynthesis.paused) {
-          this.speechSynthesis.resume();
+        await new Promise<void>((resolve, reject) => {
+          if (this.cancelCurrentSpeech) {
+            resolve();
+            return;
+          }
+
+          const utterance = new SpeechSynthesisUtterance(segment.text);
+          utterance.lang = config.lang;
+          if (config.voice) {
+            utterance.voice = config.voice;
+          }
+
+          // Slightly rise pitch for questions, normal warm pitch for statements
+          const segmentPitch = segment.isQuestion ? config.pitch * 1.04 : config.pitch;
+          utterance.rate = options.speed !== undefined ? options.speed : config.rate;
+          utterance.pitch = options.pitch !== undefined ? options.pitch : segmentPitch;
+          utterance.volume = options.volume !== undefined ? options.volume : config.volume;
+
+          utterance.onstart = () => {
+            if (this.speechSynthesis.paused) {
+              this.speechSynthesis.resume();
+            }
+          };
+
+          utterance.onend = () => {
+            resolve();
+          };
+
+          utterance.onerror = (event: any) => {
+            if (event.error !== 'interrupted' && event.error !== 'canceled') {
+              console.warn('Speech synthesis segment error', event);
+              reject(new Error(event.error || 'Speech synthesis error'));
+            } else {
+              resolve();
+            }
+          };
+
+          this.speechSynthesis.speak(utterance);
+        });
+
+        // Natural breath pause / halt after each sentence (Siri style), unless it was the last sentence
+        if (i < segments.length - 1 && !this.cancelCurrentSpeech) {
+          await sleep(segment.pauseAfterMs);
         }
-      };
-
-      utterance.onend = () => resolve();
-      utterance.onerror = (event: any) => {
-        console.warn('Speech synthesis error', event);
-        reject(new Error(event.error || 'Speech synthesis error'));
-      };
-
-      this.speechSynthesis.speak(utterance);
-    });
+      }
+    } finally {
+      this.isSpeakingActive = false;
+    }
   }
 
   /**
-   * Start listening for user input
+   * Start listening for user input with a natural turn-taking delay
    */
   startListening(
     onResult: (transcript: string, isFinal: boolean) => void,
@@ -111,15 +138,13 @@ export class SpeechService {
 
     this.isListening = true;
 
-    // Set language
     const languageMap: Record<Language, string> = {
       en: 'en-US',
       hi: 'hi-IN',
-      mr: 'mr-IN'
+      mr: 'mr-IN',
     };
     this.recognition.lang = languageMap[language] || 'en-US';
 
-    // Handle results
     this.recognition.onresult = (event: any) => {
       let finalTranscript = '';
       let interimTranscript = '';
@@ -141,17 +166,14 @@ export class SpeechService {
       }
     };
 
-    // Handle errors
     this.recognition.onerror = (event: any) => {
       onError(event.error || 'Speech recognition error');
     };
 
-    // Handle end
     this.recognition.onend = () => {
       this.isListening = false;
     };
 
-    // Start listening
     this.recognition.start();
   }
 
@@ -176,31 +198,29 @@ export class SpeechService {
    * Stop speaking
    */
   stopSpeaking(): void {
-    this.speechSynthesis.cancel();
+    this.cancelCurrentSpeech = true;
+    this.isSpeakingActive = false;
+    if (this.speechSynthesis) {
+      this.speechSynthesis.cancel();
+    }
   }
 
   /**
    * Check if currently speaking
    */
   getIsSpeaking(): boolean {
-    return this.speechSynthesis.speaking;
+    return this.isSpeakingActive || (this.speechSynthesis ? this.speechSynthesis.speaking : false);
   }
 
   private async ensureVoicesLoaded(): Promise<void> {
-    if (this.voices.length > 0) {
-      return;
-    }
-
-    this.loadVoices();
-    if (this.voices.length > 0) {
-      return;
-    }
+    const loaded = getLoadedVoices();
+    if (loaded.length > 0) return;
 
     await new Promise<void>((resolve) => {
       const timeout = window.setTimeout(resolve, 300);
       const checkVoices = () => {
-        this.loadVoices();
-        if (this.voices.length > 0) {
+        const v = getLoadedVoices();
+        if (v.length > 0) {
           window.clearTimeout(timeout);
           resolve();
         }
@@ -209,75 +229,25 @@ export class SpeechService {
     });
   }
 
-  private chooseNaturalVoice(language: Language): SpeechSynthesisVoice | null {
-    if (!this.voices.length) {
-      this.loadVoices();
-    }
-
-    const preferences: Record<Language, string[]> = {
-      en: [
-        'Google UK English Female',
-        'Google US English',
-        'Samantha',
-        'Alloy',
-        'Alex',
-        'Daniel',
-        'Karen',
-        'Microsoft Zira',
-        'Microsoft David'
-      ],
-      hi: [
-        'Google हिन्दी',
-        'Google Hindi',
-        'Microsoft Kalpana',
-        'Hindi'
-      ],
-      mr: [
-        'Google मराठी',
-        'Google Marathi',
-        'Microsoft Marathi',
-        'Marathi'
-      ]
-    };
-
-    const candidates = this.voices.filter((voice) => {
-      const langMatch = voice.lang.toLowerCase().includes(language);
-      return langMatch;
-    });
-
-    const preferredNames = preferences[language] || preferences.en;
-    for (const preferred of preferredNames) {
-      const match = candidates.find((voice) => voice.name.includes(preferred) || voice.voiceURI.includes(preferred));
-      if (match) return match;
-    }
-
-    return candidates.length > 0 ? candidates[0] : null;
-  }
-
   /**
    * Get available voices for a language
    */
   getVoicesForLanguage(language: Language = 'en'): SpeechSynthesisVoice[] {
-    if (!this.voices.length) {
-      this.loadVoices();
-    }
-
+    const voices = getLoadedVoices();
     const languageMap: Record<Language, string> = {
       en: 'en',
       hi: 'hi',
-      mr: 'mr'
+      mr: 'mr',
     };
     const lang = languageMap[language];
-    return this.voices.filter(v => v.lang.toLowerCase().includes(lang));
+    return voices.filter((v) => v.lang.toLowerCase().includes(lang));
   }
 
   /**
    * Pause synthesis
    */
   pause(): void {
-    if (this.speechSynthesis.paused) {
-      this.speechSynthesis.resume();
-    } else {
+    if (this.speechSynthesis && this.speechSynthesis.speaking) {
       this.speechSynthesis.pause();
     }
   }
@@ -286,7 +256,9 @@ export class SpeechService {
    * Resume synthesis
    */
   resume(): void {
-    this.speechSynthesis.resume();
+    if (this.speechSynthesis && this.speechSynthesis.paused) {
+      this.speechSynthesis.resume();
+    }
   }
 }
 
