@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { useDyslexia, type Language } from '../../contexts/DyslexiaContext';
+import { useSpotlightReader } from '../../contexts/SpotlightReaderContext';
 import { getTranslation } from '../../utils/translations';
-import { speakText, stopSpeech, changeSpeechSpeed } from '../../utils/textToSpeech';
 
 interface AudioControlProps {
   text?: string;
@@ -10,21 +9,35 @@ interface AudioControlProps {
   overrideSpeed?: number;
 }
 
-export function AudioControl({ text = '', showControls = true, overrideLanguage, overrideSpeed }: AudioControlProps) {
+export function AudioControl({
+  text = '',
+  showControls = true,
+  overrideLanguage,
+  overrideSpeed,
+}: AudioControlProps) {
   const context = useDyslexia();
+  const {
+    isActive,
+    isPlaying,
+    startPageReading,
+    startTextReading,
+    stopReading,
+    setSpeed,
+  } = useSpotlightReader();
+
   const language = overrideLanguage || context.language;
   const audioSpeed = overrideSpeed || context.audioSpeed;
-  
   const t = getTranslation(language);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   const handlePlay = () => {
-    if (isPlaying) {
-      stopSpeech();
-      setIsPlaying(false);
+    if (isActive && isPlaying) {
+      stopReading();
     } else {
-      speakText(text, language, audioSpeed);
-      setIsPlaying(true);
+      if (text && text.trim()) {
+        startTextReading(text);
+      } else {
+        startPageReading();
+      }
     }
   };
 
@@ -32,22 +45,22 @@ export function AudioControl({ text = '', showControls = true, overrideLanguage,
     if (!overrideSpeed) {
       context.setAudioSpeed(newSpeed);
     }
-    changeSpeechSpeed(newSpeed);
+    setSpeed(newSpeed);
   };
 
   return (
-    <div className="flex items-center gap-2 lg:gap-3 bg-surface/ backdrop-blur-md rounded-full px-3 py-1.5 shadow-sm border border-border/50 transition-all hover:bg-surface/ hover:shadow">
-      {/* Play/Pause Button */}
+    <div className="flex items-center gap-2 lg:gap-3 bg-surface backdrop-blur-md rounded-full px-3 py-1.5 shadow-sm border border-border/50 transition-all hover:bg-surface hover:shadow">
+      {/* Play/Stop Button */}
       <button
         onClick={handlePlay}
-        className={`group flex items-center gap-2 px-4 py-1.5 rounded-full font-bold text-sm transition-all duration-300 ${
-          isPlaying
+        className={`group flex items-center gap-2 px-4 py-1.5 rounded-full font-bold text-sm transition-all duration-300 cursor-pointer ${
+          isActive && isPlaying
             ? 'bg-red-50 text-red-500 hover:bg-red-100 shadow-inner'
             : 'bg-blue-50 text-blue-600 hover:bg-blue-100 shadow-sm hover:shadow'
         }`}
-        aria-label={isPlaying ? t.stop : t.listen}
+        aria-label={isActive && isPlaying ? t.stop : t.listen}
       >
-        {isPlaying ? (
+        {isActive && isPlaying ? (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
@@ -71,11 +84,11 @@ export function AudioControl({ text = '', showControls = true, overrideLanguage,
       {/* Sleek Segmented Speed Controls */}
       {showControls && (
         <div className="flex items-center bg-gray-100/50 rounded-full p-0.5 border border-border">
-          {[0.5, 1.0, 1.5].map(speedVal => (
+          {[0.5, 1.0, 1.5].map((speedVal) => (
             <button
               key={speedVal}
               onClick={() => handleSpeedChange(speedVal)}
-              className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 ${
+              className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 cursor-pointer ${
                 audioSpeed === speedVal
                   ? 'bg-surface text-blue-600 shadow-sm shadow-blue-900/5'
                   : 'text-text-muted hover:text-text hover:bg-gray-200/50'

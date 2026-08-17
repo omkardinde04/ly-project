@@ -4,23 +4,25 @@ import type { ReactNode } from 'react';
 import { DyslexiaProvider, useDyslexia } from './contexts/DyslexiaContext';
 import { AssistantProvider } from './contexts/AssistantContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SpotlightReaderProvider } from './contexts/SpotlightReaderContext';
+import { OnPageWordSpotlight } from './components/ui/OnPageWordSpotlight';
 import { AIAssistant } from './components/assistant/AIAssistant';
-import { Navbar } from './components/layout/Navbar'
-import Index from './components/pages/Index'
-import { Login } from './components/pages/Login'
-import { Footer } from './components/layout/Footer'
-import { AssessmentPage } from './components/pages/Assessment'
-import { Dashboard } from './components/pages/Dashboard'
-import { Learn } from './components/pages/Learn'
-import { OpportunitiesPage } from './components/pages/OpportunitiesPage'
-import { CommunityPage } from './components/pages/CommunityPage'
-import { AboutPage } from './components/pages/AboutPage'
-import { ForgotPassword } from './components/pages/ForgotPassword'
-import { ResetPassword } from './components/pages/ResetPassword'
-import { VerifyEmail } from './components/pages/VerifyEmail'
-import { AuthRedirect } from './components/auth/AuthRedirect'
-import { ProtectedRoute } from './components/auth/ProtectedRoute'
-import { ResumeBuilderPage } from './components/pages/ResumeBuilderPage'
+import { Navbar } from './components/layout/Navbar';
+import Index from './components/pages/Index';
+import { Login } from './components/pages/Login';
+import { Footer } from './components/layout/Footer';
+import { AssessmentPage } from './components/pages/Assessment';
+import { Dashboard } from './components/pages/Dashboard';
+import { Learn } from './components/pages/Learn';
+import { OpportunitiesPage } from './components/pages/OpportunitiesPage';
+import { CommunityPage } from './components/pages/CommunityPage';
+import { AboutPage } from './components/pages/AboutPage';
+import { ForgotPassword } from './components/pages/ForgotPassword';
+import { ResetPassword } from './components/pages/ResetPassword';
+import { VerifyEmail } from './components/pages/VerifyEmail';
+import { AuthRedirect } from './components/auth/AuthRedirect';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { ResumeBuilderPage } from './components/pages/ResumeBuilderPage';
 
 function Layout({ children }: { children: ReactNode }) {
   const { isDyslexiaMode, dyslexiaLevel } = useDyslexia();
@@ -45,7 +47,6 @@ function Layout({ children }: { children: ReactNode }) {
 
   return <>{children}</>;
 }
-
 
 function AppContent() {
   const location = useLocation();
@@ -118,6 +119,8 @@ function AppContent() {
         </main>
         {!isDashboard && <Footer />}
         <AIAssistant autoStart={true} />
+        {/* On-Page Word Spotlight Overlay */}
+        <OnPageWordSpotlight />
       </div>
     </Layout>
   );
@@ -128,13 +131,15 @@ function App() {
     <AuthProvider>
       <DyslexiaProvider>
         <AssistantProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <SpotlightReaderProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </SpotlightReaderProvider>
         </AssistantProvider>
       </DyslexiaProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -110,7 +110,7 @@ export function Dashboard() {
       <main className="flex-1 ml-64 p-8 flex flex-col h-screen overflow-y-auto">
         {/* Global Accessibility Top Bar */}
         <div className="flex items-center justify-end gap-4 mb-6 shrink-0">
-          <AudioControl text="Welcome to your NeuroBridge Dashboard. You can access your assessments, cognitive tasks, and progress from the sidebar menu." showControls={false} />
+          <AudioControl showControls={false} />
           <LanguageSelector />
           <DyslexiaToggle />
         </div>

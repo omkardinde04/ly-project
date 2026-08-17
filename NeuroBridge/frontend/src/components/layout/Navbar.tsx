@@ -67,7 +67,7 @@ export function Navbar({ links = [], showLogin = true }: { links?: string[], sho
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Accessibility Bar */}
             <div className="hidden lg:flex items-center gap-3 mr-1">
-              <AudioControl text="Welcome to NeuroBridge. Navigate through our learning platform, assessments, and community features." showControls={false} />
+              <AudioControl showControls={false} />
               <select
                 value={language}
                 onChange={(e) => {
