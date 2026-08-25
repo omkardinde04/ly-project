@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SkipForward } from 'lucide-react';
 
 interface CognitiveTaskProps {
   onComplete: (scores: { phonological: number; visual: number; workingMemory: number; processingSpeed: number; orthographic: number; executive: number }) => void;
@@ -26,7 +27,8 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
     { id: 'executive', name: 'Time Reading', icon: '🕐' },
   ];
 
-  const handleTaskComplete = (taskId: string, score: number) => {
+  const handleTaskComplete = (taskId: string, score: number, taskIndex = currentTask) => {
+    if (taskIndex !== currentTask) return;
     if (isLoading) return;
     setIsLoading(true);
     const updatedScores = { ...scores, [taskId]: score };
@@ -42,15 +44,31 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
     }, 600);
   };
 
+  const handleForceNext = () => {
+    handleTaskComplete(tasks[currentTask].id, 0);
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-text">Cognitive Tasks</h2>
-          <span className="text-sm font-semibold text-blue-600">
-            Task {currentTask + 1} of {tasks.length}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleForceNext}
+              disabled={isLoading}
+              title="Skip this task for testing"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-700 transition-colors hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <SkipForward size={14} aria-hidden="true" />
+              Force next
+            </button>
+            <span className="text-sm font-semibold text-blue-600">
+              Task {currentTask + 1} of {tasks.length}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-6 gap-2">
@@ -98,12 +116,12 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
           >
-            {currentTask === 0 && <PhonologicalTask onComplete={(score) => handleTaskComplete('phonological', score)} />}
-            {currentTask === 1 && <VisualAttentionTask onComplete={(score) => handleTaskComplete('visual', score)} />}
-            {currentTask === 2 && <WorkingMemoryTask onComplete={(score) => handleTaskComplete('workingMemory', score)} />}
-            {currentTask === 3 && <ProcessingSpeedTask onComplete={(score) => handleTaskComplete('processingSpeed', score)} />}
-            {currentTask === 4 && <OrthographicTask onComplete={(score) => handleTaskComplete('orthographic', score)} />}
-            {currentTask === 5 && <TimedReadingTask onComplete={(score) => handleTaskComplete('executive', score)} />}
+            {currentTask === 0 && <PhonologicalTask onComplete={(score) => handleTaskComplete('phonological', score, 0)} />}
+            {currentTask === 1 && <VisualAttentionTask onComplete={(score) => handleTaskComplete('visual', score, 1)} />}
+            {currentTask === 2 && <WorkingMemoryTask onComplete={(score) => handleTaskComplete('workingMemory', score, 2)} />}
+            {currentTask === 3 && <ProcessingSpeedTask onComplete={(score) => handleTaskComplete('processingSpeed', score, 3)} />}
+            {currentTask === 4 && <OrthographicTask onComplete={(score) => handleTaskComplete('orthographic', score, 4)} />}
+            {currentTask === 5 && <TimedReadingTask onComplete={(score) => handleTaskComplete('executive', score, 5)} />}
           </motion.div>
         )}
       </AnimatePresence>

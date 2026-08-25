@@ -28,14 +28,14 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
   };
 
   const menuItems = [
-    { id: 'home', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'progress', label: 'Progress', icon: TrendingUp },
-    { id: 'resumeBuilder', label: 'Resume Builder', icon: FileText },
-    { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
-    { id: 'notebook', label: 'Notebook LLM', icon: Bot },
-    { id: 'community', label: 'Community', icon: Users },
+    { id: 'home', label: t.dashboard, icon: LayoutDashboard },
+    { id: 'progress', label: t.navProgress, icon: TrendingUp },
+    { id: 'resumeBuilder', label: t.resumeBuilder, icon: FileText },
+    { id: 'opportunities', label: t.opportunities, icon: Briefcase },
+    { id: 'notebook', label: t.notebookLLM, icon: Bot },
+    { id: 'community', label: t.community, icon: Users },
     { id: 'accessibility', label: t.navSettings, icon: Settings },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'profile', label: t.profile, icon: User },
   ];
 
   return (
@@ -50,7 +50,7 @@ export function DashboardSidebar({ activeTab, onNavigate }: SidebarProps) {
           </div>
           <div>
             <div className="font-bold text-text">NeuroBridge</div>
-            <div className="text-xs text-text-muted">Learning Platform</div>
+            <div className="text-xs text-text-muted">{t.learningPlatform}</div>
           </div>
         </div>
       </div>

@@ -1,234 +1,61 @@
-import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
+import { Brain, Check, Eye, Flame, Gamepad2, Headphones, LockKeyhole, Swords, Target, Trophy, Zap } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
-import { 
-  Clock, CheckCircle, Target, Briefcase, FileText, Send,
-  TrendingUp, Award, Star, Zap, BookOpen
-} from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { ProgressGame, type GameResult } from './ProgressGame';
+import { MatchmakingPanel } from './MatchmakingPanel';
+import { BattleGame } from './BattleGame';
+import { BadgeCollection, BadgeProgressBar, badgeDefinitions, type BadgeDefinition } from './BadgeCollection';
+
+type SkillId = 'sound' | 'focus' | 'memory' | 'speed';
+type Skill = { id: SkillId; icon: typeof Brain; name: string; construct: string; color: string; rating: number; delta: number };
+export type ArenaState = { ratings: Record<SkillId, number>; skillStats: Record<SkillId, { bestAccuracy: number; attempts: number }>; plays: number; streak: number; lastPlayed: string; weeklyGain: number; days: string[]; dailyChallenges: string[]; achievements: string[]; acceptedChallenges: number; wins: number; losses: number; opponent: { name: string; rating: number } | null };
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const today = () => new Date().toISOString().slice(0, 10);
+const labels = {
+  en: { arena: 'Your Reading Arena', daily: 'DAILY CHALLENGE', play: 'Play', playNow: 'Play now', streak: 'day streak', best: 'Best', week: 'this week', skills: 'Your skills', construct: 'Learning construct', peer: 'CHALLENGE A PEER', peerText: 'Find someone around your level.', find: 'Find opponent', you: 'You', accepted: 'accepted', activity: 'Weekly activity', challenges: 'challenges completed', rating: 'rating this week', achievements: 'Recent achievements', growth: 'Your growth', next: 'Recommended next', go: 'Go play', played: 'Played' },
+  hi: { arena: 'आपका रीडिंग एरिना', daily: 'दैनिक चुनौती', play: 'खेलें', playNow: 'अभी खेलें', streak: 'दिनों की लकीर', best: 'सर्वश्रेष्ठ', week: 'इस सप्ताह', skills: 'आपके कौशल', construct: 'सीखने का कौशल', peer: 'साथी को चुनौती दें', peerText: 'अपने स्तर के किसी विद्यार्थी को खोजें।', find: 'प्रतिद्वंद्वी खोजें', you: 'आप', accepted: 'स्वीकृत', activity: 'साप्ताहिक गतिविधि', challenges: 'चुनौतियां पूरी', rating: 'इस सप्ताह रेटिंग', achievements: 'हाल की उपलब्धियां', growth: 'आपकी प्रगति', next: 'अगली सुझाई चुनौती', go: 'खेलने जाएं', played: 'खेला गया' },
+  mr: { arena: 'तुमचे रीडिंग एरिना', daily: 'दैनिक आव्हान', play: 'खेळा', playNow: 'आता खेळा', streak: 'दिवसांची मालिका', best: 'सर्वोत्तम', week: 'या आठवड्यात', skills: 'तुमची कौशल्ये', construct: 'शिकण्याचे कौशल्य', peer: 'सहकाऱ्याला आव्हान द्या', peerText: 'तुमच्या पातळीवरील विद्यार्थी शोधा.', find: 'प्रतिस्पर्धी शोधा', you: 'तुम्ही', accepted: 'स्वीकारले', activity: 'साप्ताहिक उपक्रम', challenges: 'आव्हाने पूर्ण', rating: 'या आठवड्यातील गुण', achievements: 'अलीकडील यश', growth: 'तुमची प्रगती', next: 'पुढील सुचवलेले आव्हान', go: 'खेळायला जा', played: 'खेळले' },
+} as const;
 
 export function ProgressTracking() {
-  const { cognitiveProfile } = useDyslexia();
-
-  // Calculate average from cognitive profile if available
-  const averageAccuracy = cognitiveProfile 
-    ? Math.round(Object.values(cognitiveProfile).reduce((sum: number, val: number) => sum + val, 0) / 6)
-    : 0;
-
-  // Mock data combined with dynamic stats
-  const progressData = {
-    learningTime: 12.5, // hours
-    coursesCompleted: 3,
-    accuracy: averageAccuracy || 75,
-    opportunitiesMatched: 45,
-    jobsApplied: 12,
-    resumeScore: 85,
-    weeklyActivity: [45, 52, 38, 65, 58, 72, 68],
-    skillGrowth: cognitiveProfile ? [
-      { skill: 'Phonological', level: cognitiveProfile.phonological },
-      { skill: 'Visual Attention', level: cognitiveProfile.visual },
-      { skill: 'Working Memory', level: cognitiveProfile.workingMemory },
-      { skill: 'Processing Speed', level: cognitiveProfile.processingSpeed },
-    ] : [
-      { skill: 'Reading Comprehension', level: 65 },
-      { skill: 'Pattern Recognition', level: 72 },
-      { skill: 'Visual Learning', level: 85 },
-      { skill: 'Problem Solving', level: 80 },
-    ],
-  };
-
-  return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-text mb-2">Track Your Progress</h1>
-        <p className="text-text-muted font-medium">See how far you've come in your learning and career journey.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* Learning Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden"
-        >
-          <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
-            <h2 className="text-lg font-bold text-text flex items-center gap-2">
-              <BookOpen size={20} className="text-[#4A90E2]" />
-              Learning Progress
-            </h2>
-          </div>
-          <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-text-muted">
-                <Clock size={16} /> <span className="text-sm font-semibold">Time Spent</span>
-              </div>
-              <div className="text-3xl font-black text-text">{progressData.learningTime}h</div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-text-muted">
-                <CheckCircle size={16} /> <span className="text-sm font-semibold">Completed</span>
-              </div>
-              <div className="text-3xl font-black text-text">{progressData.coursesCompleted}</div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-text-muted">
-                <Target size={16} /> <span className="text-sm font-semibold">Accuracy</span>
-              </div>
-              <div className="text-3xl font-black text-text">{progressData.accuracy}%</div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Career Readiness */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden"
-        >
-          <div className="bg-blue-50 px-6 py-4 border-b border-blue-100 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-text flex items-center gap-2">
-              <Briefcase size={20} className="text-[#4A90E2]" />
-              Career Readiness
-            </h2>
-          </div>
-          <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-text-muted">
-                <Zap size={16} /> <span className="text-sm font-semibold">Matched</span>
-              </div>
-              <div className="text-3xl font-black text-text">{progressData.opportunitiesMatched}</div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-text-muted">
-                <Send size={16} /> <span className="text-sm font-semibold">Applied</span>
-              </div>
-              <div className="text-3xl font-black text-text">{progressData.jobsApplied}</div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-text-muted">
-                <FileText size={16} /> <span className="text-sm font-semibold">Resume Score</span>
-              </div>
-              <div className="text-3xl font-black text-text">{progressData.resumeScore}%</div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* Weekly Activity Graph */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden"
-        >
-          <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
-            <h3 className="text-lg font-bold text-text flex items-center gap-2">
-              <TrendingUp size={20} className="text-[#4A90E2]" />
-              Weekly Activity
-            </h3>
-          </div>
-          
-          <div className="p-6 flex items-end justify-between gap-3 h-64">
-            {progressData.weeklyActivity.map((value, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-3">
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: `${(value / 100) * 100}%` }}
-                  transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
-                  className="w-full bg-[#4A90E2] rounded-t-md min-h-[20px] max-w-[40px] opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
-                  title={`${value} activity points`}
-                />
-                <span className="text-xs font-semibold text-text-muted">
-                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'][index]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Skill Growth */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden"
-        >
-          <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
-            <h3 className="text-lg font-bold text-text flex items-center gap-2">
-              <Award size={20} className="text-[#4A90E2]" />
-              Skill Development
-            </h3>
-          </div>
-
-          <div className="p-6 space-y-6">
-            {progressData.skillGrowth.map((skill, index) => (
-              <div key={skill.skill}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-text text-sm">{skill.skill}</span>
-                  <span className="font-bold text-text text-sm">{skill.level}%</span>
-                </div>
-                <div className="w-full bg-blue-50 rounded-full h-2.5 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${skill.level}%` }}
-                    transition={{ delay: 0.4 + index * 0.1, duration: 0.8 }}
-                    className="h-full rounded-full bg-[#4A90E2]"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Achievements */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden"
-      >
-        <div className="bg-blue-50 px-6 py-4 border-b border-blue-100 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-text flex items-center gap-2">
-            <Star size={20} className="text-[#4A90E2]" />
-            Recent Achievements
-          </h3>
-        </div>
-        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-blue-200 transition-colors">
-            <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
-              <Award size={24} className="text-yellow-600" />
-            </div>
-            <div>
-              <div className="font-bold text-text text-sm">First Course</div>
-              <div className="text-xs text-text-muted">Completed beginner module</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-blue-200 transition-colors">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-              <Zap size={24} className="text-[#4A90E2]" />
-            </div>
-            <div>
-              <div className="font-bold text-text text-sm">Quick Learner</div>
-              <div className="text-xs text-text-muted">5 hours in one week</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-blue-200 transition-colors">
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-              <CheckCircle size={24} className="text-green-600" />
-            </div>
-            <div>
-              <div className="font-bold text-text text-sm">Perfect Profile</div>
-              <div className="text-xs text-text-muted">Completed assessment</div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
+  const { language } = useDyslexia();
+  const { user, token } = useAuth();
+  const t = labels[language];
+  const [game, setGame] = useState<{ skillId: SkillId; isMatch: boolean } | null>(null);
+  const [battle, setBattle] = useState<{ matchId: string; skillId: SkillId } | null>(null);
+  const [matchmaking, setMatchmaking] = useState<SkillId | null>(null);
+  const [unlockedBadge, setUnlockedBadge] = useState<BadgeDefinition | null>(null);
+  const [showBadges, setShowBadges] = useState(false);
+  const storageKey = `neurobridge-learning-arena-v1:${user?.email || 'guest'}`;
+  const [state, setState] = useState<ArenaState>(() => {
+    const empty = { sound: 0, focus: 0, memory: 0, speed: 0 };
+    const defaults = { ratings: empty, skillStats: { sound: { bestAccuracy: 0, attempts: 0 }, focus: { bestAccuracy: 0, attempts: 0 }, memory: { bestAccuracy: 0, attempts: 0 }, speed: { bestAccuracy: 0, attempts: 0 } }, plays: 0, streak: 0, lastPlayed: '', weeklyGain: 0, days: [], dailyChallenges: [], achievements: [], acceptedChallenges: 0, wins: 0, losses: 0, opponent: null };
+    try { const saved = JSON.parse(localStorage.getItem(storageKey) || 'null'); return saved ? { ...defaults, ...saved, ratings: { ...empty, ...saved.ratings }, skillStats: { ...defaults.skillStats, ...saved.skillStats } } : defaults; } catch { return defaults; }
+  });
+  useEffect(() => { localStorage.setItem(storageKey, JSON.stringify(state)); }, [state, storageKey]);
+  useEffect(() => { if (!token) return; fetch('http://localhost:4000/api/progress', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).then(data => { if (!data) return; setState(current => ({ ...current, ratings: { ...current.ratings, ...Object.fromEntries(Object.entries(data.skills || {}).map(([id, stats]: [string, any]) => [id, stats.rating])) }, skillStats: { ...current.skillStats, ...data.skills }, plays: data.completedChallenges ?? current.plays, streak: data.streak ?? current.streak, lastPlayed: data.lastPlayedDay ?? current.lastPlayed, days: data.activityDays ?? current.days, dailyChallenges: data.dailyChallenges ?? current.dailyChallenges, weeklyGain: data.arena?.weeklyGain ?? current.weeklyGain, achievements: data.achievements ?? current.achievements, acceptedChallenges: data.arena?.acceptedChallenges ?? current.acceptedChallenges, wins: data.arena?.wins ?? current.wins, losses: data.arena?.losses ?? current.losses, opponent: data.arena?.opponent ?? current.opponent })); }).catch(() => undefined); }, [token]);
+  const skills: Skill[] = [
+    { id: 'sound', icon: Headphones, name: language === 'hi' ? 'ध्वनि प्रयोगशाला' : language === 'mr' ? 'ध्वनी प्रयोगशाळा' : 'Sound Lab', construct: language === 'hi' ? 'ध्वन्यात्मक जागरूकता' : language === 'mr' ? 'ध्वन्यात्मक जागरूकता' : 'Phonological Awareness', color: '#e86f51', rating: state.ratings.sound, delta: state.skillStats.sound.bestAccuracy },
+    { id: 'focus', icon: Eye, name: language === 'hi' ? 'फोकस ज़ोन' : language === 'mr' ? 'फोकस झोन' : 'Focus Zone', construct: language === 'hi' ? 'दृश्य ध्यान' : language === 'mr' ? 'दृश्य लक्ष' : 'Visual Attention', color: '#4a90e2', rating: state.ratings.focus, delta: state.skillStats.focus.bestAccuracy },
+    { id: 'memory', icon: Brain, name: language === 'hi' ? 'मेमोरी वॉल्ट' : language === 'mr' ? 'मेमरी वॉल्ट' : 'Memory Vault', construct: language === 'hi' ? 'कार्यशील स्मृति' : language === 'mr' ? 'कार्यरत स्मरणशक्ती' : 'Working Memory', color: '#8b6fc5', rating: state.ratings.memory, delta: state.skillStats.memory.bestAccuracy },
+    { id: 'speed', icon: Zap, name: language === 'hi' ? 'स्पीड रन' : language === 'mr' ? 'स्पीड रन' : 'Speed Run', construct: language === 'hi' ? 'प्रसंस्करण गति' : language === 'mr' ? 'प्रक्रिया वेग' : 'Processing Speed', color: '#f2a93b', rating: state.ratings.speed, delta: state.skillStats.speed.bestAccuracy },
+  ];
+  const daily = skills[new Date().getDate() % skills.length];
+  const dailyDone = state.days.includes(today()) || state.dailyChallenges.includes(today());
+  const weekActivity = DAYS.map((_, index) => state.days.includes(new Date(Date.now() - (6 - index) * 86400000).toISOString().slice(0, 10)));
+  const complete = (result: GameResult) => { const date = today(); const previousAchievements = state.achievements; setState(value => ({ ...value, ratings: { ...value.ratings, [result.skillId]: Math.max(0, value.ratings[result.skillId] + result.delta) }, plays: value.plays + 1, streak: value.lastPlayed === date ? value.streak : value.streak + 1, lastPlayed: date, weeklyGain: value.weeklyGain + result.delta, days: value.days.includes(date) ? value.days : [...value.days, date], dailyChallenges: result.mode === 'practice' && !value.dailyChallenges.includes(date) ? [...value.dailyChallenges, date] : value.dailyChallenges, achievements: value.streak >= 1 || !value.lastPlayed || value.lastPlayed === date ? (value.achievements.includes('one-day-streak') ? value.achievements : [...value.achievements, 'one-day-streak']) : value.achievements })); if (token) fetch('http://localhost:4000/api/progress/games', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ skill: result.skillId, correct: result.correct, total: result.total, seconds: result.seconds, mode: result.mode, dailyKey: date }) }).then(response => response.json()).then(data => { const savedSkill = data.progress?.skills?.[result.skillId]; if (savedSkill) setState(value => ({ ...value, ratings: { ...value.ratings, [result.skillId]: savedSkill.rating }, skillStats: { ...value.skillStats, [result.skillId]: savedSkill } })); const newlyUnlocked = (data.progress?.achievements || []).find((id: string) => !previousAchievements.includes(id)); if (newlyUnlocked) setUnlockedBadge(badgeDefinitions.find(badge => badge.id === newlyUnlocked) || null); }).catch(() => undefined); };
+  if (unlockedBadge) { const progress = unlockedBadge.progress(state); const BadgeIcon = unlockedBadge.icon; return <div className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,#513d12_0%,#17130a_42%,#050505_100%)] p-5"><div className="nb-badge-celebration-rays" /><span className="nb-badge-sparkle left-[12%] top-[22%]">✦</span><span className="nb-badge-sparkle right-[14%] top-[28%]" style={{ animationDelay: '0.25s' }}>✧</span><span className="nb-badge-sparkle bottom-[25%] left-[20%]" style={{ animationDelay: '0.5s' }}>✦</span><span className="nb-badge-sparkle bottom-[20%] right-[22%]" style={{ animationDelay: '0.75s' }}>✧</span><div className="nb-badge-unlock relative z-10 w-full max-w-lg text-center"><div className="nb-badge-shimmer" /><div className="nb-badge-celebration-icon relative mx-auto flex h-44 w-44 items-center justify-center rounded-full border-[10px] border-[#d4a941] bg-gradient-to-br from-[#fff3b0] via-[#f4cb5f] to-[#c88e17] text-[#805b08]"><BadgeIcon size={84} /></div><p className="relative mt-10 text-sm font-black uppercase tracking-[0.4em] text-[#ffe47e]">BADGE UNLOCKED!</p><h1 className="relative mt-3 text-4xl font-black text-white sm:text-5xl">{unlockedBadge.name}</h1><p className="relative mx-auto mt-4 max-w-md text-base font-semibold text-[#f8e9b5]">{unlockedBadge.description}</p><p className="relative mt-3 text-sm font-black text-[#ffe47e]">{progress.current} / {progress.target}</p><button onClick={() => setUnlockedBadge(null)} className="relative mt-9 rounded-xl bg-[#d4a941] px-9 py-3 font-black text-white shadow-[0_0_22px_rgba(212,169,65,0.65)] transition hover:bg-[#e4b84e]">Continue</button></div></div>; }
+  if (showBadges) return <BadgeCollection state={state} onClose={() => setShowBadges(false)} />;
+  if (battle && token) return <BattleGame matchId={battle.matchId} token={token} language={language} userId={String(user?.id)} onExit={() => setBattle(null)} onResult={result => { setState(value => ({ ...value, ratings: { ...value.ratings, [battle.skillId]: Math.max(0, value.ratings[battle.skillId] + result.delta) }, plays: value.plays + 1, weeklyGain: value.weeklyGain + result.delta })); }} />;
+  if (matchmaking) { const skill = skills.find(item => item.id === matchmaking)!; return <MatchmakingPanel skill={skill.id} rating={skill.rating} language={language} token={token} displayName={user?.name} onFound={matchId => { setMatchmaking(null); setBattle({ matchId, skillId: skill.id }); }} onCancel={() => setMatchmaking(null)} />; }
+  if (game) { const skill = skills.find(item => item.id === game.skillId)!; return <ProgressGame skillId={skill.id} skillName={skill.name} construct={skill.construct} rating={skill.rating} language={language} isMatch={game.isMatch} onComplete={complete} onExit={() => setGame(null)} />; }
+  const badgeBar = <BadgeProgressBar state={state} onOpen={() => setShowBadges(true)} />;
+  const cards = [
+    <section key="daily" className="relative overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-r from-[#fff1dc] via-[#fff8ed] to-[#e8f4ff] p-5 shadow-sm"><div className="absolute right-5 top-4 text-5xl opacity-20">⚡</div><p className="text-xs font-black tracking-[0.18em] text-[#d87526]">{t.daily}</p><div className="mt-2 flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-2xl font-black text-text">{daily.name}</h2><p className="text-sm font-semibold text-text-muted">10 questions · {daily.construct}</p><p className="mt-2 text-2xl font-black text-text">{daily.rating}</p></div><button disabled={dailyDone} onClick={() => setGame({ skillId: daily.id, isMatch: false })} className="inline-flex items-center gap-2 rounded-xl bg-[#e86f51] px-5 py-3 text-sm font-black text-white disabled:opacity-50"><Gamepad2 size={17} /> {dailyDone ? '✓' : t.playNow}</button></div><p className="mt-3 text-xs font-bold text-text-muted">🔥 {state.streak} {t.streak} · {t.best}: {daily.rating} · +{state.weeklyGain} {t.week}</p></section>,
+    <section key="skills"><div className="mb-2 flex items-center justify-between"><h2 className="text-sm font-black uppercase tracking-[0.16em] text-text-muted">{t.skills}</h2><span className="text-xs font-semibold text-text-muted">{t.construct}</span></div><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{skills.map(skill => { const Icon = skill.icon; return <article key={skill.id} className="rounded-2xl border border-border bg-surface p-4 shadow-sm"><div className="flex items-start justify-between"><div className="flex items-center gap-3"><div className="rounded-xl p-2.5" style={{ backgroundColor: `${skill.color}18`, color: skill.color }}><Icon size={21} /></div><div><h3 className="font-black text-text">{skill.name}</h3><p className="text-xs font-semibold text-text-muted">{skill.construct}</p></div></div><span className="rounded-full px-2 py-1 text-xs font-black" style={{ backgroundColor: `${skill.color}18`, color: skill.color }}>+{skill.delta}</span></div><div className="mt-4 flex items-end justify-between"><span className="text-3xl font-black text-text">{skill.rating}</span><button onClick={() => setGame({ skillId: skill.id, isMatch: false })} className="inline-flex items-center gap-1.5 rounded-lg bg-[#4a90e2] px-3 py-2 text-xs font-black text-white"><Gamepad2 size={14} /> {t.play}</button></div></article>; })}</div></section>,
+    <div key="lower" className="grid grid-cols-1 gap-4 lg:grid-cols-[1.25fr_1fr]"><section className="rounded-2xl border border-border bg-[#f4f8ff] p-5"><div className="flex items-start justify-between"><div><p className="text-xs font-black tracking-[0.16em] text-[#4a90e2]">{t.peer}</p><h2 className="mt-1 text-xl font-black text-text">{t.peerText}</h2><p className="mt-1 text-xs font-bold text-text-muted">{state.acceptedChallenges} {t.accepted}</p></div><Swords className="text-[#4a90e2]" size={28} /></div><div className="mt-5 flex items-center justify-center gap-5"><div className="text-center"><div className="text-xs font-bold text-text-muted">{t.you}</div><div className="text-3xl font-black text-[#4a90e2]">{daily.rating}</div></div><span className="rounded-full bg-white px-3 py-1 text-xs font-black text-text-muted">VS</span><div className="text-center"><div className="text-xs font-bold text-text">{state.opponent?.name || 'No opponent yet'}</div><div className="text-3xl font-black text-[#e86f51]">{state.opponent?.rating ?? '—'}</div></div></div><button onClick={() => setMatchmaking(daily.id)} className="mt-5 w-full rounded-xl border border-[#4a90e2] bg-white py-2.5 text-sm font-black text-[#4a90e2]"><Swords size={15} className="mr-2 inline" />{t.find}</button></section><section className="rounded-2xl border border-border bg-surface p-5"><div className="flex items-center justify-between"><h2 className="font-black text-text">{t.activity}</h2><Target size={20} className="text-[#e86f51]" /></div><div className="mt-5 flex justify-between">{DAYS.map((day, i) => <div key={day} className="flex flex-col items-center gap-2"><span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${weekActivity[i] ? 'bg-[#e86f51] text-white' : 'bg-gray-100 text-gray-400'}`}>{weekActivity[i] ? <Check size={13} /> : '·'}</span><span className="text-[10px] font-bold text-text-muted">{day}</span></div>)}</div><div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4"><div><div className="text-xl font-black text-text">{state.plays}</div><div className="text-xs font-semibold text-text-muted">{t.challenges}</div></div><div><div className="text-xl font-black text-[#4a90e2]">+{state.weeklyGain}</div><div className="text-xs font-semibold text-text-muted">{t.rating}</div></div></div></section></div>,
+    <div key="bottom" className="grid grid-cols-1 gap-4 lg:grid-cols-[1.25fr_1fr]"><section className="rounded-2xl border border-border bg-surface p-5"><div className="flex items-center justify-between"><h2 className="font-black text-text"><Trophy size={20} className="mr-2 inline text-[#f2a93b]" />{t.achievements}</h2></div><div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">{badgeDefinitions.map(badge => { const unlocked = state.achievements.includes(badge.id); const progress = badge.progress(state); const BadgeIcon = unlocked ? badge.icon : LockKeyhole; return <div key={badge.id} className={`${unlocked ? 'nb-earned-badge' : 'nb-locked-badge bg-gray-50'} rounded-xl p-3`}><div className="flex items-center gap-3"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${unlocked ? 'border-[#c99b2e] bg-[#ffe8a3] text-[#9a6c0c]' : 'border-gray-300 bg-gray-100 text-gray-400'}`}><BadgeIcon size={20} /></div><div><div className="text-sm font-black text-text">{badge.name}</div><div className="text-[11px] font-semibold text-text-muted">{unlocked ? 'UNLOCKED' : 'LOCKED'}</div></div>{unlocked && <span className="ml-auto text-xs font-black text-green-600">✓</span>}</div><p className="mt-2 text-xs font-semibold text-text-muted">{badge.description}</p><p className="mt-2 text-[11px] font-black text-text-muted">Requirement: {badge.requirement}</p><div className="mt-2 flex items-center justify-between text-[11px] font-black text-[#a47716]"><span>Progress</span><span>{progress.current} / {progress.target}</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/10"><div className="h-full rounded-full bg-[#d4a941]" style={{ width: `${Math.min(100, progress.current / progress.target * 100)}%` }} /></div></div>; })}</div></section><section className="rounded-2xl border border-border bg-[#fff8ed] p-5"><div className="flex items-center justify-between"><h2 className="font-black text-text">{t.growth}</h2><Flame size={20} className="text-[#e86f51]" /></div><div className="mt-3 space-y-2">{skills.map(skill => <div key={skill.id} className="flex items-center justify-between rounded-lg bg-white/70 px-3 py-2"><span className="text-xs font-bold text-text">{skill.name}</span><span className="text-xs font-black text-[#e86f51]">↑ {skill.delta}%</span></div>)}</div><button onClick={() => setGame({ skillId: daily.id, isMatch: false })} className="mt-4 text-xs font-black text-[#e86f51]">{t.next} {t.go} →</button></section></div>,
+  ];
+  return <div className="max-w-5xl mx-auto pb-8 space-y-4"><div className="flex items-end justify-between px-1"><div><p className="text-xs font-black uppercase tracking-[0.18em] text-[#e86f51]">{t.arena}</p><h1 className="text-3xl font-black text-text">{t.skills} <span className="text-[#e86f51]">🔥 {state.streak}</span></h1></div><div className="flex items-end gap-4"><div className="text-right text-xs font-bold text-text-muted">{state.plays} {t.played}<br />+{state.weeklyGain} {t.week}</div></div></div>{badgeBar}{cards.slice(0, 3)}</div>;
 }

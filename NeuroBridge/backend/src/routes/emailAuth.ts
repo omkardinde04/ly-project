@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { AuthService } from '../auth';
 import database from '../database';
 import crypto from 'crypto';
+import UserModel from '../models/User';
 // @ts-ignore
 import nodemailer from 'nodemailer';
 
@@ -465,4 +466,16 @@ emailAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res: 
     console.error('Get email user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+emailAuthRouter.patch('/me', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const name = String(req.body?.name || '').trim();
+    if (!name || name.length > 80) return res.status(400).json({ error: 'Name must be between 1 and 80 characters' });
+    const user = await database.getUserById(req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const updated = await UserModel.findByIdAndUpdate(req.user.userId, { name }, { new: true });
+    if (!updated) return res.status(404).json({ error: 'User not found' });
+    res.json({ id: String(updated._id), name: updated.name, email: updated.email, profile_picture: updated.profile_picture, assessment_completed: updated.assessment_completed, email_verified: updated.email_verified, created_at: updated.created_at });
+  } catch (error) { console.error('Update profile error:', error); res.status(500).json({ error: 'Could not update profile' }); }
 });

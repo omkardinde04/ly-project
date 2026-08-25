@@ -14,6 +14,9 @@ import { linkedinRouter } from './routes/linkedin';
 import { brainRouter } from './routes/brain';
 import { googleAuthRouter } from './routes/googleAuth';
 import { emailAuthRouter } from './routes/emailAuth';
+import { progressRouter } from './routes/progress';
+import { resumeRouter } from './routes/resume';
+import { communityRouter } from './routes/community';
 
 const PORT = process.env.PORT || 4000;
 const geminiKey = process.env.GEMINI_API_KEY;
@@ -53,6 +56,13 @@ app.use('/api/auth/email', emailAuthRouter);
 app.use('/api/llm', llmRouter);
 app.use('/api/linkedin', linkedinRouter);
 app.use('/api/brain', brainRouter);
+app.use('/api/progress', progressRouter);
+app.use('/api/resume', resumeRouter);
+app.use('/api/community', communityRouter);
+
+app.get('/', (_req, res) => {
+  res.json({ status: 'ok', service: 'NeuroBridge backend', health: '/health' });
+});
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

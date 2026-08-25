@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Heart, MessageSquare, Share2, ArrowLeft, Info } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { CommunityNetwork } from './CommunityNetwork';
 
 // --- Types ---
 type Category = 'General' | 'Study & Learning' | 'Career' | 'Experiences' | 'Questions';
@@ -89,7 +90,7 @@ const MOCK_POSTS: Post[] = [
 const CATEGORIES: Category[] = ['General', 'Study & Learning', 'Career', 'Experiences', 'Questions'];
 
 export function Community() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   
   // State
   const [view, setView] = useState<'feed' | 'create' | 'detail'>('feed');
@@ -97,11 +98,28 @@ export function Community() {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [activePost, setActivePost] = useState<Post | null>(null);
+  const [commentDraft, setCommentDraft] = useState('');
 
   // Create Post State
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostCategory, setNewPostCategory] = useState<Category>('General');
+
+  useEffect(() => {
+    if (!token) return;
+    fetch('http://localhost:4000/api/community/posts', { headers: { Authorization: `Bearer ${token}` } })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (data?.posts) setPosts(data.posts); })
+      .catch(() => undefined);
+  }, [token]);
+
+  useEffect(() => {
+    if (!activePost || !token) return;
+    fetch(`http://localhost:4000/api/community/posts/${activePost.id}/comments`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (data?.comments) setActivePost(current => current ? { ...current, comments: data.comments } : current); })
+      .catch(() => undefined);
+  }, [activePost?.id, token]);
 
   // Helpers
   const getInitials = (name: string) => {
@@ -109,7 +127,7 @@ export function Community() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     if (!newPostTitle.trim() || !newPostContent.trim()) return;
     
     const newPost: Post = {
@@ -124,11 +142,29 @@ export function Community() {
       comments: []
     };
 
-    setPosts([newPost, ...posts]);
+    if (token) {
+      const response = await fetch('http://localhost:4000/api/community/posts', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ title: newPost.title, content: newPost.content, category: newPost.category }) });
+      const data = await response.json();
+      if (!response.ok || !data.post) return;
+      setPosts(current => [data.post, ...current]);
+    } else {
+      setPosts(current => [newPost, ...current]);
+    }
     setNewPostTitle('');
     setNewPostContent('');
     setNewPostCategory('General');
     setView('feed');
+  };
+
+  const handleAddComment = async () => {
+    if (!activePost || !commentDraft.trim() || !token) return;
+    const response = await fetch(`http://localhost:4000/api/community/posts/${activePost.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ content: commentDraft.trim() }) });
+    const data = await response.json();
+    if (!response.ok || !data.comment) return;
+    const updated = { ...activePost, comments: [...activePost.comments, data.comment] };
+    setActivePost(updated);
+    setPosts(current => current.map(post => post.id === updated.id ? updated : post));
+    setCommentDraft('');
   };
 
   const filteredPosts = posts.filter(post => {
@@ -364,9 +400,13 @@ export function Community() {
              </div>
              <input 
                type="text" 
+               value={commentDraft}
+               onChange={(e) => setCommentDraft(e.target.value)}
+               onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(); }}
                placeholder="Write a comment..."
                className="flex-1 px-4 py-2.5 rounded-lg border border-border focus:border-[#4A90E2] focus:outline-none bg-gray-50 text-text  "
              />
+             <button type="button" onClick={handleAddComment} disabled={!commentDraft.trim()} className="px-4 py-2.5 rounded-lg bg-[#4A90E2] text-white font-bold disabled:opacity-40">Send</button>
           </div>
 
           <div className="space-y-8">
@@ -436,6 +476,8 @@ export function Community() {
           </div>
         </div>
       )}
+
+      <CommunityNetwork posts={posts} />
 
       {/* Main Content Router */}
       {view === 'feed' && renderFeed()}

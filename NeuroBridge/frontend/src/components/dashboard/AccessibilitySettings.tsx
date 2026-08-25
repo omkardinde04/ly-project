@@ -2,9 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import type { LineSpacing, LetterSpacing, ContentWidth } from '../../contexts/DyslexiaContext';
+import { getTranslation } from '../../utils/translations';
 
 export function AccessibilitySettings() {
   const { 
+    language,
     isDyslexiaMode,
     textSize, setTextSize,
     lineSpacing, setLineSpacing,
@@ -14,6 +16,7 @@ export function AccessibilitySettings() {
     contentWidth, setContentWidth,
     resetVisualPreferences
   } = useDyslexia();
+  const t = getTranslation(language);
 
   // Helper mappings for CSS values
   const getLineHeight = (val: LineSpacing) => {
@@ -38,8 +41,8 @@ export function AccessibilitySettings() {
     <div className="max-w-4xl mx-auto pb-16 space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-text mb-2">Accessibility Preferences</h1>
-        <p className="text-text-muted font-medium">Customize how content looks and feels for you.</p>
+        <h1 className="text-3xl font-bold text-text mb-2">{t.accPreferences}</h1>
+        <p className="text-text-muted font-medium">{t.customizeAppearance}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -50,19 +53,19 @@ export function AccessibilitySettings() {
           className="lg:col-span-2 bg-surface rounded-2xl shadow-sm border border-border overflow-hidden"
         >
           <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
-            <h2 className="text-lg font-bold text-text">Reading & Visual Adjustments</h2>
+            <h2 className="text-lg font-bold text-text">{t.readingVisualAdjustments}</h2>
           </div>
 
           <div className="p-6 space-y-8">
             {/* 1. Text Size */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="font-bold text-text">Text Size</label>
+                <label className="font-bold text-text">{t.textSize}</label>
                 <span className="text-[#4A90E2] font-bold bg-blue-50 px-3 py-1 rounded-full text-sm">
                   {textSize}%
                 </span>
               </div>
-              <p className="text-sm text-text-muted font-medium mb-4">Make text easier to read.</p>
+              <p className="text-sm text-text-muted font-medium mb-4">{t.textSizeHelp}</p>
               <input
                 type="range"
                 min="80" max="140" step="10"
@@ -82,8 +85,8 @@ export function AccessibilitySettings() {
 
             {/* 2. Line Spacing */}
             <div>
-              <label className="font-bold text-text block mb-1">Line Spacing</label>
-              <p className="text-sm text-text-muted font-medium mb-4">Increase space between lines for easier reading.</p>
+              <label className="font-bold text-text block mb-1">{t.lineSpacing}</label>
+              <p className="text-sm text-text-muted font-medium mb-4">{t.lineSpacingHelp}</p>
               <div className="flex gap-3">
                 {(['normal', 'comfortable', 'spacious'] as LineSpacing[]).map((spacing) => (
                   <button
@@ -105,8 +108,8 @@ export function AccessibilitySettings() {
 
             {/* 3. Letter Spacing */}
             <div>
-              <label className="font-bold text-text block mb-1">Letter Spacing</label>
-              <p className="text-sm text-text-muted font-medium mb-4">Add space between letters to improve readability.</p>
+              <label className="font-bold text-text block mb-1">{t.letterSpacing}</label>
+              <p className="text-sm text-text-muted font-medium mb-4">{t.letterSpacingHelp}</p>
               <div className="flex gap-3">
                 {(['normal', 'comfortable', 'wide'] as LetterSpacing[]).map((spacing) => (
                   <button
@@ -130,8 +133,8 @@ export function AccessibilitySettings() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-text mb-1">High Contrast</div>
-                  <div className="text-sm text-text-muted font-medium">Increase the contrast between text and backgrounds.</div>
+                  <div className="font-bold text-text mb-1">{t.highContrast}</div>
+                  <div className="text-sm text-text-muted font-medium">{t.highContrastHelp}</div>
                 </div>
                 <button
                   onClick={() => setHighContrast(!highContrast)}
@@ -148,8 +151,8 @@ export function AccessibilitySettings() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-text mb-1">Reduce Motion</div>
-                  <div className="text-sm text-text-muted font-medium">Minimize animations and movement across the website.</div>
+                  <div className="font-bold text-text mb-1">{t.reduceMotion}</div>
+                  <div className="text-sm text-text-muted font-medium">{t.reduceMotionHelp}</div>
                 </div>
                 <button
                   onClick={() => setReduceMotion(!reduceMotion)}
@@ -169,8 +172,8 @@ export function AccessibilitySettings() {
 
             {/* 6. Content Width */}
             <div>
-              <label className="font-bold text-text block mb-1">Reading Comfort (Content Width)</label>
-              <p className="text-sm text-text-muted font-medium mb-4">Controls the maximum width of long text paragraphs.</p>
+              <label className="font-bold text-text block mb-1">{t.contentWidth}</label>
+              <p className="text-sm text-text-muted font-medium mb-4">{t.contentWidthHelp}</p>
               <div className="flex gap-3">
                 {(['normal', 'comfortable', 'narrow'] as ContentWidth[]).map((width) => (
                   <button
@@ -201,10 +204,10 @@ export function AccessibilitySettings() {
             }`}
           >
             <h3 className={`text-sm font-bold uppercase tracking-wider mb-8 ${highContrast ? 'text-slate-400' : 'text-text-muted'}`}>
-              Live Preview
+              {t.livePreview}
             </h3>
             <p className={`text-sm font-bold mb-4 ${highContrast ? 'text-slate-300' : 'text-text-muted'}`}>
-              See how your settings affect reading.
+              {t.previewDescription}
             </p>
 
             {/* Preview Container */}
@@ -237,7 +240,7 @@ export function AccessibilitySettings() {
 
           {/* Current Settings Summary */}
           <div className="bg-surface rounded-2xl shadow-sm border border-border p-6">
-            <h3 className="font-bold text-text mb-4">Your Settings</h3>
+            <h3 className="font-bold text-text mb-4">{t.yourSettings}</h3>
             <div className="space-y-2 mb-6">
               <div className="flex justify-between text-sm">
                 <span className="text-text-muted font-medium">Text Size:</span>
@@ -265,7 +268,7 @@ export function AccessibilitySettings() {
               onClick={resetVisualPreferences}
               className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-text font-bold rounded-xl transition-colors text-sm"
             >
-              Reset to Default
+              {t.resetToDefault}
             </button>
           </div>
         </div>

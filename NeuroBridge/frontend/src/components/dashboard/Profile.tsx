@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 export function Profile() {
-  const { user, logout, updateUser } = useAuth();
+  const { user, token, logout, updateUser } = useAuth();
   
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -28,10 +28,14 @@ export function Profile() {
     platformReminders: true,
   });
 
-  const handleSavePersonalInfo = () => {
-    // In a real app, we'd make an API call to update these fields.
-    // We'll update the context's name just for demonstration.
-    updateUser({ name: personalInfo.fullName });
+  const handleSavePersonalInfo = async () => {
+    const name = personalInfo.fullName.trim();
+    if (!name || !token) return;
+    const response = await fetch('http://localhost:4000/api/auth/email/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ name }) });
+    if (!response.ok) return;
+    const updated = await response.json();
+    updateUser(updated);
+    setPersonalInfo(value => ({ ...value, fullName: updated.name, preferredName: updated.name.split(' ')[0] }));
     setIsEditingPersonal(false);
   };
 

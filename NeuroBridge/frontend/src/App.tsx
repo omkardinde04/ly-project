@@ -25,14 +25,31 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { ResumeBuilderPage } from './components/pages/ResumeBuilderPage';
 
 function Layout({ children }: { children: ReactNode }) {
-  const { isDyslexiaMode, dyslexiaLevel } = useDyslexia();
+  const {
+    isDyslexiaMode,
+    dyslexiaLevel,
+    textSize,
+    lineSpacing,
+    letterSpacing,
+    highContrast,
+    reduceMotion,
+    contentWidth,
+  } = useDyslexia();
 
   // Apply class directly on <body> so our CSS token system works globally
   useEffect(() => {
     const body = document.body;
+    const root = document.documentElement;
 
     // Reset all mode classes first
-    body.classList.remove('dyslexia-mode', 'mild-dyslexia', 'high-contrast');
+    body.classList.remove(
+      'dyslexia-mode',
+      'mild-dyslexia',
+      'high-contrast',
+      'accessibility-high-contrast',
+      'accessibility-reduce-motion',
+    );
+    root.classList.remove('accessibility-reduce-motion');
 
     if (isDyslexiaMode) {
       if (dyslexiaLevel === 'severe') {
@@ -43,7 +60,28 @@ function Layout({ children }: { children: ReactNode }) {
         body.classList.add('dyslexia-mode');
       }
     }
-  }, [isDyslexiaMode, dyslexiaLevel]);
+
+    if (highContrast) body.classList.add('high-contrast', 'accessibility-high-contrast');
+    if (reduceMotion) {
+      body.classList.add('accessibility-reduce-motion');
+      root.classList.add('accessibility-reduce-motion');
+    }
+
+    const lineHeights = { normal: '1.5', comfortable: '1.8', spacious: '2.2' };
+    const letterSpacings = { normal: 'normal', comfortable: '0.05em', wide: '0.1em' };
+    const contentWidths = { normal: '100%', comfortable: '85%', narrow: '65%' };
+    root.style.fontSize = `${textSize}%`;
+    root.style.setProperty('--accessibility-line-height', lineHeights[lineSpacing]);
+    root.style.setProperty('--accessibility-letter-spacing', letterSpacings[letterSpacing]);
+    root.style.setProperty('--accessibility-content-width', contentWidths[contentWidth]);
+
+    return () => {
+      root.style.fontSize = '';
+      root.style.removeProperty('--accessibility-line-height');
+      root.style.removeProperty('--accessibility-letter-spacing');
+      root.style.removeProperty('--accessibility-content-width');
+    };
+  }, [isDyslexiaMode, dyslexiaLevel, textSize, lineSpacing, letterSpacing, highContrast, reduceMotion, contentWidth]);
 
   return <>{children}</>;
 }

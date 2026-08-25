@@ -199,32 +199,59 @@ export const ResumeBuilder: React.FC = () => {
   };
 
   const downloadPDF = async () => {
-    const element = document.getElementById('resume-preview-content');
+    const element = document.getElementById('resume-preview-content') || document.getElementById('resume-container');
     if (!element) {
       alert("Resume preview not found. Please make sure the preview is visible.");
       return;
     }
 
+    let exportElement: HTMLElement | null = null;
     try {
+      exportElement = element.cloneNode(true) as HTMLElement;
+      exportElement.id = 'resume-pdf-export';
+      exportElement.style.position = 'fixed';
+      exportElement.style.left = '-10000px';
+      exportElement.style.top = '0';
+      exportElement.style.width = `${Math.max(element.getBoundingClientRect().width, 760)}px`;
+      exportElement.style.backgroundColor = '#ffffff';
+      const styleProperties = ['color', 'background-color', 'background-image', 'font', 'font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'display', 'width', 'height', 'margin', 'padding', 'border', 'border-radius', 'text-align', 'white-space', 'vertical-align'] as const;
+      const sourceNodes = [element, ...Array.from(element.querySelectorAll('*'))];
+      const exportNodes = [exportElement, ...Array.from(exportElement.querySelectorAll('*'))];
+      sourceNodes.forEach((sourceNode, index) => {
+        const targetNode = exportNodes[index] as HTMLElement;
+        const computed = window.getComputedStyle(sourceNode);
+        styleProperties.forEach(property => targetNode.style.setProperty(property, computed.getPropertyValue(property)));
+      });
+      document.body.appendChild(exportElement);
       const opt = {
         margin: 0.35,
         filename: getFileName(),
         image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { 
+        html2canvas: {
           scale: 2, 
-          useCORS: true, 
+          useCORS: false,
+          allowTaint: false,
+          foreignObjectRendering: false,
           backgroundColor: '#ffffff',
-          logging: false
+          logging: false,
+          onclone: (clonedDocument: Document) => {
+            clonedDocument.querySelectorAll('style, link[rel="stylesheet"]').forEach(node => node.remove());
+            const clonedElement = clonedDocument.getElementById('resume-pdf-export');
+            clonedElement?.querySelectorAll('*').forEach(node => node.removeAttribute('class'));
+          }
         },
         jsPDF: { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const },
         pagebreak: { mode: ['css', 'legacy'] }
       };
       
       // Using the promise-based API
-      await html2pdf().set(opt).from(element).save();
+      const pdfFactory = (html2pdf as unknown as { default?: typeof html2pdf }).default || html2pdf;
+      await pdfFactory().set(opt).from(exportElement).save();
     } catch (err) {
       console.error("PDF generation error:", err);
       alert("Failed to generate PDF. Please try again.");
+    } finally {
+      exportElement?.remove();
     }
   };
 

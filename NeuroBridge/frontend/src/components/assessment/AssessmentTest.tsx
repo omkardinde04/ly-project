@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SkipForward } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { partAQuestions } from './assessmentQuestions';
 import { speakText } from '../../utils/textToSpeech';
@@ -490,7 +491,8 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = (expectedQuestion = currentQuestion) => {
+    if (expectedQuestion !== currentQuestion) return;
     if (currentQuestion < partAQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
@@ -531,6 +533,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
 
       onComplete(score, metrics);
     }
+  };
+
+  const handleForceNext = () => {
+    handleNext(currentQuestion);
   };
 
   const handlePrevious = () => {
@@ -666,7 +672,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
               <MissionControlTask onComplete={(logs) => {
                 handleAnswer(0);
-                setTimeout(handleNext, 100);
+                setTimeout(() => handleNext(currentQuestion), 100);
               }} />
             </div>
           ) : currentQ.type === 'situation_series' ? (
@@ -676,7 +682,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 title="Imagine this..."
                 onComplete={(data) => {
                   handleAnswer(0);
-                  setTimeout(handleNext, 100);
+                  setTimeout(() => handleNext(currentQuestion), 100);
                 }} 
               />
             </div>
@@ -684,14 +690,14 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
               <MultiplicationRecallTask onComplete={(metrics) => {
                 handleAnswer(0);
-                setTimeout(handleNext, 100);
+                setTimeout(() => handleNext(currentQuestion), 100);
               }} />
             </div>
           ) : currentQ.type === 'voice_alphabet' ? (
             <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
               <VoiceAlphabetTask onComplete={(metrics) => {
                 handleAnswer(0);
-                setTimeout(handleNext, 100);
+                setTimeout(() => handleNext(currentQuestion), 100);
               }} />
             </div>
           ) : currentQ.type === 'read_aloud' ? (
@@ -702,10 +708,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                   setShowBrainGamesIntro(true);
                   setTimeout(() => {
                     setShowBrainGamesIntro(false);
-                    handleNext();
+                    handleNext(currentQuestion);
                   }, 3000);
                 } else {
-                  setTimeout(handleNext, 100);
+                  setTimeout(() => handleNext(currentQuestion), 100);
                 }
               }} />
             </div>
@@ -793,7 +799,17 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             </p>
 
             <button
-              onClick={handleNext}
+              type="button"
+              onClick={handleForceNext}
+              title="Skip this question for testing"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-full border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 active:scale-95 font-bold text-xs transition-all"
+            >
+              <SkipForward className="h-3.5 w-3.5" aria-hidden="true" />
+              Force next
+            </button>
+
+            <button
+              onClick={() => handleNext()}
               disabled={!isAnswered}
               className={`flex items-center gap-1 px-6 py-2 rounded-full font-bold text-sm transition-all shadow-sm ${
                 !isAnswered

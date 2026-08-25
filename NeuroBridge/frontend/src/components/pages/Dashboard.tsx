@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { getTranslation } from '../../utils/translations';
+import { getDashboardTextTranslations, getTranslation } from '../../utils/translations';
 import { DashboardSidebar } from '../dashboard/DashboardSidebar';
 import { MyLearning } from '../dashboard/MyLearning';
 import { ProgressTracking } from '../dashboard/ProgressTracking';
@@ -102,12 +102,13 @@ export function Dashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="dashboard-shell flex min-h-screen bg-bg">
+      <DashboardLanguageBridge />
       {/* Left Sidebar */}
       <DashboardSidebar activeTab={activeTab} onNavigate={setActiveTab} />
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-64 p-8 flex flex-col h-screen overflow-y-auto">
+      <main className="dashboard-main flex-1 ml-64 p-8 flex flex-col h-screen overflow-y-auto">
         {/* Global Accessibility Top Bar */}
         <div className="flex items-center justify-end gap-4 mb-6 shrink-0">
           <AudioControl showControls={false} />
@@ -116,12 +117,99 @@ export function Dashboard() {
         </div>
 
         {/* Page Content */}
-        <div className="flex-1">
+        <div className="dashboard-content flex-1">
           {renderContent()}
         </div>
       </main>
     </div>
   );
+}
+
+function DashboardLanguageBridge() {
+  const { language } = useDyslexia();
+
+  useEffect(() => {
+    const dashboard = document.querySelector('.dashboard-shell');
+    if (!dashboard) return;
+
+    const dictionary = getDashboardTextTranslations(language);
+    const hindiDictionary = getDashboardTextTranslations('hi');
+    const marathiDictionary = getDashboardTextTranslations('mr');
+    const originals = new Map<Text, string>();
+    const translatedAttributes = new Map<Element, Map<string, string>>();
+    let observer: MutationObserver;
+    const phrases = Object.keys(dictionary).sort((a, b) => b.length - a.length);
+    const translatedPhrases = Object.keys({ ...hindiDictionary, ...marathiDictionary })
+      .map((key) => hindiDictionary[key] || marathiDictionary[key])
+      .filter(Boolean)
+      .sort((a, b) => b.length - a.length);
+    const restoreEnglish = (value: string) => {
+      let restored = value;
+      for (const phrase of translatedPhrases) {
+        const english = Object.keys(hindiDictionary).find((key) => hindiDictionary[key] === phrase)
+          || Object.keys(marathiDictionary).find((key) => marathiDictionary[key] === phrase);
+        if (english) restored = restored.split(phrase).join(english);
+      }
+      return restored;
+    };
+    const translateValue = (value: string) => {
+      const normalized = restoreEnglish(value);
+      const trimmed = normalized.trim();
+      if (!trimmed) return value;
+      if (dictionary[trimmed]) return normalized.replace(trimmed, dictionary[trimmed]);
+      return phrases.reduce((result, phrase) => result.split(phrase).join(dictionary[phrase]), normalized);
+    };
+
+    const translate = (root: Node) => {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const textNodes: Text[] = [];
+      let node: Node | null;
+      while ((node = walker.nextNode())) textNodes.push(node as Text);
+
+      for (const textNode of textNodes) {
+        const value = originals.get(textNode) ?? textNode.nodeValue ?? '';
+        if (!originals.has(textNode)) originals.set(textNode, value);
+        textNode.nodeValue = translateValue(value);
+      }
+
+      const elements = root instanceof Element ? [root, ...Array.from(root.querySelectorAll('*'))] : [];
+      for (const element of elements) {
+        for (const attribute of ['placeholder', 'title', 'aria-label']) {
+          const value = element.getAttribute(attribute);
+          if (!value) continue;
+          const translated = translateValue(value);
+          if (translated === value) continue;
+          let saved = translatedAttributes.get(element);
+          if (!saved) {
+            saved = new Map();
+            translatedAttributes.set(element, saved);
+          }
+          if (!saved.has(attribute)) saved.set(attribute, value);
+          element.setAttribute(attribute, translated);
+        }
+      }
+    };
+
+    translate(dashboard);
+    observer = new MutationObserver((mutations) => {
+      observer.disconnect();
+      for (const mutation of mutations) {
+        mutation.addedNodes.forEach((addedNode) => translate(addedNode));
+      }
+      observer.observe(dashboard, { childList: true, subtree: true, characterData: true });
+    });
+    observer.observe(dashboard, { childList: true, subtree: true, characterData: true });
+
+    return () => {
+      observer.disconnect();
+      originals.forEach((value, textNode) => { textNode.nodeValue = value; });
+      translatedAttributes.forEach((attributes, element) => {
+        attributes.forEach((value, attribute) => element.setAttribute(attribute, value));
+      });
+    };
+  }, [language]);
+
+  return null;
 }
 
 
@@ -227,20 +315,20 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
         {/* Profile Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
-            <div className="text-sm font-semibold text-blue-600 mb-2">Your Level</div>
+            <div className="text-sm font-semibold text-blue-600 mb-2">{t.yourLevel}</div>
             <div className={`inline-block px-4 py-2 rounded-full font-bold ${getLevelColor(dyslexiaLevel)}`}>
-              {dyslexiaLevel === 'none' ? 'Standard' : dyslexiaLevel === 'mild' ? 'Mild Support' : dyslexiaLevel === 'moderate' ? 'Moderate Support' : 'Enhanced Support'}
+              {dyslexiaLevel === 'none' ? t.standard : dyslexiaLevel === 'mild' ? t.levelMild : dyslexiaLevel === 'moderate' ? t.levelModerate : t.levelSevere}
             </div>
           </div>
           
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6">
-            <div className="text-sm font-semibold text-green-600 mb-2">Assessment Score</div>
+            <div className="text-sm font-semibold text-green-600 mb-2">{t.assessmentScore}</div>
             <div className="text-3xl font-black text-green-700">{testScore}</div>
           </div>
           
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6">
-            <div className="text-sm font-semibold text-purple-600 mb-2">Accessibility Mode</div>
-            <div className="text-lg font-bold text-purple-700">Active ✓</div>
+            <div className="text-sm font-semibold text-purple-600 mb-2">{t.accessibilityMode}</div>
+            <div className="text-lg font-bold text-purple-700">{t.active} ✓</div>
           </div>
         </div>
       </motion.div>
@@ -255,18 +343,18 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
       >
         <DashboardCard
           icon={<TrendingUp size={28} className="text-[#4A90E2]" />}
-          title="View Progress"
-          description="See how far you've come and celebrate your achievements."
-          buttonLabel="View Progress →"
+          title={t.trackProgress}
+          description={t.yourPersonalizedDashboard}
+          buttonLabel={`${t.viewProgress} →`}
           onClick={() => onNavigate('progress')}
           delay={0.1}
         />
         
         <DashboardCard
           icon={<FileText size={28} className="text-[#4A90E2]" />}
-          title="Resume Builder"
-          description="Create a professional, ATS-friendly resume tailored to your strengths."
-          buttonLabel="Open Resume Builder →"
+          title={t.resumeBuilder}
+          description={t.resumeDescription}
+          buttonLabel={`${t.openResumeBuilder} →`}
           onClick={() => navigate('/dashboard/resume-builder')}
           delay={0.15}
         />
@@ -275,10 +363,10 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
       {/* Quick Navigation Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
         {[
-          { id: 'notebook', icon: <Bot size={24} className="text-[#4A90E2]" />, title: 'AI Notebook', desc: 'Smart learning assistant' },
-          { id: 'community', icon: <Users size={24} className="text-[#4A90E2]" />, title: 'Community', desc: 'Connect with peers' },
-          { id: 'opportunities', icon: <Briefcase size={24} className="text-[#4A90E2]" />, title: 'Opportunities', desc: 'Jobs & scholarships' },
-          { id: 'accessibility', icon: <Settings size={24} className="text-[#4A90E2]" />, title: 'Accessibility', desc: 'Customise experience' },
+          { id: 'notebook', icon: <Bot size={24} className="text-[#4A90E2]" />, title: t.aiNotebook, desc: t.smartLearningAssistant },
+          { id: 'community', icon: <Users size={24} className="text-[#4A90E2]" />, title: t.community, desc: t.connectWithPeers },
+          { id: 'opportunities', icon: <Briefcase size={24} className="text-[#4A90E2]" />, title: t.opportunities, desc: t.jobsAndScholarships },
+          { id: 'accessibility', icon: <Settings size={24} className="text-[#4A90E2]" />, title: t.navSettings, desc: t.customiseExperience },
         ].map((item, index) => (
           <motion.div
             key={item.id}
