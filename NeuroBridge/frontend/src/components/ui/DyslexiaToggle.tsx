@@ -1,25 +1,42 @@
+import React from 'react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { Type } from 'lucide-react';
 
 export function DyslexiaToggle({ className = '' }: { className?: string }) {
   const { isDyslexiaMode, toggleDyslexiaMode } = useDyslexia();
 
   return (
-    <div className={`flex items-center gap-3 bg-surface/ backdrop-blur-md px-4 py-2.5 rounded-full shadow-sm border border-blue-100/50 ${className}`}>
-      <span className="text-sm font-bold text-text select-none">🎨 Dyslexia Mode</span>
+    <div
+      className={`flex items-center gap-2 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl shadow-2xs border border-blue-100/90 hover:border-blue-200 transition-all ${className}`}
+      role="group"
+      aria-label="Dyslexia Font Accessibility Switch"
+    >
+      <div className="flex items-center gap-1 text-xs font-bold text-[#1A202C]">
+        <Type size={13} className="text-[#8B5CF6]" />
+        <span className="hidden xl:inline">Dyslexia</span>
+      </div>
+
       <button
         onClick={toggleDyslexiaMode}
         type="button"
-        className={`w-12 h-6 rounded-full transition-colors relative focus:outline-hidden focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 ${
-          isDyslexiaMode ? 'bg-blue-500' : 'bg-gray-300'
+        className={`relative w-8 h-4.5 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 cursor-pointer ${
+          isDyslexiaMode ? 'bg-[#2563EB]' : 'bg-slate-300'
         }`}
-        aria-label="Toggle Dyslexia Mode"
+        aria-label="Toggle OpenDyslexic Mode"
+        aria-pressed={isDyslexiaMode}
       >
-        <div
-          className={`w-4 h-4 rounded-full bg-surface absolute top-1 transition-transform shadow-sm ${
-            isDyslexiaMode ? 'translate-x-7' : 'translate-x-1'
+        <span
+          className={`absolute top-0.5 left-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-xs transition-transform duration-300 ${
+            isDyslexiaMode ? 'translate-x-3.5' : 'translate-x-0'
           }`}
         />
       </button>
+
+      {isDyslexiaMode && (
+        <span className="text-[9px] font-black text-[#2563EB] bg-blue-50 px-1 py-0.2 rounded hidden sm:inline">
+          ON
+        </span>
+      )}
     </div>
   );
 }

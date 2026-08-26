@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
+import { Menu } from 'lucide-react';
+import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDashboardData } from '../../hooks/useDashboardData';
 import { getDashboardTextTranslations, getTranslation } from '../../utils/translations';
 import { DashboardSidebar } from '../dashboard/DashboardSidebar';
+import { DashboardHeader } from '../dashboard/DashboardHeader';
+import { DashboardStatusCards } from '../dashboard/DashboardStatusCards';
+import { LearningProgressCard } from '../dashboard/LearningProgressCard';
+import { ContinueLearningCard } from '../dashboard/ContinueLearningCard';
+import { ResumeBuilderWidget } from '../dashboard/ResumeBuilderWidget';
+import { OpportunitiesWidget } from '../dashboard/OpportunitiesWidget';
+import { AINotebookWidget } from '../dashboard/AINotebookWidget';
+import { CommunityWidget } from '../dashboard/CommunityWidget';
+import { AccessibilityQuickActions } from '../dashboard/AccessibilityQuickActions';
+
 import { MyLearning } from '../dashboard/MyLearning';
 import { ProgressTracking } from '../dashboard/ProgressTracking';
 import { Opportunities } from '../dashboard/Opportunities';
@@ -18,13 +30,34 @@ import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
 import { LinkedInConnect } from '../dashboard/LinkedInConnect';
 import { Brain } from '../dashboard/Brain';
 import { ResumeBuilder } from '../resume-builder/ResumeBuilder';
-import { TrendingUp, FileText, Bot, Users, Briefcase, Settings } from 'lucide-react';
 
 export function Dashboard() {
-  const { user, token, logout } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('home');
+
+  // Sidebar collapse state with localStorage persistence and tablet default
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('neurobridge.sidebarCollapsed');
+      if (saved !== null) return saved === 'true';
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) return true;
+    } catch {}
+    return false;
+  });
+
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('neurobridge.sidebarCollapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Auto-navigate to linkedin tab if returning from OAuth callback
   useEffect(() => {
@@ -45,16 +78,14 @@ export function Dashboard() {
 
   // Check if user is authenticated
   if (!user || !token) {
-    console.log('Dashboard: No user or token found, showing mock dashboard for testing');
-    // Temporarily show mock dashboard for testing
     return (
-      <div className="flex min-h-screen bg-bg">
-        <div className="flex-1 p-8">
-          <h1 className="text-3xl font-bold text-text mb-4">Mock Dashboard (Testing)</h1>
-          <p className="text-text-muted mb-4">Please log in to access the full dashboard.</p>
+      <div className="flex min-h-screen bg-[#F0F7FA]">
+        <div className="flex-1 p-8 max-w-lg mx-auto flex flex-col items-center justify-center text-center">
+          <h1 className="text-2xl font-bold text-[#1A202C] mb-2">Session Required</h1>
+          <p className="text-sm text-[#64748B] mb-5">Please log in to access your student dashboard.</p>
           <button 
             onClick={() => navigate('/login')}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-[#2563EB] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#1D4ED8] transition-colors"
           >
             Go to Login
           </button>
@@ -102,25 +133,58 @@ export function Dashboard() {
   };
 
   return (
-    <div className="dashboard-shell flex min-h-screen bg-bg">
+    <div className="dashboard-shell flex min-h-screen bg-[#F0F7FA]">
       <DashboardLanguageBridge />
-      {/* Left Sidebar */}
-      <DashboardSidebar activeTab={activeTab} onNavigate={setActiveTab} />
+      
+      {/* Redesigned Fixed Desktop Sidebar & Mobile Drawer */}
+      <DashboardSidebar
+        activeTab={activeTab}
+        onNavigate={setActiveTab}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapse}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+      />
 
-      {/* Main Content Area */}
-      <main className="dashboard-main flex-1 ml-64 p-8 flex flex-col h-screen overflow-y-auto">
-        {/* Global Accessibility Top Bar */}
-        <div className="flex items-center justify-end gap-4 mb-6 shrink-0">
-          <AudioControl showControls={false} />
-          <LanguageSelector />
-          <DyslexiaToggle />
+      {/* Main Content Area with synchronous Framer Motion margin animation */}
+      <motion.main
+        initial={false}
+        animate={{
+          marginLeft: isSidebarCollapsed ? 80 : 275,
+        }}
+        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+        className="dashboard-main flex-1 p-5 sm:p-7 lg:p-8 flex flex-col h-screen overflow-y-auto max-md:!ml-0"
+      >
+        {/* Global Accessibility & Utility Top Bar */}
+        <div className="flex items-center justify-between gap-4 mb-6 shrink-0">
+          <div className="flex items-center gap-3">
+            {/* Mobile Menu Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              aria-label="Open sidebar menu"
+              className="md:hidden p-2 rounded-xl text-[#1A202C] bg-white border border-blue-100 shadow-xs hover:bg-blue-50 transition-colors flex items-center justify-center min-w-[40px] min-h-[40px]"
+            >
+              <Menu size={20} aria-hidden="true" />
+            </button>
+
+            <div className="hidden sm:block text-xs font-bold text-[#64748B] uppercase tracking-wider">
+              NeuroBridge SaaS · Student Workspace
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 ml-auto">
+            <AudioControl showControls={false} />
+            <LanguageSelector />
+            <DyslexiaToggle />
+          </div>
         </div>
 
         {/* Page Content */}
         <div className="dashboard-content flex-1">
           {renderContent()}
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 }
@@ -212,14 +276,11 @@ function DashboardLanguageBridge() {
   return null;
 }
 
-
-
 function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { dyslexiaLevel, testScore, language } = useDyslexia();
   const { user, token, updateUser } = useAuth();
   const navigate = useNavigate();
-  const t = getTranslation(language);
   const [isRetaking, setIsRetaking] = useState(false);
+  const dashboardData = useDashboardData();
 
   useEffect(() => {
     if (!user?.assessment_completed || !token) return;
@@ -258,279 +319,103 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
     }
   };
 
-  const getLevelColor = (level: DyslexiaLevel) => {
-    switch (level) {
-      case 'none': return 'bg-green-100 text-green-700';
-      case 'mild': return 'bg-yellow-100 text-yellow-700';
-      case 'moderate': return 'bg-orange-100 text-orange-700';
-      case 'severe': return 'bg-red-100 text-red-700';
-    }
-  };
-
-  const getDashboardMessage = (level: DyslexiaLevel) => {
-    const messages = {
-      none: {
-        title: 'Your learning profile is ready!',
-        subtitle: 'You show minimal dyslexic indicators. Standard learning tools will work well for you.',
-        icon: '🎯',
-      },
-      mild: {
-        title: 'Your personalized dashboard is ready!',
-        subtitle: 'You have mild dyslexic indicators. We\'ve optimized the interface slightly for your needs.',
-        icon: '✨',
-      },
-      moderate: {
-        title: 'Welcome to your customized workspace!',
-        subtitle: 'You have moderate dyslexic indicators. We\'ve enabled enhanced accessibility features for you.',
-        icon: '🌟',
-      },
-      severe: {
-        title: 'Your optimized learning environment is ready!',
-        subtitle: 'You have significant dyslexic indicators. We\'ve activated maximum accessibility support.',
-        icon: '⭐',
-      },
-    };
-    return messages[level];
-  };
-
-  const message = getDashboardMessage(dyslexiaLevel);
-
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Welcome Message */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-surface rounded-3xl shadow-xl p-8 border-2 border-blue-100"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-4xl font-black text-text mb-2">
-              {t.welcomeBack}
-            </h1>
-            <p className="text-lg text-text-muted font-medium">{t.yourPersonalizedDashboard}</p>
-          </div>
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-7 pb-12">
+      {/* Header Area */}
+      <DashboardHeader onNavigate={onNavigate} />
+
+      {/* Row 1: 3 Compact Status Cards */}
+      <DashboardStatusCards
+        onNavigate={onNavigate}
+        onRetakeAssessment={handleRetakeAssessment}
+        isRetaking={isRetaking}
+      />
+
+      {/* Row 2: Learning Progress (Wider Left) & Continue Learning (Right) */}
+      {/* Responsive layout: mobile shows Recommended Next Step first, Track Progress second */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <div className="order-2 lg:order-1 lg:col-span-7 flex flex-col">
+          <LearningProgressCard onNavigate={onNavigate} dashboardData={dashboardData} />
         </div>
-
-        {/* Profile Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
-            <div className="text-sm font-semibold text-blue-600 mb-2">{t.yourLevel}</div>
-            <div className={`inline-block px-4 py-2 rounded-full font-bold ${getLevelColor(dyslexiaLevel)}`}>
-              {dyslexiaLevel === 'none' ? t.standard : dyslexiaLevel === 'mild' ? t.levelMild : dyslexiaLevel === 'moderate' ? t.levelModerate : t.levelSevere}
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6">
-            <div className="text-sm font-semibold text-green-600 mb-2">{t.assessmentScore}</div>
-            <div className="text-3xl font-black text-green-700">{testScore}</div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6">
-            <div className="text-sm font-semibold text-purple-600 mb-2">{t.accessibilityMode}</div>
-            <div className="text-lg font-bold text-purple-700">{t.active} ✓</div>
-          </div>
+        <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col">
+          <ContinueLearningCard onNavigate={onNavigate} dashboardData={dashboardData} />
         </div>
-      </motion.div>
+      </div>
 
+      {/* Row 3: Modular Workspace Cards (Resume Builder, Opportunities, AI Notebook) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        <ResumeBuilderWidget onNavigate={onNavigate} dashboardData={dashboardData} />
+        <OpportunitiesWidget onNavigate={onNavigate} />
+        <AINotebookWidget onNavigate={onNavigate} />
+      </div>
 
-      {/* Dashboard Action Cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-      >
-        <DashboardCard
-          icon={<TrendingUp size={28} className="text-[#4A90E2]" />}
-          title={t.trackProgress}
-          description={t.yourPersonalizedDashboard}
-          buttonLabel={`${t.viewProgress} →`}
-          onClick={() => onNavigate('progress')}
-          delay={0.1}
-        />
-        
-        <DashboardCard
-          icon={<FileText size={28} className="text-[#4A90E2]" />}
-          title={t.resumeBuilder}
-          description={t.resumeDescription}
-          buttonLabel={`${t.openResumeBuilder} →`}
-          onClick={() => navigate('/dashboard/resume-builder')}
-          delay={0.15}
-        />
-      </motion.div>
-
-      {/* Quick Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-        {[
-          { id: 'notebook', icon: <Bot size={24} className="text-[#4A90E2]" />, title: t.aiNotebook, desc: t.smartLearningAssistant },
-          { id: 'community', icon: <Users size={24} className="text-[#4A90E2]" />, title: t.community, desc: t.connectWithPeers },
-          { id: 'opportunities', icon: <Briefcase size={24} className="text-[#4A90E2]" />, title: t.opportunities, desc: t.jobsAndScholarships },
-          { id: 'accessibility', icon: <Settings size={24} className="text-[#4A90E2]" />, title: t.navSettings, desc: t.customiseExperience },
-        ].map((item, index) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 + index * 0.05 }}
-            onClick={() => onNavigate(item.id)}
-            className="bg-surface rounded-2xl shadow-sm p-5 border border-border hover:border-[#4A90E2] transition-all cursor-pointer group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-              {item.icon}
-            </div>
-            <h3 className="text-base font-bold text-text mb-1">{item.title}</h3>
-            <p className="text-text-muted text-xs font-medium">{item.desc}</p>
-          </motion.div>
-        ))}
+      {/* Row 4: Community & Accessibility Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        <CommunityWidget onNavigate={onNavigate} />
+        <AccessibilityQuickActions onNavigate={onNavigate} />
       </div>
     </div>
   );
 }
 
-// Reusable Dashboard Card Component
-function DashboardCard({
-  icon, title, description, buttonLabel, onClick, badge, badgeColor, buttonColor, delay = 0,
-}: {
-  icon: React.ReactNode; title: string; description: string; buttonLabel: string;
-  onClick: () => void; badge?: string; badgeColor?: string; buttonColor?: string; delay?: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="bg-surface rounded-2xl shadow-sm p-6 border border-border hover:border-blue-200 transition-all flex flex-col gap-4"
-    >
-      <div className="flex items-start justify-between">
-        <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl border border-blue-100">
-          {icon}
-        </div>
-        {badge && (
-          <span className={`text-xs font-bold px-3 py-1 rounded-full ${badgeColor}`}>{badge}</span>
-        )}
-      </div>
-      <div>
-        <h3 className="text-xl font-bold text-text mb-1">{title}</h3>
-        <p className="text-text-muted text-sm font-medium leading-relaxed">{description}</p>
-      </div>
-      <button
-        onClick={onClick}
-        className={`mt-auto w-full py-3 rounded-xl text-white font-bold text-sm transition-all shadow-sm ${
-          buttonColor || 'bg-[#4A90E2] hover:bg-[#3A80D2]'
-        }`}
-      >
-        {buttonLabel}
-      </button>
-    </motion.div>
-  );
-}
-
-
-
 // Welcome screen for users who haven't taken assessment yet
 function DashboardWelcome({ onStartAssessment }: { onStartAssessment: () => void }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-6">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-2xl w-full bg-surface rounded-3xl shadow-2xl p-12 text-center"
+        className="max-w-2xl w-full bg-white rounded-3xl shadow-xl p-8 sm:p-12 text-center border border-blue-100"
       >
-        <div className="text-8xl mb-6">🧠</div>
-        <h1 className="text-5xl font-black text-text mb-4">
+        <div className="text-7xl mb-6">🧠</div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1A202C] mb-3">
           Welcome to NeuroBridge!
         </h1>
-        <p className="text-xl text-text-muted mb-8 leading-relaxed">
-          Personalize your learning experience by taking our interactive assessment.
+        <p className="text-base sm:text-lg text-[#64748B] mb-8 leading-relaxed">
+          Personalize your learning experience by taking our quick interactive assessment.
           <br />
-          <span className="text-sm text-text-muted">It only takes 5-10 minutes and helps us customize everything for you.</span>
+          <span className="text-xs sm:text-sm text-[#94A3B8]">
+            It only takes 5-10 minutes and calibrates your cognitive strengths & reading supports.
+          </span>
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-blue-50 rounded-2xl p-6">
-            <div className="text-4xl mb-3">🎯</div>
-            <h3 className="font-bold text-text mb-2">Personalized</h3>
-            <p className="text-sm text-text-muted">Tailored to your learning style</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="bg-blue-50/70 border border-blue-100 rounded-2xl p-5">
+            <div className="text-3xl mb-2">🎯</div>
+            <h3 className="font-extrabold text-sm text-[#1A202C] mb-1">Personalized</h3>
+            <p className="text-xs text-[#64748B]">Tailored to your learning style</p>
           </div>
-          <div className="bg-purple-50 rounded-2xl p-6">
-            <div className="text-4xl mb-3">🎮</div>
-            <h3 className="font-bold text-text mb-2">Interactive</h3>
-            <p className="text-sm text-text-muted">Fun activities, not boring tests</p>
+          <div className="bg-purple-50/70 border border-purple-100 rounded-2xl p-5">
+            <div className="text-3xl mb-2">🎮</div>
+            <h3 className="font-extrabold text-sm text-[#1A202C] mb-1">Interactive</h3>
+            <p className="text-xs text-[#64748B]">Fun activities, not boring tests</p>
           </div>
-          <div className="bg-green-50 rounded-2xl p-6">
-            <div className="text-4xl mb-3">⚡</div>
-            <h3 className="font-bold text-text mb-2">Quick</h3>
-            <p className="text-sm text-text-muted">Complete in just 5-10 minutes</p>
+          <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-5">
+            <div className="text-3xl mb-2">⚡</div>
+            <h3 className="font-extrabold text-sm text-[#1A202C] mb-1">Fast & Calm</h3>
+            <p className="text-xs text-[#64748B]">Complete in just 5 minutes</p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3.5 justify-center">
           <button
             onClick={onStartAssessment}
-            className="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-bold text-lg hover:shadow-xl transition-all transform hover:scale-105"
+            className="px-8 py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-2xl font-bold text-base shadow-md shadow-blue-500/20 hover:shadow-lg transition-all transform hover:-translate-y-0.5"
           >
             Start Assessment →
           </button>
           <button
             onClick={() => window.location.href = '/'}
-            className="px-10 py-4 bg-gray-200 text-text rounded-full font-bold text-lg hover:bg-gray-300 transition-all"
+            className="px-8 py-3.5 bg-slate-100 hover:bg-slate-200 text-[#475569] rounded-2xl font-bold text-base transition-all"
           >
             Explore First
           </button>
         </div>
 
-        <p className="mt-8 text-sm text-text-muted">
-          💡 You can also take the assessment later from the dashboard
+        <p className="mt-6 text-xs text-[#94A3B8]">
+          💡 You can also take the assessment later from the dashboard profile
         </p>
       </motion.div>
     </div>
   );
 }
-
-function LinkedInPromoCard({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const [isConnected, setIsConnected] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('linkedin_profile');
-    if (saved) {
-      try {
-        const p = JSON.parse(saved);
-        setProfile(p);
-        setIsConnected(true);
-      } catch (e) {
-        console.error('Failed to parse linkedin profile', e);
-      }
-    }
-  }, []);
-
-  if (isConnected && profile) {
-    return (
-      <DashboardCard
-        icon="🚀"
-        title="LinkedIn Integrated"
-        description={`Connected as ${profile.name}. Explore your AI-generated career paths and learning roadmap.`}
-        buttonLabel="Open My Plan →"
-        buttonColor="bg-gradient-to-r from-[#0077B5] to-[#00a0dc] hover:from-[#005fa3] hover:to-[#0088cc]"
-        onClick={() => onNavigate('linkedin')}
-        delay={0.25}
-        badge="Active"
-        badgeColor="bg-blue-100 text-[#0077B5]"
-      />
-    );
-  }
-
-  return (
-    <DashboardCard
-      icon="💼"
-      title="Connect LinkedIn"
-      description="Sync your career profile to unlock personalized opportunity matching and skill roadmaps."
-      buttonLabel="Connect LinkedIn →"
-      buttonColor="bg-[#0077B5] hover:bg-[#005fa3]"
-      onClick={() => onNavigate('linkedin')}
-      delay={0.25}
-    />
-  );
-}
-

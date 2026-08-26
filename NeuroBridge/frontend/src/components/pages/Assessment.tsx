@@ -1,6 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardEdit, Timer, BarChart2 } from 'lucide-react';
+import {
+  ClipboardEdit,
+  Timer,
+  BarChart2,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  BookOpen,
+  Volume2,
+  Eye,
+  Sliders,
+} from 'lucide-react';
 import { AssessmentTest } from '../assessment/AssessmentTest';
 import { ReportGenerator } from '../assessment/ReportGenerator';
 import { CognitiveTaskAssessment } from '../assessment/CognitiveTaskAssessment';
@@ -33,7 +45,7 @@ export function AssessmentPage() {
   const handlePartBComplete = async (profile: any) => {
     completeCognitiveTasks(profile);
     setTestState('report');
-    
+
     // Save assessment completion to database
     if (user && token) {
       await saveAssessmentResults(finalScore, assessmentMetrics);
@@ -41,26 +53,23 @@ export function AssessmentPage() {
   };
 
   const saveAssessmentResults = async (score: number, metrics: any) => {
-    // Determine assessment type based on score
-    let assessmentType = "No Dyslexia Indicators";
+    let assessmentType = 'No Dyslexia Indicators';
     if (score >= 70) {
-      assessmentType = "Severe Dyslexia Indicators";
+      assessmentType = 'Severe Dyslexia Indicators';
     } else if (score >= 40) {
-      assessmentType = "Moderate Dyslexia Indicators";
+      assessmentType = 'Moderate Dyslexia Indicators';
     } else if (score >= 20) {
-      assessmentType = "Mild Dyslexia Indicators";
+      assessmentType = 'Mild Dyslexia Indicators';
     }
 
-    // Save to localStorage temporarily
     const tempAssessment = {
       score,
       classification: assessmentType,
       metrics,
-      completed_at: new Date().toISOString()
+      completed_at: new Date().toISOString(),
     };
     localStorage.setItem('temp_assessment', JSON.stringify(tempAssessment));
 
-    // If user is logged in, save to database immediately
     if (token && user) {
       setIsSaving(true);
       try {
@@ -68,26 +77,22 @@ export function AssessmentPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             assessment_score: score,
             classification: assessmentType,
-            assessment_metrics: JSON.stringify(metrics)
-          })
+            assessment_metrics: JSON.stringify(metrics),
+          }),
         });
 
         if (response.ok) {
-          // Update local user state
           updateUser({
             assessment_completed: true,
             assessment_score: score,
-            classification: assessmentType
+            classification: assessmentType,
           });
-          // Clear temporary assessment after saving
           localStorage.removeItem('temp_assessment');
-        } else {
-          console.error('Failed to save assessment results');
         }
       } catch (error) {
         console.error('Error saving assessment results:', error);
@@ -128,122 +133,107 @@ export function AssessmentPage() {
     );
   }
 
-
-  // Intro Screen
+  // Calm Intro Workspace
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-surface rounded-3xl shadow-xl p-8 md:p-12 border-2 border-blue-100">
-        {/* Header */}
-        <div className="relative text-center mb-2 pt-4">
+    <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 animate-in fade-in duration-300">
+      <div className="bg-white rounded-3xl sm:rounded-[36px] shadow-xs border border-blue-100/90 p-6 sm:p-10 md:p-12 space-y-8 text-left relative overflow-hidden">
+        {/* Decorative subtle ambient circle */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-blue-100/40 via-purple-50/30 to-transparent rounded-full blur-2xl pointer-events-none -z-0" />
 
-
-          <div className="inline-block bg-gradient-to-br from-blue-100 to-blue-50 p-4 rounded-full mb-4 mt-6 md:mt-0 shadow-sm border border-blue-100/50">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
+        {/* 1. Header & Title */}
+        <div className="text-center max-w-2xl mx-auto space-y-3 relative z-10">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] text-white flex items-center justify-center mx-auto shadow-md shadow-blue-500/20">
+            <Sparkles size={28} />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-text mb-4">
-            {t.assessmentTitle}
-          </h1>
-        </div>
 
-        {/* Description */}
-        <div className="prose prose-lg max-w-none mb-8">
-          <p className="text-lg text-text leading-relaxed text-center">
-            {t.assessmentSubtitle}
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200/80 text-xs font-black">
+            <span>Adaptive Cognitive Calibration</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1A202C] tracking-tight">
+            {t.assessmentTitle || 'Discover Your Learning Strengths'}
+          </h1>
+
+          <p className="text-xs sm:text-sm text-[#64748B] font-medium leading-relaxed max-w-xl mx-auto">
+            {t.assessmentSubtitle ||
+              'A calm, pressure-free assessment designed to calibrate your personal typography, line spacing, and sensory support tools.'}
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-gradient-to-br from-blue-50/50 to-surface rounded-2xl p-6 text-center border border-blue-100 shadow-sm hover:shadow-md transition-all">
-            <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary shadow-sm border border-blue-50">
-              <ClipboardEdit size={32} strokeWidth={1.5} />
+        {/* 2. Key Highlights Strip (3 Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
+          <div className="bg-[#F8FAFC] rounded-2xl p-5 border border-slate-200/80 space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center">
+              <ClipboardEdit size={20} />
             </div>
-            <h3 className="font-bold text-text mb-2">15 Questions</h3>
-            <p className="text-sm text-text-muted leading-relaxed">Quick assessment to understand your learning style</p>
+            <h3 className="font-extrabold text-sm text-[#1A202C]">15 Quick Prompts</h3>
+            <p className="text-xs text-[#64748B] font-medium leading-relaxed">
+              Interactive phonics and visual questions tailored to your pace.
+            </p>
           </div>
-          
-          <div className="bg-gradient-to-br from-orange-50/50 to-surface rounded-2xl p-6 text-center border border-orange-100/50 shadow-sm hover:shadow-md transition-all">
-            <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#FF8A65] shadow-sm border border-orange-50">
-              <Timer size={32} strokeWidth={1.5} />
+
+          <div className="bg-[#F8FAFC] rounded-2xl p-5 border border-slate-200/80 space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#8B5CF6] border border-purple-100 flex items-center justify-center">
+              <Timer size={20} />
             </div>
-            <h3 className="font-bold text-text mb-2">5-10 Minutes</h3>
-            <p className="text-sm text-text-muted leading-relaxed">Take your time, there's no rush</p>
+            <h3 className="font-extrabold text-sm text-[#1A202C]">5–10 Minutes</h3>
+            <p className="text-xs text-[#64748B] font-medium leading-relaxed">
+              Take your time with zero pressure—there are no wrong answers.
+            </p>
           </div>
-          
-          <div className="bg-gradient-to-br from-slate-50/50 to-surface rounded-2xl p-6 text-center border border-slate-100 shadow-sm hover:shadow-md transition-all">
-            <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary shadow-sm border border-slate-100">
-              <BarChart2 size={32} strokeWidth={1.5} />
+
+          <div className="bg-[#F8FAFC] rounded-2xl p-5 border border-slate-200/80 space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+              <BarChart2 size={20} />
             </div>
-            <h3 className="font-bold text-text mb-2">Instant Report</h3>
-            <p className="text-sm text-text-muted leading-relaxed">Get personalized recommendations immediately</p>
+            <h3 className="font-extrabold text-sm text-[#1A202C]">Instant Personal Report</h3>
+            <p className="text-xs text-[#64748B] font-medium leading-relaxed">
+              Immediate recommendations for font scale, speech pace, and contrast.
+            </p>
           </div>
         </div>
 
-        {/* What to Expect */}
-        <div className="bg-[#F0F7FA]/50 rounded-2xl p-8 mb-8 border border-blue-100">
-          <h3 className="font-bold text-xl text-text mb-6 flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            What to Expect
-          </h3>
-          <ul className="space-y-4">
-            <li className="flex items-center gap-4 text-text">
-              <div className="bg-white shrink-0 w-6 h-6 rounded-full flex items-center justify-center shadow-sm border border-blue-50">
-                <span className="text-primary font-bold text-sm">✓</span>
-              </div>
-              <span className="leading-relaxed">One question per screen - easy to focus</span>
-            </li>
-            <li className="flex items-center gap-4 text-text">
-              <div className="bg-white shrink-0 w-6 h-6 rounded-full flex items-center justify-center shadow-sm border border-blue-50">
-                <span className="text-primary font-bold text-sm">✓</span>
-              </div>
-              <span className="leading-relaxed">Audio support available for each question</span>
-            </li>
-            <li className="flex items-center gap-4 text-text">
-              <div className="bg-white shrink-0 w-6 h-6 rounded-full flex items-center justify-center shadow-sm border border-blue-50">
-                <span className="text-primary font-bold text-sm">✓</span>
-              </div>
-              <span className="leading-relaxed">Visual examples to help understanding</span>
-            </li>
-            <li className="flex items-center gap-4 text-text">
-              <div className="bg-white shrink-0 w-6 h-6 rounded-full flex items-center justify-center shadow-sm border border-blue-50">
-                <span className="text-primary font-bold text-sm">✓</span>
-              </div>
-              <span className="leading-relaxed">No right or wrong answers - be honest</span>
-            </li>
-            <li className="flex items-center gap-4 text-text">
-              <div className="bg-white shrink-0 w-6 h-6 rounded-full flex items-center justify-center shadow-sm border border-blue-50">
-                <span className="text-primary font-bold text-sm">✓</span>
-              </div>
-              <span className="leading-relaxed">You can go back and change answers</span>
-            </li>
-          </ul>
+        {/* 3. What to Expect Card */}
+        <div className="bg-[#F8FAFC] rounded-3xl p-6 sm:p-7 border border-blue-100 space-y-4 relative z-10">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} className="text-[#2563EB]" />
+            <h3 className="font-extrabold text-sm text-[#1A202C]">What to Expect</h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#1A202C] font-semibold">
+            <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+              <span>One question per screen for comfortable focus</span>
+            </div>
+            <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+              <span>Full audio & TTS support available for each prompt</span>
+            </div>
+            <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+              <span>Visual illustrations to assist comprehension</span>
+            </div>
+            <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+              <span>You can step back and adjust answers anytime</span>
+            </div>
+          </div>
         </div>
 
-        {/* Start Button */}
-        <div className="text-center">
+        {/* 4. Primary CTA & Reassurance */}
+        <div className="text-center pt-2 space-y-3 relative z-10">
           <button
+            type="button"
             onClick={handleStartTest}
-            className="inline-flex items-center gap-3 bg-[#4A90E2] hover:bg-blue-600 text-white px-12 py-4 rounded-full font-bold text-lg transition-all shadow-lg shadow-blue-500/30 transform hover:scale-105"
+            className="px-10 py-4 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-sm sm:text-base transition-all shadow-md shadow-blue-500/20 inline-flex items-center gap-2.5 cursor-pointer group"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t.startAssessment}
+            <span>{t.startAssessment || 'Start Assessment'}</span>
+            <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
           </button>
-        </div>
 
-        {/* Reassurance */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-text-muted flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            This helps us personalize the platform for your needs
+          <p className="text-xs text-[#64748B] font-medium flex items-center justify-center gap-1.5">
+            <CheckCircle2 size={13} className="text-[#2563EB]" />
+            <span>Used exclusively to personalize your NeuroBridge study environment</span>
           </p>
         </div>
       </div>

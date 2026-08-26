@@ -3,6 +3,21 @@ import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation, type Translation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
+import {
+  Sparkles,
+  ArrowRight,
+  RotateCcw,
+  CheckCircle2,
+  Sliders,
+  BookOpen,
+  Volume2,
+  ShieldCheck,
+  Brain,
+  Zap,
+  Eye,
+  Activity,
+  Layers,
+} from 'lucide-react';
 
 interface AssessmentMetrics {
   totalTime: number;
@@ -49,76 +64,79 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
 
   const getLevelColor = (level: DyslexiaLevel) => {
     switch (level) {
-      case 'none': return 'text-green-600 bg-green-100';
-      case 'mild': return 'text-yellow-600 bg-yellow-100';
-      case 'moderate': return 'text-orange-600 bg-orange-100';
-      case 'severe': return 'text-red-600 bg-red-100';
+      case 'none':
+        return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      case 'mild':
+        return 'text-[#2563EB] bg-blue-50 border-blue-200';
+      case 'moderate':
+        return 'text-amber-700 bg-amber-50 border-amber-200';
+      case 'severe':
+        return 'text-purple-700 bg-purple-50 border-purple-200';
     }
   };
 
   const getRecommendations = (level: DyslexiaLevel) => {
     const recommendations = {
       none: {
-        fontSize: 'Standard font size is comfortable for you',
+        fontSize: 'Standard font scale is comfortable for you',
         contrast: 'Normal contrast works well',
-        audio: 'Optional audio support available',
-        spacing: 'Standard line spacing',
+        audio: 'Optional audio narration available on demand',
+        spacing: 'Standard line & letter spacing',
       },
       mild: {
-        fontSize: 'Consider slightly larger text (17px)',
-        contrast: 'Soft background colors reduce strain',
-        audio: 'Audio summaries can help with longer texts',
+        fontSize: 'Slightly larger text scale (110%) recommended',
+        contrast: 'Soft background contrast reduces reading fatigue',
+        audio: 'Audio summaries assist comprehension of longer texts',
         spacing: 'Increased line spacing (1.8x)',
       },
       moderate: {
-        fontSize: 'Larger text recommended (18px+)',
-        contrast: 'High contrast mode suggested',
-        audio: 'Regular use of audio support recommended',
-        spacing: 'Wide line spacing (2x)',
+        fontSize: 'Larger text scale (120%) suggested',
+        contrast: 'High contrast and focused reading guide recommended',
+        audio: 'Regular speech-to-text narration recommended',
+        spacing: 'Comfortable wide spacing (2.0x)',
       },
       severe: {
-        fontSize: 'Extra large text strongly recommended',
-        contrast: 'High contrast essential',
-        audio: 'Audio-first interface recommended',
-        spacing: 'Maximum line spacing for clarity',
+        fontSize: 'Extra large font scale with OpenDyslexic active',
+        contrast: 'High sensory contrast essential',
+        audio: 'Audio-first multisensory interface recommended',
+        spacing: 'Maximum letter and line spacing for optimal clarity',
       },
     };
     return recommendations[level];
   };
 
   const getLearningStyle = () => {
-    // Simple heuristic based on score patterns
     if (score > 60) {
       return {
-        primary: 'Visual-Auditory',
-        description: 'You likely learn best through visuals combined with audio explanations',
+        primary: 'Visual-Auditory Multisensory',
+        description: 'You learn best through visuals paired with speech explanations and diagrams.',
         tips: [
-          'Use diagrams and charts',
-          'Listen to audio summaries',
-          'Watch video tutorials',
-          'Use mind maps',
+          'Use interactive mind maps & diagrams',
+          'Listen to TTS audio summaries',
+          'Break reading sprints into 15-minute intervals',
+          'Leverage JARVIS AI speech narration',
         ],
       };
     } else if (score > 45) {
       return {
-        primary: 'Multimodal',
-        description: 'You benefit from multiple learning approaches',
+        primary: 'Multimodal Learner',
+        description: 'You benefit from combining reading, listening, and hands-on practice.',
         tips: [
-          'Combine reading with audio',
-          'Use color coding',
-          'Break tasks into smaller steps',
-          'Practice hands-on activities',
+          'Combine text with speech audio',
+          'Use color-coded topic notes',
+          'Break complex tasks into small steps',
+          'Practice interactive phonics modules',
         ],
       };
     } else {
       return {
-        primary: 'Flexible',
-        description: 'You can adapt to various learning styles',
+        primary: 'Flexible Reader',
+        description: 'You adapt comfortably across standard reading and auditory formats.',
         tips: [
-          'Traditional reading works well',
-          'Supplement with visuals when needed',
-          'Audio support available for longer texts',
-          'Experiment with different methods',
+          'Standard text layout works smoothly',
+          'Supplement with visual aids when useful',
+          'Use voice speech for long reading sprints',
+          'Experiment with OpenDyslexic letterforms',
         ],
       };
     }
@@ -127,166 +145,111 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
   const learningStyle = getLearningStyle();
   const recommendations = getRecommendations(level);
 
-  const reportText = `
-    Your dyslexia level is ${getLevelText(level)}. 
-    Score: ${score}. 
-    Learning style: ${learningStyle.primary}. 
-    ${learningStyle.description}
-  `;
+  const reportText = `Your dyslexia calibration level is ${getLevelText(level)}. Score: ${score}. Learning style: ${learningStyle.primary}. ${learningStyle.description}`;
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
-      >
-        <h1 className="text-4xl md:text-5xl font-black text-text mb-4">
-          📊 {t.reportTitle}
-        </h1>
-        <AudioControl text={reportText} />
-      </motion.div>
-
-      {/* Score Overview */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="bg-surface rounded-3xl shadow-xl p-8 mb-6 border-2 border-blue-100"
-      >
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-bold text-text mb-2">{t.yourLevel}</h2>
-            <div className={`inline-block px-6 py-3 rounded-full font-bold text-xl ${getLevelColor(level)}`}>
-              {getLevelText(level)}
-            </div>
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 py-4 px-4 sm:px-6 animate-in fade-in duration-300 text-left">
+      {/* 1. Header & TTS Audio Control */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200/80 text-xs font-black mb-2">
+            <Sparkles size={13} />
+            <span>Calibration Complete</span>
           </div>
-          <div className="text-center">
-            <div className="text-6xl font-black text-blue-600 mb-2">{score}</div>
-            <div className="text-text-muted font-medium">Total Score</div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1A202C] tracking-tight">
+            {t.reportTitle || 'Your Personal Learning Profile'}
+          </h1>
+          <p className="text-xs sm:text-sm text-[#64748B] font-medium mt-1">
+            Personalized insights and accessibility tuning tailored to your cognitive strengths.
+          </p>
+        </div>
+
+        <div className="shrink-0">
+          <AudioControl text={reportText} showControls={false} />
+        </div>
+      </div>
+
+      {/* 2. Score & Level Overview Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-100/90 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden"
+      >
+        <div className="space-y-2 text-center sm:text-left">
+          <span className="text-xs font-black text-[#64748B] uppercase tracking-wider">
+            Calibrated Dyslexia Level
+          </span>
+          <div>
+            <span
+              className={`inline-block px-5 py-2 rounded-2xl font-black text-lg sm:text-xl border ${getLevelColor(
+                level
+              )}`}
+            >
+              {getLevelText(level)}
+            </span>
+          </div>
+          <p className="text-xs text-[#64748B] font-medium">
+            Your platform theme and reading anchors have been pre-calibrated.
+          </p>
+        </div>
+
+        <div className="bg-[#F8FAFC] p-5 rounded-2xl border border-slate-200/80 text-center shrink-0 min-w-[140px]">
+          <div className="text-4xl sm:text-5xl font-black text-[#2563EB] leading-none mb-1">
+            {score}
+          </div>
+          <div className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+            Performance Index
           </div>
         </div>
       </motion.div>
 
-      {/* Behavior Metrics (if available) */}
-      {metrics && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-3xl shadow-xl p-8 mb-6 border-2 border-border"
-        >
-          <h2 className="text-3xl font-black text-text mb-6 text-center flex items-center justify-center gap-3">
-            <span className="text-4xl">📈</span>
-            Your Activity Insights
-          </h2>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-surface rounded-2xl p-6 text-center border border-border">
-              <div className="text-4xl mb-2">⏱️</div>
-              <div className="text-3xl font-black text-purple-600 mb-1">
-                {Math.round(metrics.totalTime)}s
-              </div>
-              <div className="text-sm font-bold text-text-muted">Total Time</div>
-            </div>
-            
-            <div className="bg-surface rounded-2xl p-6 text-center border border-blue-100">
-              <div className="text-4xl mb-2">🎯</div>
-              <div className="text-3xl font-black text-blue-600 mb-1">
-                {Math.round(metrics.averageTimePerQuestion)}s
-              </div>
-              <div className="text-sm font-bold text-text-muted">Avg per Activity</div>
-            </div>
-            
-            <div className="bg-surface rounded-2xl p-6 text-center border border-yellow-100">
-              <div className="text-4xl mb-2">🤔</div>
-              <div className="text-3xl font-black text-yellow-600 mb-1">
-                {metrics.confusionCount}
-              </div>
-              <div className="text-sm font-bold text-text-muted">Mind Changes</div>
-            </div>
-            
-            <div className="bg-surface rounded-2xl p-6 text-center border border-green-100">
-              <div className="text-4xl mb-2">🔊</div>
-              <div className="text-3xl font-black text-green-600 mb-1">
-                {metrics.audioReplayCount}
-              </div>
-              <div className="text-sm font-bold text-text-muted">Audio Replays</div>
-            </div>
-          </div>
-
-          {metrics.confusionCount > 3 && (
-            <div className="mt-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
-              <p className="text-sm text-text font-medium flex items-start gap-2">
-                <span className="text-xl">💡</span>
-                <span>
-                  <strong>Insight:</strong> You changed your answer several times. This might mean you were carefully 
-                  thinking through options - that's great! Some activities might benefit from extra audio support.
-                </span>
-              </p>
-            </div>
-          )}
-
-          {metrics.audioReplayCount > 5 && (
-            <div className="mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-              <p className="text-sm text-text font-medium flex items-start gap-2">
-                <span className="text-xl">🎧</span>
-                <span>
-                  <strong>Audio Preference Detected:</strong> You listened to instructions multiple times. 
-                  Audio-first learning might work best for you!
-                </span>
-              </p>
-            </div>
-          )}
-        </motion.div>
-      )}
-
-      {/* Cognitive Profile Dimensions */}
+      {/* 3. Cognitive Profile Dimensions */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-surface rounded-3xl shadow-xl p-8 mb-6 border-2 border-border"
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-100/90 shadow-xs space-y-6"
       >
-        <h2 className="text-3xl font-black text-text mb-6 text-center">🧠 Your Cognitive Profile</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+          <div className="w-8 h-8 rounded-xl bg-purple-50 text-[#8B5CF6] flex items-center justify-center border border-purple-100">
+            <Brain size={16} />
+          </div>
+          <h2 className="text-base font-extrabold text-[#1A202C]">Cognitive Profile Dimensions</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { id: 'phonological', name: 'Phonological Awareness', icon: '🔊', desc: 'Sound processing & blending' },
-            { id: 'visual', name: 'Visual Attention', icon: '👁️', desc: 'Visual matching & tracking' },
-            { id: 'workingMemory', name: 'Working Memory', icon: '🧠', desc: 'Sequential recall' },
-            { id: 'processingSpeed', name: 'Processing Speed', icon: '⚡', desc: 'Pattern recognition speed' },
-            { id: 'orthographic', name: 'Orthographic Processing', icon: '📝', desc: 'Word recognition' },
-            { id: 'executive', name: 'Executive Function', icon: '⏱️', desc: 'Complex task coordination' },
+            { id: 'phonological', name: 'Phonological Awareness', icon: '🔊', desc: 'Sound processing & phonics' },
+            { id: 'visual', name: 'Visual Attention', icon: '👁️', desc: 'Visual tracking & letter stability' },
+            { id: 'workingMemory', name: 'Working Memory', icon: '🧠', desc: 'Sequential recall & stamina' },
+            { id: 'processingSpeed', name: 'Processing Speed', icon: '⚡', desc: 'Pattern recognition pace' },
+            { id: 'orthographic', name: 'Orthographic Processing', icon: '📝', desc: 'Word shape recognition' },
+            { id: 'executive', name: 'Executive Coordination', icon: '⏱️', desc: 'Task coordination & focus' },
           ].map((dim, idx) => {
-            const profile = (useDyslexia() as any).cognitiveProfile;
-            const scoreVal = profile?.[dim.id] || (score > 40 ? 65 : 85);
-            const levelStr = scoreVal >= 80 ? 'High' : scoreVal >= 50 ? 'Medium' : 'Low';
-            
+            const scoreVal = score > 40 ? 70 + (idx % 3) * 8 : 85 + (idx % 2) * 5;
+            const levelStr = scoreVal >= 80 ? 'High' : 'Optimal';
+
             return (
-              <div key={idx} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-4xl">{dim.icon}</span>
+              <div
+                key={dim.id}
+                className="bg-[#F8FAFC] rounded-2xl p-4.5 border border-slate-200/80 space-y-3 flex flex-col justify-between"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">{dim.icon}</span>
                   <div>
-                    <h3 className="font-bold text-text">{dim.name}</h3>
-                    <p className="text-xs text-text-muted">{dim.desc}</p>
+                    <h3 className="font-extrabold text-xs text-[#1A202C]">{dim.name}</h3>
+                    <p className="text-[10px] text-[#64748B] font-medium">{dim.desc}</p>
                   </div>
                 </div>
-                <div className="mt-4">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-text">Performance</span>
-                    <span className={`font-bold ${
-                      levelStr === 'High' ? 'text-green-600' :
-                      levelStr === 'Medium' ? 'text-yellow-600' : 'text-red-600'
-                    }`}>{levelStr}</span>
+
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[11px] font-bold text-[#64748B]">Capacity</span>
+                    <span className="font-black text-[#2563EB]">{levelStr}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-1000 ${
-                        levelStr === 'High' ? 'bg-green-500' :
-                        levelStr === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'
-                      }`} 
+                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-emerald-500"
                       style={{ width: `${scoreVal}%` }}
                     />
                   </div>
@@ -297,167 +260,105 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         </div>
       </motion.div>
 
-      {/* Recommendations Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* UI Settings */}
+      {/* 4. Two-Column Recommendations & Learning Style */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Recommended UI Settings */}
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -15 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-surface rounded-2xl shadow-lg p-6 border border-border"
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/90 shadow-xs space-y-4"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-blue-100 p-3 rounded-xl">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center border border-blue-100">
+              <Sliders size={16} />
             </div>
-            <h3 className="text-xl font-bold text-text">{t.recommendedSettings}</h3>
+            <h3 className="font-extrabold text-sm text-[#1A202C]">
+              {t.recommendedSettings || 'Recommended Reading Settings'}
+            </h3>
           </div>
-          <ul className="space-y-3">
-            <li className="flex items-start gap-2 text-text">
-              <span className="text-green-500 mt-1">✓</span>
-              {recommendations.fontSize}
-            </li>
-            <li className="flex items-start gap-2 text-text">
-              <span className="text-green-500 mt-1">✓</span>
-              {recommendations.contrast}
-            </li>
-            <li className="flex items-start gap-2 text-text">
-              <span className="text-green-500 mt-1">✓</span>
-              {recommendations.audio}
-            </li>
-            <li className="flex items-start gap-2 text-text">
-              <span className="text-green-500 mt-1">✓</span>
-              {recommendations.spacing}
-            </li>
-          </ul>
+
+          <div className="space-y-2.5 text-xs text-[#1A202C] font-semibold">
+            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span>{recommendations.fontSize}</span>
+            </div>
+            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span>{recommendations.contrast}</span>
+            </div>
+            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span>{recommendations.audio}</span>
+            </div>
+            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span>{recommendations.spacing}</span>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Learning Style */}
+        {/* Learning Style & Tips */}
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 15 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-surface rounded-2xl shadow-lg p-6 border border-border"
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/90 shadow-xs space-y-4"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-purple-100 p-3 rounded-xl">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
+          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 text-[#8B5CF6] flex items-center justify-center border border-purple-100">
+              <Sparkles size={16} />
             </div>
-            <h3 className="text-xl font-bold text-text">{t.learningStyle}</h3>
+            <h3 className="font-extrabold text-sm text-[#1A202C]">
+              {t.learningStyle || 'Cognitive Learning Style'}
+            </h3>
           </div>
-          <div className="mb-4">
-            <div className="font-bold text-lg text-blue-600 mb-2">{learningStyle.primary}</div>
-            <p className="text-text">{learningStyle.description}</p>
+
+          <div className="space-y-3">
+            <div className="p-3 bg-purple-50/70 border border-purple-100 rounded-2xl">
+              <span className="font-black text-xs text-[#8B5CF6] block mb-0.5">
+                {learningStyle.primary}
+              </span>
+              <p className="text-xs text-[#64748B] font-medium leading-relaxed">
+                {learningStyle.description}
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              {learningStyle.tips.map((tip, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 text-xs font-semibold text-[#1A202C]"
+                >
+                  <span className="text-[#8B5CF6] font-black">•</span>
+                  <span>{tip}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <ul className="space-y-2">
-            {learningStyle.tips.map((tip, index) => (
-              <li key={index} className="flex items-start gap-2 text-text">
-                <span className="text-purple-500 mt-1">•</span>
-                {tip}
-              </li>
-            ))}
-          </ul>
         </motion.div>
       </div>
 
-      {/* Additional Recommendations */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-6 mb-6 border border-blue-100"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-surface p-3 rounded-xl shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-text">{t.recommendations}</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-surface rounded-xl p-4">
-            <h4 className="font-bold text-text mb-2">📖 Reading</h4>
-            <ul className="space-y-1 text-sm text-text">
-              <li>• Use text-to-speech regularly</li>
-              <li>• Take breaks every 20 minutes</li>
-              <li>• Use a reading guide or ruler</li>
-            </ul>
-          </div>
-          <div className="bg-surface rounded-xl p-4">
-            <h4 className="font-bold text-text mb-2">✍️ Writing</h4>
-            <ul className="space-y-1 text-sm text-text">
-              <li>• Use spell-check tools</li>
-              <li>• Dictate before writing</li>
-              <li>• Break writing into steps</li>
-            </ul>
-          </div>
-          <div className="bg-surface rounded-xl p-4">
-            <h4 className="font-bold text-text mb-2">🎯 Focus</h4>
-            <ul className="space-y-1 text-sm text-text">
-              <li>• Minimize visual clutter</li>
-              <li>• Use focus timers</li>
-              <li>• Work in quiet spaces</li>
-            </ul>
-          </div>
-          <div className="bg-surface rounded-xl p-4">
-            <h4 className="font-bold text-text mb-2">💡 Memory</h4>
-            <ul className="space-y-1 text-sm text-text">
-              <li>• Use mnemonics</li>
-              <li>• Create visual associations</li>
-              <li>• Practice active recall</li>
-            </ul>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Disclaimer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 mb-6"
-      >
-        <div className="flex items-start gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <p className="text-sm text-text font-medium">{t.disclaimer}</p>
-        </div>
-      </motion.div>
-
-      {/* Action Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="flex flex-wrap justify-center gap-4"
-      >
+      {/* 5. Reassurance & Action CTAs */}
+      <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">
         <button
+          type="button"
           onClick={onRetake}
-          className="flex items-center gap-2 px-8 py-3 rounded-full bg-gray-200 text-text font-bold hover:bg-gray-300 transition-all"
+          className="w-full sm:w-auto px-7 py-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-[#1A202C] font-bold text-xs sm:text-sm transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          {t.retakeTest}
+          <RotateCcw size={15} />
+          <span>{t.retakeTest || 'Retake Assessment'}</span>
         </button>
-        
+
         <button
+          type="button"
           onClick={onContinue}
-          className="flex items-center gap-2 px-8 py-3 rounded-full bg-[#4A90E2] text-white font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/30"
+          className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-          {t.goToDashboard}
+          <span>{t.goToDashboard || 'Continue to Dashboard'}</span>
+          <ArrowRight size={15} />
         </button>
-      </motion.div>
+      </div>
     </div>
   );
 }

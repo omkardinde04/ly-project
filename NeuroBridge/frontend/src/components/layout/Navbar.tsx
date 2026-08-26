@@ -1,21 +1,33 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import brain from "../assets/brain.png";
+import brain from '../assets/brain.png';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { AudioControl } from '../ui/AudioControl';
+import { LanguageSelector } from '../ui/LanguageSelector';
+import { DyslexiaToggle } from '../ui/DyslexiaToggle';
+import { Menu, X, ArrowRight } from 'lucide-react';
 
-export function Navbar({ links = [], showLogin = true }: { links?: string[], showLogin?: boolean }) {
+export function Navbar({
+  links = ['Home', 'Learn', 'Opportunities', 'Community', 'About'],
+  showLogin = true,
+}: {
+  links?: string[];
+  showLogin?: boolean;
+}) {
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginPage = location.pathname === '/login';
-  const { isDyslexiaMode, toggleDyslexiaMode, language, setLanguage } = useDyslexia();
+  const { isDyslexiaMode, toggleDyslexiaMode } = useDyslexia();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavigation = (link: string) => {
+    setMobileMenuOpen(false);
     const routeMap: Record<string, string> = {
-      'Home': '/',
-      'Learn': '/learn',
-      'Opportunities': '/opportunities',
-      'Community': '/community',
-      'About': '/about',
+      Home: '/',
+      Learn: '/learn',
+      Opportunities: '/opportunities',
+      Community: '/community',
+      About: '/about',
     };
     if (routeMap[link]) {
       navigate(routeMap[link]);
@@ -23,101 +35,156 @@ export function Navbar({ links = [], showLogin = true }: { links?: string[], sho
   };
 
   return (
-    <nav className={`${isLoginPage ? 'bg-surface' : 'bg-surface'} shadow`}>
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="flex justify-between items-center h-16">
-          
-          {/* Left Section */}
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-blue-100/80 shadow-2xs">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
+        <div className="flex justify-between items-center h-18 gap-4">
+          {/* 1. Left: Brand Logo & Title */}
           <div className="flex items-center shrink-0">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="bg-[#4A90E2] p-2.5 rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300">
-                <img src={brain} alt="NeuroBridge Logo" className="w-7 h-7" />
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] p-2 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
+                <img src={brain} alt="NeuroBridge Logo" className="w-full h-full object-contain" />
               </div>
-              <span className="flex flex-col">
-                <span className="font-black text-2xl text-text tracking-tight group-hover:text-black transition-colors">
+              <div className="flex flex-col">
+                <span className="font-black text-xl text-[#1A202C] tracking-tight group-hover:text-[#2563EB] transition-colors leading-none">
                   NeuroBridge
                 </span>
-                <span className="text-[11px] font-bold text-text-muted tracking-wide uppercase hidden xl:block">
+                <span className="text-[10px] font-bold text-[#64748B] tracking-wider uppercase hidden sm:block mt-1">
                   Learning & careers for every brain
                 </span>
-              </span>
+              </div>
             </Link>
           </div>
 
-          {/* Dynamic Links (Only on main layout) */}
+          {/* 2. Center: Navigation Links (Desktop) */}
           {!isLoginPage && (
-            <div className={`hidden lg:flex flex-1 justify-center items-center mx-2 min-w-0 ${
-              isDyslexiaMode ? 'gap-2 xl:gap-5' : 'gap-4 xl:gap-8'
-            }`}>
-              {links.map((link, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleNavigation(link)}
-                  className={`text-text hover:text-black font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                    isDyslexiaMode ? 'text-[13px] xl:text-base' : 'text-base'
-                  }`}
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
+              {links.map((link) => {
+                const isActive =
+                  (link === 'Home' && location.pathname === '/') ||
+                  (link === 'Learn' && location.pathname.startsWith('/learn')) ||
+                  (link === 'Opportunities' && location.pathname.startsWith('/opportunities')) ||
+                  (link === 'Community' && location.pathname.startsWith('/community')) ||
+                  (link === 'About' && location.pathname.startsWith('/about'));
+
+                return (
+                  <button
+                    key={link}
+                    type="button"
+                    onClick={() => handleNavigation(link)}
+                    className={`px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-blue-50 text-[#2563EB] shadow-2xs'
+                        : 'text-[#64748B] hover:text-[#1A202C] hover:bg-slate-50'
+                    }`}
+                  >
+                    {link}
+                  </button>
+                );
+              })}
+            </nav>
           )}
 
-          {/* Right Section / Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Accessibility Bar */}
-            <div className="hidden lg:flex items-center gap-3 mr-1">
+          {/* 3. Right: Utility Controls & CTAs with generous spacing */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 pr-1">
+            {/* Top Accessibility Tools */}
+            <div className="hidden md:flex items-center gap-2">
               <AudioControl showControls={false} />
-              <select
-                value={language}
-                onChange={(e) => {
-                  setLanguage(e.target.value as 'en'|'hi'|'mr');
-                  if (location.pathname === '/') window.location.reload();
-                }}
-                className="bg-surface border-2 border-border text-text px-3 py-1.5 rounded-lg text-sm font-medium focus:border-blue-400 focus:outline-none transition-colors cursor-pointer"
-                aria-label="Select language"
-              >
-                <option value="en">🇬🇧 EN</option>
-                <option value="hi">🇮🇳 HI</option>
-                <option value="mr">🇮🇳 MR</option>
-              </select>
-
-              <div className="flex items-center gap-2 xl:gap-3 bg-surface-2 px-3 py-1.5 rounded-full border border-border">
-                <span className="text-text font-bold text-sm flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="hidden xl:inline">Dyslexia Mode</span><span className="xl:hidden">Dyslexia</span>
-                </span>
-                <button
-                  onClick={toggleDyslexiaMode}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 ${isDyslexiaMode ? 'bg-blue-600' : 'bg-[#CBD5E1]'
-                    }`}
-                  aria-label="Toggle dyslexia mode"
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform duration-300 ${isDyslexiaMode ? 'translate-x-6' : 'translate-x-0'
-                      }`}
-                  />
-                </button>
-              </div>
+              <LanguageSelector />
+              <DyslexiaToggle />
             </div>
 
+            {/* Auth Buttons */}
             {isLoginPage ? (
-              <Link to="/" className="flex items-center gap-2 px-6 py-2 rounded-full bg-primary text-white font-bold hover:bg-blue-700 transition-colors shadow-sm">
+              <Link
+                to="/"
+                className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-[#1A202C] text-xs font-bold hover:bg-slate-50 transition-colors shadow-2xs"
+              >
                 Go Back
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
               </Link>
             ) : (
               showLogin && (
-                <Link to="/login" className="px-6 py-2 rounded-full bg-primary text-white font-bold hover:bg-blue-700 transition-colors shadow-sm">
-                  Login
-                </Link>
+                <div className="flex items-center gap-2 pl-1">
+                  <Link
+                    to="/login"
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold text-[#1A202C] hover:text-[#2563EB] hover:bg-slate-50 transition-colors"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/assessment"
+                    className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+                  >
+                    <span>Get Started</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
               )
             )}
-          </div>
 
+            {/* Mobile Menu Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl text-[#64748B] hover:text-[#1A202C] hover:bg-slate-100 transition-colors cursor-pointer ml-1"
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
       </div>
-    </nav>
+
+      {/* Mobile Drawer Navigation */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-slate-100 bg-white px-4 py-5 space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-200">
+          <div className="space-y-1">
+            {links.map((link) => (
+              <button
+                key={link}
+                type="button"
+                onClick={() => handleNavigation(link)}
+                className="w-full text-left px-3 py-2 rounded-xl text-sm font-bold text-[#1A202C] hover:bg-blue-50 hover:text-[#2563EB] transition-colors"
+              >
+                {link}
+              </button>
+            ))}
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#1A202C]">Dyslexia Font</span>
+              <button
+                type="button"
+                onClick={toggleDyslexiaMode}
+                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
+                  isDyslexiaMode ? 'bg-[#2563EB]' : 'bg-slate-300'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                    isDyslexiaMode ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Link
+                to="/login"
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-center text-xs font-bold text-[#1A202C] hover:bg-slate-50"
+              >
+                Log In
+              </Link>
+              <Link
+                to="/assessment"
+                className="flex-1 py-2.5 rounded-xl bg-[#2563EB] text-center text-xs font-bold text-white shadow-xs"
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }

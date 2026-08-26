@@ -548,8 +548,8 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
 
   return (
     <div
-      className="w-full max-w-3xl mx-auto flex flex-col overflow-hidden relative"
-      style={{ height: '88vh', maxHeight: '860px', minHeight: '500px' }}
+      className="w-full max-w-3xl mx-auto flex flex-col overflow-hidden relative py-2"
+      style={{ height: '88vh', maxHeight: '860px', minHeight: '520px' }}
     >
       <AnimatePresence mode="wait">
         {showBrainGamesIntro ? (
@@ -558,276 +558,306 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1 }}
-            className="absolute inset-0 z-50 bg-[#4DA6FF] rounded-2xl flex flex-col items-center justify-center text-white p-10 text-center shadow-2xl"
+            className="absolute inset-0 z-50 bg-gradient-to-tr from-[#2563EB] to-[#8B5CF6] rounded-3xl flex flex-col items-center justify-center text-white p-10 text-center shadow-2xl"
           >
             <motion.div
               initial={{ y: 20 }}
               animate={{ y: 1 }}
               transition={{ repeat: Infinity, duration: 2, repeatType: 'reverse' }}
-              className="text-8xl mb-8"
+              className="text-7xl sm:text-8xl mb-6"
             >
               🧠✨
             </motion.div>
-            <h2 className="text-4xl font-black mb-4 tracking-tight">Leveling Up!</h2>
-            <p className="text-xl font-medium opacity-90 max-w-sm">
-              Great progress! Now let's explore some <span className="bg-surface/ px-2 py-1 rounded">Brain Puzzles</span>...
+            <h2 className="text-3xl sm:text-4xl font-black mb-3 tracking-tight">Leveling Up!</h2>
+            <p className="text-sm sm:text-base font-medium opacity-90 max-w-sm">
+              Great progress! Now let's explore some <span className="bg-white/20 px-2 py-0.5 rounded-lg">Brain Tasks</span>...
             </p>
             <div className="mt-8 flex gap-2">
-              <div className="w-3 h-3 bg-surface rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-              <div className="w-3 h-3 bg-surface rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-              <div className="w-3 h-3 bg-surface rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
             </div>
           </motion.div>
         ) : null}
       </AnimatePresence>
 
       <div className="flex flex-col h-full w-full">
-        {/* TOP BAR: progress */}
-      <div className="flex-none pb-2">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-semibold text-text-muted tracking-widest uppercase">
-            Q {currentQuestion + 1} of {partAQuestions.length}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleAudioPlay}
-              title="Listen to question"
-              className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
-            >
-              <span className="text-sm">🔊</span>
-              <span className="hidden sm:inline">Listen</span>
-            </button>
-            <span className="text-sm font-bold text-blue-600 tabular-nums">{progress}%</span>
+        {/* TOP BAR: progress & utilities */}
+        <div className="flex-none pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-black text-[#1A202C] tracking-wide uppercase">
+              Question {currentQuestion + 1} of {partAQuestions.length}
+            </span>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={handleAudioPlay}
+                title="Listen to question"
+                className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-[#2563EB] text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
+              >
+                <span>🔊</span>
+                <span className="hidden sm:inline">Listen</span>
+              </button>
+              <span className="text-xs font-black text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 tabular-nums">
+                {progress}%
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#60A5FA]"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            />
           </div>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+
+        {/* ANIMATED QUESTION CARD */}
+        <AnimatePresence mode="wait">
           <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-blue-400 via-purple-500 to-pink-400"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-          />
-        </div>
-      </div>
-
-      {/* ANIMATED CARD */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentQuestion}
-          initial={{ opacity: 0, x: 32 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -32 }}
-          transition={{ duration: 0.22, ease: 'easeInOut' }}
-          className="flex-1 min-h-0 flex flex-col bg-surface rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
-        >
-          {/* QUESTION TEXT */}
-          <div className="flex-none px-5 pt-4 pb-3 border-b border-slate-100">
-            <p
-              className="font-semibold text-text"
-              style={{
-                fontSize: 'clamp(0.875rem, 1.6vw, 1.05rem)',
-                lineHeight: 1.4,
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {currentQ.instruction}
-            </p>
-            {currentQ.example && (
-              <div className="mt-2 inline-block bg-blue-50 border border-blue-200 text-blue-800 px-3 py-1 rounded-lg text-sm font-bold font-mono tracking-widest">
-                {currentQ.example}
-              </div>
-            )}
-          </div>
-
-          {currentQ.type === 'reading_tracking' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-               <ReadingTrackingTask paragraph={currentQ.paragraph || ''} onComplete={(tCount) => {
-                 setTrackingMetrics({ trackCount: tCount });
-                 handleAnswer(0);
-               }} />
-            </div>
-          ) : currentQ.type === 'camera_direction' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto">
-               <CameraDirectionTask onComplete={(isCorrect) => {
-                 // The 'camera_direction' question options are: index 0 (Correct), index 1 (Wrong).
-                 handleAnswer(isCorrect ? 0 : 1);
-               }} />
-            </div>
-          ) : currentQ.type === 'eye_tracking_maze' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-              <EyeTrackingMazeTask onComplete={(lookCount) => {
-                handleAnswer(0);
-              }} />
-            </div>
-          ) : currentQ.type === 'reading_reread_tracking' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-              <ReadingRereadTask onComplete={(rereadCount) => {
-                handleAnswer(0);
-              }} />
-            </div>
-          ) : currentQ.type === 'mission_control' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-              <MissionControlTask onComplete={(logs) => {
-                handleAnswer(0);
-                setTimeout(() => handleNext(currentQuestion), 100);
-              }} />
-            </div>
-          ) : currentQ.type === 'situation_series' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-              <SituationSeriesTask 
-                scenarios={Q7_SCENARIOS}
-                title="Imagine this..."
-                onComplete={(data) => {
-                  handleAnswer(0);
-                  setTimeout(() => handleNext(currentQuestion), 100);
-                }} 
-              />
-            </div>
-          ) : currentQ.type === 'multiplication_recall' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-              <MultiplicationRecallTask onComplete={(metrics) => {
-                handleAnswer(0);
-                setTimeout(() => handleNext(currentQuestion), 100);
-              }} />
-            </div>
-          ) : currentQ.type === 'voice_alphabet' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-              <VoiceAlphabetTask onComplete={(metrics) => {
-                handleAnswer(0);
-                setTimeout(() => handleNext(currentQuestion), 100);
-              }} />
-            </div>
-          ) : currentQ.type === 'read_aloud' ? (
-            <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50 border-b border-slate-100">
-              <ReadAloudTask onComplete={(metrics) => {
-                handleAnswer(0);
-                if (currentQ.id === 10) {
-                  setShowBrainGamesIntro(true);
-                  setTimeout(() => {
-                    setShowBrainGamesIntro(false);
-                    handleNext(currentQuestion);
-                  }, 3000);
-                } else {
-                  setTimeout(() => handleNext(currentQuestion), 100);
-                }
-              }} />
-            </div>
-          ) : (
-            <>
-              {/* ILLUSTRATION */}
-              <div className="flex-1 min-h-0 relative bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden">
-                {/* Difficulty badge */}
-                <span className={`absolute top-2 right-2 z-10 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                  currentQ.difficulty === 'easy'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : currentQ.difficulty === 'medium'
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-orange-100 text-orange-700'
-                }`}>
-                  {currentQ.difficulty === 'easy' ? '★ Easy' : currentQ.difficulty === 'medium' ? '★★ Medium' : '★★★ Hard'}
-                </span>
-
-                {IllustrationComponent ? (
-                  <div className="w-full h-full p-3 flex items-center justify-center">
-                    <IllustrationComponent question={currentQ} />
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center gap-1 text-text-muted">
-                    <span className="text-4xl">🎯</span>
-                    <span className="text-xs font-medium">Visual Context</span>
-                  </div>
-                )}
-              </div>
-
-              {/* ANSWER OPTIONS — 4 frequency buttons */}
-              <div className="flex-none px-4 pt-3 pb-2 border-t border-slate-100 bg-surface">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                  {currentQ.options.map((option, index) => {
-                    const isSelected = answers[currentQuestion] === index;
-                    return (
-                      <motion.button
-                        key={option.id}
-                        onClick={() => handleAnswer(index)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.96 }}
-                        className={`relative py-3 px-2 rounded-xl text-sm font-semibold transition-all border-2 ${
-                          isSelected
-                            ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-500 shadow-md'
-                            : 'bg-gray-50 text-text border-border hover:border-blue-300 hover:bg-blue-50'
-                        }`}
-                      >
-                        {option.text}
-                        {isSelected && (
-                          <motion.span
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-surface rounded-full flex items-center justify-center shadow text-green-500 text-xs font-black border border-green-200"
-                          >
-                            ✓
-                          </motion.span>
-                        )}
-                      </motion.button>
-                    );
-                  })}
+            key={currentQuestion}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            className="flex-1 min-h-0 flex flex-col bg-white rounded-3xl shadow-xs border border-blue-100/90 overflow-hidden"
+          >
+            {/* QUESTION TEXT */}
+            <div className="flex-none px-6 pt-5 pb-4 border-b border-slate-100 text-left">
+              <p
+                className="font-bold text-[#1A202C]"
+                style={{
+                  fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
+                  lineHeight: 1.5,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {currentQ.instruction}
+              </p>
+              {currentQ.example && (
+                <div className="mt-2.5 inline-block bg-blue-50 border border-blue-200 text-[#2563EB] px-3 py-1 rounded-xl text-xs font-bold font-mono tracking-widest">
+                  {currentQ.example}
                 </div>
-              </div>
-            </>
-          )}
-
-          {/* NAVIGATION */}
-          <div className="flex-none px-4 py-3 bg-surface flex items-center justify-between gap-2 border-t border-slate-100">
-            <button
-              onClick={handlePrevious}
-              disabled={currentQuestion === 0}
-              className={`flex items-center gap-1 px-4 py-2 rounded-full font-semibold text-sm transition-all ${
-                currentQuestion === 0
-                  ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                  : 'bg-gray-100 text-text-muted hover:bg-gray-200 active:scale-95'
-              }`}
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </button>
-
-            <p className="text-xs text-text-muted font-medium hidden sm:block">
-              🌟 No right or wrong answers
-            </p>
-
-            <button
-              type="button"
-              onClick={handleForceNext}
-              title="Skip this question for testing"
-              className="inline-flex items-center gap-1 px-3 py-2 rounded-full border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 active:scale-95 font-bold text-xs transition-all"
-            >
-              <SkipForward className="h-3.5 w-3.5" aria-hidden="true" />
-              Force next
-            </button>
-
-            <button
-              onClick={() => handleNext()}
-              disabled={!isAnswered}
-              className={`flex items-center gap-1 px-6 py-2 rounded-full font-bold text-sm transition-all shadow-sm ${
-                !isAnswered
-                  ? 'bg-gray-200 text-text-muted cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 active:scale-95 shadow-blue-400/30'
-              }`}
-            >
-              {currentQuestion === partAQuestions.length - 1 ? 'Finish ✓' : 'Next'}
-              {currentQuestion < partAQuestions.length - 1 && (
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
               )}
-            </button>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+            </div>
+
+            {currentQ.type === 'reading_tracking' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <ReadingTrackingTask
+                  paragraph={currentQ.paragraph || ''}
+                  onComplete={(tCount) => {
+                    setTrackingMetrics({ trackCount: tCount });
+                    handleAnswer(0);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'camera_direction' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto">
+                <CameraDirectionTask
+                  onComplete={(isCorrect) => {
+                    handleAnswer(isCorrect ? 0 : 1);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'eye_tracking_maze' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <EyeTrackingMazeTask
+                  onComplete={(lookCount) => {
+                    handleAnswer(0);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'reading_reread_tracking' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <ReadingRereadTask
+                  onComplete={(rereadCount) => {
+                    handleAnswer(0);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'mission_control' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <MissionControlTask
+                  onComplete={(logs) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'situation_series' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <SituationSeriesTask
+                  scenarios={Q7_SCENARIOS}
+                  title="Imagine this..."
+                  onComplete={(data) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'multiplication_recall' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <MultiplicationRecallTask
+                  onComplete={(metrics) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'voice_alphabet' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <VoiceAlphabetTask
+                  onComplete={(metrics) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'read_aloud' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <ReadAloudTask
+                  onComplete={(metrics) => {
+                    handleAnswer(0);
+                    if (currentQ.id === 10) {
+                      setShowBrainGamesIntro(true);
+                      setTimeout(() => {
+                        setShowBrainGamesIntro(false);
+                        handleNext(currentQuestion);
+                      }, 3000);
+                    } else {
+                      setTimeout(() => handleNext(currentQuestion), 100);
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                {/* ILLUSTRATION CONTAINER */}
+                <div className="flex-1 min-h-0 relative bg-gradient-to-br from-[#F8FAFC] to-blue-50/40 flex items-center justify-center overflow-hidden">
+                  {/* Difficulty badge */}
+                  <span
+                    className={`absolute top-3 right-3 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                      currentQ.difficulty === 'easy'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : currentQ.difficulty === 'medium'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-orange-50 text-orange-700 border border-orange-200'
+                    }`}
+                  >
+                    {currentQ.difficulty === 'easy'
+                      ? '★ Easy'
+                      : currentQ.difficulty === 'medium'
+                      ? '★★ Medium'
+                      : '★★★ Hard'}
+                  </span>
+
+                  {IllustrationComponent ? (
+                    <div className="w-full h-full p-4 flex items-center justify-center">
+                      <IllustrationComponent question={currentQ} />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-1 text-[#64748B]">
+                      <span className="text-4xl">🎯</span>
+                      <span className="text-xs font-semibold">Visual Context</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* ANSWER OPTIONS — Large Selectable Cards */}
+                <div className="flex-none px-5 pt-3.5 pb-3 border-t border-slate-100 bg-white">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {currentQ.options.map((option, index) => {
+                      const isSelected = answers[currentQuestion] === index;
+                      return (
+                        <motion.button
+                          key={option.id}
+                          type="button"
+                          onClick={() => handleAnswer(index)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all border text-center cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
+                              : 'bg-[#F8FAFC] text-[#1A202C] border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
+                          }`}
+                        >
+                          <span>{option.text}</span>
+                          {isSelected && (
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-xs text-emerald-600 text-xs font-black border border-emerald-200"
+                            >
+                              ✓
+                            </motion.span>
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* NAVIGATION FOOTER */}
+            <div className="flex-none px-5 py-3.5 bg-white flex items-center justify-between gap-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={handlePrevious}
+                disabled={currentQuestion === 0}
+                className={`flex items-center gap-1.5 px-5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer ${
+                  currentQuestion === 0
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'bg-slate-100 text-[#1A202C] hover:bg-slate-200'
+                }`}
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Back</span>
+              </button>
+
+              <p className="text-xs text-[#64748B] font-medium hidden sm:block">
+                🌟 Take your time · No wrong answers
+              </p>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleForceNext}
+                  title="Skip this question for testing"
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 font-bold text-xs transition-all cursor-pointer"
+                >
+                  <SkipForward className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="hidden md:inline">Force next</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleNext()}
+                  disabled={!isAnswered}
+                  className={`flex items-center gap-1.5 px-6 py-2.5 rounded-2xl font-extrabold text-xs sm:text-sm transition-all shadow-xs cursor-pointer ${
+                    !isAnswered
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white'
+                  }`}
+                >
+                  <span>{currentQuestion === partAQuestions.length - 1 ? 'Finish Assessment ✓' : 'Next'}</span>
+                  {currentQuestion < partAQuestions.length - 1 && (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
-  </div>
-);
+  );
 }

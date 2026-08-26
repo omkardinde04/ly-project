@@ -154,7 +154,8 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     setSettings(prev => ({ 
       ...prev, 
       partACompleted: true,
-      testScore: score
+      testScore: score,
+      dyslexiaLevel: calculateDyslexiaLevel(score)
     }));
   };
 

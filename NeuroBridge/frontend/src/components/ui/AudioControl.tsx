@@ -1,6 +1,8 @@
+import React from 'react';
 import { useDyslexia, type Language } from '../../contexts/DyslexiaContext';
 import { useSpotlightReader } from '../../contexts/SpotlightReaderContext';
 import { getTranslation } from '../../utils/translations';
+import { Volume2, Square, Globe } from 'lucide-react';
 
 interface AudioControlProps {
   text?: string;
@@ -48,71 +50,63 @@ export function AudioControl({
     setSpeed(newSpeed);
   };
 
+  const isReading = isActive && isPlaying;
+
   return (
-    <div className="flex items-center gap-2 lg:gap-3 bg-surface backdrop-blur-md rounded-full px-3 py-1.5 shadow-sm border border-border/50 transition-all hover:bg-surface hover:shadow">
-      {/* Play/Stop Button */}
+    <div
+      className="flex items-center gap-1.5 sm:gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 sm:px-3 py-1.5 shadow-2xs border border-blue-100/90 transition-all hover:border-blue-200"
+      role="region"
+      aria-label="Text to speech narration controls"
+    >
+      {/* Play/Stop Listen Button */}
       <button
+        type="button"
         onClick={handlePlay}
-        className={`group flex items-center gap-2 px-4 py-1.5 rounded-full font-bold text-sm transition-all duration-300 cursor-pointer ${
-          isActive && isPlaying
-            ? 'bg-red-50 text-red-500 hover:bg-red-100 shadow-inner'
-            : 'bg-blue-50 text-blue-600 hover:bg-blue-100 shadow-sm hover:shadow'
+        className={`group flex items-center gap-1.5 px-3 py-1 rounded-xl font-bold text-xs transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 ${
+          isReading
+            ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 animate-pulse'
+            : 'bg-blue-50 text-[#2563EB] hover:bg-blue-100/80 border border-blue-200/80'
         }`}
-        aria-label={isActive && isPlaying ? t.stop : t.listen}
+        aria-label={isReading ? t.stop : t.listen}
       >
-        {isActive && isPlaying ? (
+        {isReading ? (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
-            </svg>
-            <span className="hidden sm:inline">{t.stop}</span>
+            <Square size={13} className="fill-current" />
+            <span>Stop</span>
           </>
         ) : (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transform group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="hidden sm:inline">{t.listen}</span>
+            <Volume2 size={14} className="group-hover:scale-110 transition-transform" />
+            <span>Listen</span>
           </>
         )}
       </button>
 
-      {/* Vertical Divider */}
-      {showControls && <div className="h-4 w-px bg-gray-200/80 mx-1"></div>}
-
-      {/* Sleek Segmented Speed Controls */}
-      {showControls && (
-        <div className="flex items-center bg-gray-100/50 rounded-full p-0.5 border border-border">
-          {[0.5, 1.0, 1.5].map((speedVal) => (
-            <button
-              key={speedVal}
-              onClick={() => handleSpeedChange(speedVal)}
-              className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all duration-300 cursor-pointer ${
-                audioSpeed === speedVal
-                  ? 'bg-surface text-blue-600 shadow-sm shadow-blue-900/5'
-                  : 'text-text-muted hover:text-text hover:bg-gray-200/50'
-              }`}
-            >
-              {speedVal}x
-            </button>
-          ))}
-        </div>
-      )}
-
+      {/* Speed Controls (Optional / Detailed mode) */}
       {showControls && (
         <>
-          {/* Vertical Divider */}
-          <div className="h-4 w-px bg-gray-200/80 mx-1"></div>
+          <div className="h-4 w-px bg-slate-200 mx-0.5" aria-hidden="true" />
+          <div className="flex items-center bg-[#F8FAFC] rounded-xl p-0.5 border border-slate-200/80">
+            {[0.5, 1.0, 1.5].map((speedVal) => (
+              <button
+                key={speedVal}
+                type="button"
+                onClick={() => handleSpeedChange(speedVal)}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                  audioSpeed === speedVal
+                    ? 'bg-white text-[#2563EB] shadow-2xs border border-blue-100'
+                    : 'text-[#64748B] hover:text-[#1A202C]'
+                }`}
+              >
+                {speedVal}x
+              </button>
+            ))}
+          </div>
 
-          {/* Compact Language Indicator */}
-          <div className="flex items-center gap-1.5 px-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-            </svg>
-            <span className="text-[11px] font-black text-text-muted uppercase tracking-widest">
-              {language === 'en' ? 'EN' : language === 'hi' ? 'HI' : 'MR'}
-            </span>
+          <div className="h-4 w-px bg-slate-200 mx-0.5" aria-hidden="true" />
+          <div className="flex items-center gap-1 px-1 text-[10px] font-extrabold text-[#64748B] uppercase">
+            <Globe size={11} className="text-[#94A3B8]" />
+            <span>{language}</span>
           </div>
         </>
       )}

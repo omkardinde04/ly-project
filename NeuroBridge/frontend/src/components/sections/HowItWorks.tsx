@@ -1,111 +1,84 @@
-import { UserSquare2, BookOpen, TrendingUp } from 'lucide-react';
+import React from 'react';
 import { motion } from 'framer-motion';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-};
+import { UserCheck, Sparkles, Rocket, ArrowRight } from 'lucide-react';
+import { useDyslexia } from '../../contexts/DyslexiaContext';
 
 export function HowItWorks() {
+  const { reduceMotion } = useDyslexia();
+
+  const steps = [
+    {
+      number: '01',
+      title: 'Personalize Your Profile',
+      desc: 'Complete a brief 5-minute phonological and visual assessment to calibrate your typography, contrast, and learning profile.',
+      icon: UserCheck,
+      color: 'text-[#2563EB]',
+      bg: 'bg-blue-50',
+      border: 'border-blue-100',
+    },
+    {
+      number: '02',
+      title: 'Learn & Adapt with AI',
+      desc: 'Engage in multisensory reading sprints, practice phonics labs, and get instant explanations from JARVIS AI.',
+      icon: Sparkles,
+      color: 'text-[#8B5CF6]',
+      bg: 'bg-purple-50',
+      border: 'border-purple-100',
+    },
+    {
+      number: '03',
+      title: 'Grow & Launch Career',
+      desc: 'Build an ATS-optimized resume, showcase neuro-inclusive strengths, and connect directly with inclusive hiring partners.',
+      icon: Rocket,
+      color: 'text-emerald-700',
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-100',
+    },
+  ];
+
   return (
-    <div className="flex flex-col w-full">
-      {/* Header section */}
-      <div className="flex flex-col items-start gap-4 mb-12">
-        <div className="bg-[#E7F0FD] text-[#306CBE] px-4 py-1.5 rounded-full text-sm font-extrabold shadow-sm">
-          How It Works
+    <section className="space-y-10 text-left" aria-label="How NeuroBridge Works">
+      <div className="max-w-3xl space-y-3">
+        <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200 text-xs font-extrabold">
+          <span>Three Simple Steps</span>
         </div>
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-[#1A2639] tracking-tight">
-          Three simple steps to get started
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1A202C] tracking-tight">
+          How NeuroBridge works for you.
         </h2>
-        <p className="text-[#566B85] text-lg font-medium max-w-2xl leading-relaxed mt-2">
-          No complicated setup. NeuroBridge meets you where you are and adapts to how your mind works best.
+        <p className="text-sm sm:text-base text-[#64748B] font-medium leading-relaxed">
+          No complicated setup or judgment. NeuroBridge meets you where you are and tunes the
+          learning experience to your strengths.
         </p>
       </div>
 
-      {/* Cards Grid */}
-      <motion.div 
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left"
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-      >
-        
-        {/* Step 1 */}
-        <motion.div 
-          variants={itemVariants}
-          whileHover={{ y: -5, scale: 1.02 }}
-          className="bg-[#F5F9FD] border-2 border-[#DCE8F7] rounded-[32px] p-8 hover:border-[#4A90E2] transition-colors group relative overflow-hidden"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div className="w-10 h-10 rounded-full bg-[#4A90E2] text-white flex items-center justify-center font-black text-lg shadow-md">
-              1
-            </div>
-            <div className="bg-blue-50 text-[#4A90E2] p-3 rounded-2xl group-hover:scale-110 transition-transform">
-              <UserSquare2 size={40} className="opacity-80" strokeWidth={1.5} />
-            </div>
-          </div>
-          <h3 className="text-[#1A2639] text-xl font-black mb-4">
-            Tell Us About You
-          </h3>
-          <p className="text-[#566B85] font-medium leading-relaxed">
-            Personalized onboarding to understand your needs, learning style, and goals — no judgment, just clarity
-          </p>
-        </motion.div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {steps.map((step) => {
+          const Icon = step.icon;
+          return (
+            <motion.div
+              key={step.number}
+              whileHover={reduceMotion ? {} : { y: -5 }}
+              className="bg-white rounded-3xl p-7 sm:p-8 border border-blue-100/80 shadow-xs hover:border-blue-200 hover:shadow-sm transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-2xl font-black text-[#2563EB]/40">{step.number}</span>
+                  <div
+                    className={`w-12 h-12 rounded-2xl ${step.bg} ${step.color} ${step.border} border flex items-center justify-center`}
+                  >
+                    <Icon size={24} />
+                  </div>
+                </div>
 
-        {/* Step 2 */}
-        <motion.div 
-          variants={itemVariants}
-          whileHover={{ y: -5, scale: 1.02 }}
-          className="bg-[#F5F9FD] border-2 border-[#DCE8F7] rounded-[32px] p-8 hover:border-[#4A90E2] transition-colors group relative overflow-hidden"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div className="w-10 h-10 rounded-full bg-[#4A90E2] text-white flex items-center justify-center font-black text-lg shadow-md">
-              2
-            </div>
-            <div className="bg-pink-50 text-[#ED64A6] p-3 rounded-2xl group-hover:scale-110 transition-transform">
-              <BookOpen size={40} className="opacity-80" strokeWidth={1.5} />
-            </div>
-          </div>
-          <h3 className="text-[#1A2639] text-xl font-black mb-4">
-            Experience Adaptive Learning
-          </h3>
-          <p className="text-[#566B85] font-medium leading-relaxed">
-            The interface adjusts automatically for comfort and clarity — fonts, spacing, colors, and pace, all tuned for you.
-          </p>
-        </motion.div>
-
-        {/* Step 3 */}
-        <motion.div 
-          variants={itemVariants}
-          whileHover={{ y: -5, scale: 1.02 }}
-          className="bg-[#F5F9FD] border-2 border-[#DCE8F7] rounded-[32px] p-8 hover:border-[#4A90E2] transition-colors group relative overflow-hidden"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div className="w-10 h-10 rounded-full bg-[#4A90E2] text-white flex items-center justify-center font-black text-lg shadow-md">
-              3
-            </div>
-            <div className="bg-orange-50 text-[#ED8936] p-3 rounded-2xl group-hover:scale-110 transition-transform">
-              <TrendingUp size={40} className="opacity-80" strokeWidth={1.5} />
-            </div>
-          </div>
-          <h3 className="text-[#1A2639] text-xl font-black mb-4">
-            Grow & Succeed
-          </h3>
-          <p className="text-[#566B85] font-medium leading-relaxed">
-            Build real skills, earn badges, and access opportunities matched to your strengths — not just your grades.
-          </p>
-        </motion.div>
-
-      </motion.div>
-    </div>
+                <h3 className="text-xl font-black text-[#1A202C] mb-2">{step.title}</h3>
+                <p className="text-xs sm:text-sm text-[#64748B] font-medium leading-relaxed">
+                  {step.desc}
+                </p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
