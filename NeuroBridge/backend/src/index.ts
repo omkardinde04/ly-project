@@ -17,6 +17,9 @@ import { emailAuthRouter } from './routes/emailAuth';
 import { progressRouter } from './routes/progress';
 import { resumeRouter } from './routes/resume';
 import { communityRouter } from './routes/community';
+import { courseRouter } from './routes/courses';
+import { courseCreatorRouter } from './routes/courseCreator';
+import { adminRouter } from './routes/admin';
 
 const PORT = process.env.PORT || 4000;
 const geminiKey = process.env.GEMINI_API_KEY;
@@ -59,6 +62,9 @@ app.use('/api/brain', brainRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/resume', resumeRouter);
 app.use('/api/community', communityRouter);
+app.use('/api/courses', courseRouter);
+app.use('/api/creator', courseCreatorRouter);
+app.use('/api/admin', adminRouter);
 
 app.get('/', (_req, res) => {
   res.json({ status: 'ok', service: 'NeuroBridge backend', health: '/health' });

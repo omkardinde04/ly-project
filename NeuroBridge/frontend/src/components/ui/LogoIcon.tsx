@@ -1,0 +1,14 @@
+export function LogoIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Background circle */}
+      <circle cx="50" cy="50" r="50" fill="#185A9D" />
+      {/* Small bar (Left) */}
+      <rect x="26" y="46" width="12" height="18" rx="2" fill="#E2E8F0" />
+      {/* Medium bar (Center) */}
+      <rect x="44" y="36" width="12" height="28" rx="2" fill="#93C5FD" />
+      {/* Tall bar (Right) */}
+      <rect x="62" y="26" width="12" height="38" rx="2" fill="#FCD34D" />
+    </svg>
+  );
+}

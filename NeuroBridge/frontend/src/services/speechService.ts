@@ -57,13 +57,14 @@ export class SpeechService {
     this.cancelCurrentSpeech = false;
     this.isSpeakingActive = true;
 
-    const segments = splitTextIntoSpeechSegments(text);
+    const voiceLanguage = (options.language || 'en') as Language;
+    const segments = splitTextIntoSpeechSegments(text, voiceLanguage);
     if (!segments.length) {
       this.isSpeakingActive = false;
       return;
     }
 
-    const voiceLanguage = (options.language || 'en') as Language;
+
     const speedMultiplier = options.speed ?? 1.0;
     const config = getNaturalVoiceConfig(voiceLanguage, speedMultiplier);
 
@@ -85,10 +86,48 @@ export class SpeechService {
             utterance.voice = config.voice;
           }
 
-          // Slightly rise pitch for questions, normal warm pitch for statements
-          const segmentPitch = segment.isQuestion ? config.pitch * 1.04 : config.pitch;
-          utterance.rate = options.speed !== undefined ? options.speed : config.rate;
-          utterance.pitch = options.pitch !== undefined ? options.pitch : segmentPitch;
+          let tonePitchMultiplier = 1.0;
+          let toneRateMultiplier = 1.0;
+
+          switch (segment.tone) {
+            case 'celebrating':
+              tonePitchMultiplier = 1.1; // Energetic, slightly higher pitch
+              toneRateMultiplier = 1.05; // Slightly faster
+              break;
+            case 'warning':
+              tonePitchMultiplier = 0.95; // Serious, lower pitch
+              toneRateMultiplier = 0.9; // Slower, clearer
+              break;
+            case 'encouraging':
+              tonePitchMultiplier = 1.05; // Warmer
+              toneRateMultiplier = 1.02; 
+              break;
+            case 'explaining':
+              tonePitchMultiplier = 0.98; // Calm
+              toneRateMultiplier = 0.92; // Slower for comprehension
+              break;
+            case 'sensitive':
+              tonePitchMultiplier = 0.95; // Gentle
+              toneRateMultiplier = 0.88; // Gentle pacing
+              break;
+            case 'helpful':
+              tonePitchMultiplier = 1.02; // Friendly
+              toneRateMultiplier = 1.0; 
+              break;
+            default:
+              break;
+          }
+
+          if (segment.isQuestion) {
+            tonePitchMultiplier *= 1.06; // Intonation goes up at the end of a question
+          }
+
+          // Ensure the multipliers don't produce extreme robotic values
+          const finalPitch = Math.max(0.5, Math.min(2.0, config.pitch * tonePitchMultiplier));
+          const finalRate = Math.max(0.5, Math.min(2.0, config.rate * toneRateMultiplier));
+
+          utterance.rate = options.speed !== undefined ? options.speed : finalRate;
+          utterance.pitch = options.pitch !== undefined ? options.pitch : finalPitch;
           utterance.volume = options.volume !== undefined ? options.volume : config.volume;
 
           utterance.onstart = () => {

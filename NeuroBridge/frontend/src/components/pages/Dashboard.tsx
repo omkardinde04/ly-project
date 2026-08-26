@@ -10,7 +10,7 @@ import { DashboardSidebar } from '../dashboard/DashboardSidebar';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { DashboardStatusCards } from '../dashboard/DashboardStatusCards';
 import { LearningProgressCard } from '../dashboard/LearningProgressCard';
-import { ContinueLearningCard } from '../dashboard/ContinueLearningCard';
+import { CoursesWidget } from '../dashboard/CoursesWidget';
 import { ResumeBuilderWidget } from '../dashboard/ResumeBuilderWidget';
 import { OpportunitiesWidget } from '../dashboard/OpportunitiesWidget';
 import { AINotebookWidget } from '../dashboard/AINotebookWidget';
@@ -23,6 +23,7 @@ import { Opportunities } from '../dashboard/Opportunities';
 import { NotebookLLM } from '../dashboard/NotebookLLM';
 import { Community } from '../dashboard/Community';
 import { Profile } from '../dashboard/Profile';
+import { CoursesDashboard } from '../pages/CoursesDashboard';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { AudioControl } from '../ui/AudioControl';
@@ -73,6 +74,8 @@ export function Dashboard() {
       setActiveTab('resumeBuilder');
     } else if (location.pathname.startsWith('/dashboard/opportunities')) {
       setActiveTab('opportunities');
+    } else if (location.pathname.startsWith('/dashboard/courses')) {
+      setActiveTab('courses');
     }
   }, [location.pathname]);
 
@@ -113,6 +116,8 @@ export function Dashboard() {
         return <ProgressTracking />;
       case 'opportunities':
         return <Opportunities />;
+      case 'courses':
+        return <div className="-m-5 sm:-m-7 lg:-m-8"><CoursesDashboard /></div>;
       case 'resumeBuilder':
         return <ResumeBuilder />;
       case 'linkedin':
@@ -134,8 +139,6 @@ export function Dashboard() {
 
   return (
     <div className="dashboard-shell flex min-h-screen bg-[#F0F7FA]">
-      <DashboardLanguageBridge />
-      
       {/* Redesigned Fixed Desktop Sidebar & Mobile Drawer */}
       <DashboardSidebar
         activeTab={activeTab}
@@ -187,93 +190,6 @@ export function Dashboard() {
       </motion.main>
     </div>
   );
-}
-
-function DashboardLanguageBridge() {
-  const { language } = useDyslexia();
-
-  useEffect(() => {
-    const dashboard = document.querySelector('.dashboard-shell');
-    if (!dashboard) return;
-
-    const dictionary = getDashboardTextTranslations(language);
-    const hindiDictionary = getDashboardTextTranslations('hi');
-    const marathiDictionary = getDashboardTextTranslations('mr');
-    const originals = new Map<Text, string>();
-    const translatedAttributes = new Map<Element, Map<string, string>>();
-    let observer: MutationObserver;
-    const phrases = Object.keys(dictionary).sort((a, b) => b.length - a.length);
-    const translatedPhrases = Object.keys({ ...hindiDictionary, ...marathiDictionary })
-      .map((key) => hindiDictionary[key] || marathiDictionary[key])
-      .filter(Boolean)
-      .sort((a, b) => b.length - a.length);
-    const restoreEnglish = (value: string) => {
-      let restored = value;
-      for (const phrase of translatedPhrases) {
-        const english = Object.keys(hindiDictionary).find((key) => hindiDictionary[key] === phrase)
-          || Object.keys(marathiDictionary).find((key) => marathiDictionary[key] === phrase);
-        if (english) restored = restored.split(phrase).join(english);
-      }
-      return restored;
-    };
-    const translateValue = (value: string) => {
-      const normalized = restoreEnglish(value);
-      const trimmed = normalized.trim();
-      if (!trimmed) return value;
-      if (dictionary[trimmed]) return normalized.replace(trimmed, dictionary[trimmed]);
-      return phrases.reduce((result, phrase) => result.split(phrase).join(dictionary[phrase]), normalized);
-    };
-
-    const translate = (root: Node) => {
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-      const textNodes: Text[] = [];
-      let node: Node | null;
-      while ((node = walker.nextNode())) textNodes.push(node as Text);
-
-      for (const textNode of textNodes) {
-        const value = originals.get(textNode) ?? textNode.nodeValue ?? '';
-        if (!originals.has(textNode)) originals.set(textNode, value);
-        textNode.nodeValue = translateValue(value);
-      }
-
-      const elements = root instanceof Element ? [root, ...Array.from(root.querySelectorAll('*'))] : [];
-      for (const element of elements) {
-        for (const attribute of ['placeholder', 'title', 'aria-label']) {
-          const value = element.getAttribute(attribute);
-          if (!value) continue;
-          const translated = translateValue(value);
-          if (translated === value) continue;
-          let saved = translatedAttributes.get(element);
-          if (!saved) {
-            saved = new Map();
-            translatedAttributes.set(element, saved);
-          }
-          if (!saved.has(attribute)) saved.set(attribute, value);
-          element.setAttribute(attribute, translated);
-        }
-      }
-    };
-
-    translate(dashboard);
-    observer = new MutationObserver((mutations) => {
-      observer.disconnect();
-      for (const mutation of mutations) {
-        mutation.addedNodes.forEach((addedNode) => translate(addedNode));
-      }
-      observer.observe(dashboard, { childList: true, subtree: true, characterData: true });
-    });
-    observer.observe(dashboard, { childList: true, subtree: true, characterData: true });
-
-    return () => {
-      observer.disconnect();
-      originals.forEach((value, textNode) => { textNode.nodeValue = value; });
-      translatedAttributes.forEach((attributes, element) => {
-        attributes.forEach((value, attribute) => element.setAttribute(attribute, value));
-      });
-    };
-  }, [language]);
-
-  return null;
 }
 
 function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
@@ -338,7 +254,7 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
           <LearningProgressCard onNavigate={onNavigate} dashboardData={dashboardData} />
         </div>
         <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col">
-          <ContinueLearningCard onNavigate={onNavigate} dashboardData={dashboardData} />
+          <CoursesWidget onNavigate={onNavigate} />
         </div>
       </div>
 

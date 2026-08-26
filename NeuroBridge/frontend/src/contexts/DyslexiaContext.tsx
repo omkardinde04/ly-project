@@ -20,6 +20,7 @@ interface CognitiveProfile {
 
 interface DyslexiaSettings {
   isDyslexiaMode: boolean;
+  isDarkMode: boolean;
   language: Language;
   audioSpeed: number;
   fontSize: number;
@@ -39,6 +40,7 @@ interface DyslexiaSettings {
 
 interface DyslexiaContextType extends DyslexiaSettings {
   toggleDyslexiaMode: () => void;
+  toggleDarkMode: () => void;
   setLanguage: (lang: Language) => void;
   setAudioSpeed: (speed: number) => void;
   setFontSize: (size: number) => void;
@@ -57,6 +59,7 @@ interface DyslexiaContextType extends DyslexiaSettings {
 
 const defaultSettings: DyslexiaSettings = {
   isDyslexiaMode: false,
+  isDarkMode: false,
   language: 'en',
   audioSpeed: 1,
   fontSize: 16,
@@ -94,8 +97,20 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('dyslexiaSettings', JSON.stringify(settings));
   }, [settings]);
 
+  useEffect(() => {
+    if (settings.isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [settings.isDarkMode]);
+
   const toggleDyslexiaMode = () => {
     setSettings(prev => ({ ...prev, isDyslexiaMode: !prev.isDyslexiaMode }));
+  };
+
+  const toggleDarkMode = () => {
+    setSettings((prev) => ({ ...prev, isDarkMode: !prev.isDarkMode }));
   };
 
   const setLanguage = (lang: Language) => {
@@ -202,6 +217,7 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     <DyslexiaContext.Provider value={{
       ...settings,
       toggleDyslexiaMode,
+      toggleDarkMode,
       setLanguage,
       setAudioSpeed,
       setFontSize,

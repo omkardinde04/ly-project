@@ -17,7 +17,7 @@ import {
   AlertCircle,
   Check,
 } from 'lucide-react';
-import brain from '../assets/brain.png';
+import { LogoIcon } from '../ui/LogoIcon';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
@@ -208,8 +208,8 @@ export function Login() {
           {/* Logo & Headline */}
           <div className="space-y-3">
             <Link to="/" className="inline-flex items-center gap-3 group">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] p-2.5 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
-                <img src={brain} alt="NeuroBridge Logo" className="w-full h-full object-contain" />
+              <div className="w-11 h-11 rounded-full flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
+                <LogoIcon className="w-full h-full" />
               </div>
               <span className="font-black text-2xl text-[#1A202C] tracking-tight">
                 NeuroBridge

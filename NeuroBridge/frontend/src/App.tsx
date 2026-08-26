@@ -8,6 +8,7 @@ import { SpotlightReaderProvider } from './contexts/SpotlightReaderContext';
 import { OnPageWordSpotlight } from './components/ui/OnPageWordSpotlight';
 import { AIAssistant } from './components/assistant/AIAssistant';
 import { Navbar } from './components/layout/Navbar';
+import { GlobalLanguageBridge } from './components/layout/GlobalLanguageBridge';
 import Index from './components/pages/Index';
 import { Login } from './components/pages/Login';
 import { Footer } from './components/layout/Footer';
@@ -23,7 +24,11 @@ import { VerifyEmail } from './components/pages/VerifyEmail';
 import { AuthRedirect } from './components/auth/AuthRedirect';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { ResumeBuilderPage } from './components/pages/ResumeBuilderPage';
-
+import { CoursesDashboard } from './components/pages/CoursesDashboard';
+import { CourseDetail } from './components/pages/CourseDetail';
+import { CoursePlayer } from './components/pages/CoursePlayer';
+import { CourseCreator } from './components/pages/CourseCreator';
+import { AdminModeration } from './components/pages/AdminModeration';
 function Layout({ children }: { children: ReactNode }) {
   const {
     isDyslexiaMode,
@@ -34,6 +39,7 @@ function Layout({ children }: { children: ReactNode }) {
     highContrast,
     reduceMotion,
     contentWidth,
+    language,
   } = useDyslexia();
 
   // Apply class directly on <body> so our CSS token system works globally
@@ -70,9 +76,13 @@ function Layout({ children }: { children: ReactNode }) {
     const lineHeights = { normal: '1.5', comfortable: '1.8', spacious: '2.2' };
     const letterSpacings = { normal: 'normal', comfortable: '0.05em', wide: '0.1em' };
     const contentWidths = { normal: '100%', comfortable: '85%', narrow: '65%' };
+    
+    // Indic scripts (Hindi, Marathi) completely break if letter-spacing is applied
+    const isIndic = language === 'hi' || language === 'mr';
+    
     root.style.fontSize = `${textSize}%`;
     root.style.setProperty('--accessibility-line-height', lineHeights[lineSpacing]);
-    root.style.setProperty('--accessibility-letter-spacing', letterSpacings[letterSpacing]);
+    root.style.setProperty('--accessibility-letter-spacing', isIndic ? '0px' : letterSpacings[letterSpacing]);
     root.style.setProperty('--accessibility-content-width', contentWidths[contentWidth]);
 
     return () => {
@@ -81,7 +91,7 @@ function Layout({ children }: { children: ReactNode }) {
       root.style.removeProperty('--accessibility-letter-spacing');
       root.style.removeProperty('--accessibility-content-width');
     };
-  }, [isDyslexiaMode, dyslexiaLevel, textSize, lineSpacing, letterSpacing, highContrast, reduceMotion, contentWidth]);
+  }, [isDyslexiaMode, dyslexiaLevel, textSize, lineSpacing, letterSpacing, highContrast, reduceMotion, contentWidth, language]);
 
   return <>{children}</>;
 }
@@ -90,9 +100,12 @@ function AppContent() {
   const location = useLocation();
   const { user, isLoading } = useAuth();
   const isDashboard = location.pathname.startsWith('/dashboard');
+  const isAuthRoute = location.pathname.startsWith('/auth-redirect') || location.pathname.startsWith('/login');
+  const isAssessment = location.pathname.startsWith('/assessment');
+  const isLandingPage = location.pathname === '/';
 
-  // Show loading screen while checking authentication
-  if (isLoading) {
+  // Show loading screen while checking authentication (skip for auth routes so they don't unmount mid-login)
+  if (isLoading && !isAuthRoute) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg)' }}>
         <div className="text-center">
@@ -109,11 +122,27 @@ function AppContent() {
     <Layout>
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}>
         {!isDashboard && <Navbar links={["Home", "Learn", "Opportunities", "Community", "About"]} showLogin={true} />}
-        <main className={`flex-1 ${isDashboard ? "" : "max-w-7xl mx-auto py-6 w-full sm:px-6 lg:px-8"}`}>
+        <main className={`flex-1 ${isDashboard ? "" : "w-full"}`}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<AssessmentPage />} />
+            <Route 
+              path="/dashboard/resume-builder" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/courses" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/dashboard/*" 
               element={
@@ -138,6 +167,39 @@ function AppContent() {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/courses" element={<Navigate to="/dashboard/courses" replace />} />
+            <Route 
+              path="/courses/:id" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <CourseDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/courses/:id/learn" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <CoursePlayer />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/creator/dashboard" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <CourseCreator />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/courses" 
+              element={
+                <ProtectedRoute requireAssessment={true}>
+                  <AdminModeration />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/community" 
               element={
@@ -155,10 +217,11 @@ function AppContent() {
             <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </main>
-        {!isDashboard && <Footer />}
-        <AIAssistant autoStart={true} />
+        {isLandingPage && <Footer />}
+        {!isAssessment && <AIAssistant autoStart={true} />}
         {/* On-Page Word Spotlight Overlay */}
         <OnPageWordSpotlight />
+        <GlobalLanguageBridge />
       </div>
     </Layout>
   );

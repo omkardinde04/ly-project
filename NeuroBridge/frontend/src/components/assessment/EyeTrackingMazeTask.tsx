@@ -239,10 +239,10 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
     }, 2000);
   };
 
-  // Much larger, easier-to-see grid
-  const gridStyle = {
-    backgroundImage: `linear-gradient(to right, #cbd5e1 2px, transparent 2px), linear-gradient(to bottom, #cbd5e1 2px, transparent 2px)`,
-    backgroundSize: '25% 25%'
+  // Clean, professional dot grid for the assessment
+  const dotGridStyle = {
+    backgroundImage: `radial-gradient(circle at center, #94A3B8 3px, transparent 4px)`,
+    backgroundSize: '20% 20%',
   };
 
   return (
@@ -294,40 +294,50 @@ export function EyeTrackingMazeTask({ onComplete }: { onComplete: (lookCount: nu
             </div>
           </div>
           
-          <div className="flex flex-1 gap-16 md:gap-24 w-full min-h-[300px] max-w-5xl mx-auto px-4">
+          <div className="flex flex-1 gap-12 md:gap-20 w-full min-h-[350px] max-w-5xl mx-auto px-4">
             {/* Left Canvas: Reference */}
-            <div className="flex-1 bg-surface border-2 border-gray-300 rounded-xl overflow-hidden relative shadow-sm" style={gridStyle}>
-              <div className="absolute top-2 left-2 bg-surface/ px-2 py-1 rounded text-xs font-bold text-text shadow-sm z-10">Reference Map</div>
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                {referencePath.length > 0 && (
-                  <>
-                    <path 
-                      d={`M ${referencePath[0].x} ${referencePath[0].y} ${referencePath.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`} 
-                      stroke="#f43f5e" 
-                      strokeWidth="4" 
-                      fill="none" 
-                      strokeLinejoin="round" 
-                      strokeLinecap="round" 
-                    />
-                    <circle cx={referencePath[0].x} cy={referencePath[0].y} r="5" fill="#f43f5e" />
-                    <circle cx={referencePath[referencePath.length-1].x} cy={referencePath[referencePath.length-1].y} r="5" fill="#10b981" />
-                  </>
-                )}
-              </svg>
+            <div className="flex-1 flex flex-col gap-3">
+              <div className="inline-flex self-start bg-white px-3 py-1.5 rounded-lg text-xs font-black text-slate-700 shadow-sm border border-slate-200 items-center gap-2">
+                <span>📍</span> Reference Map
+              </div>
+              <div className="flex-1 bg-white border-2 border-slate-200 rounded-2xl overflow-hidden relative shadow-lg">
+                <div className="absolute inset-0 pointer-events-none" style={dotGridStyle} />
+                <svg className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-md" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {referencePath.length > 0 && (
+                    <>
+                      <path 
+                        d={`M ${referencePath[0].x} ${referencePath[0].y} ${referencePath.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`} 
+                        stroke="#f43f5e" 
+                        strokeWidth="3.5" 
+                        fill="none" 
+                        strokeLinejoin="round" 
+                        strokeLinecap="round" 
+                      />
+                      <circle cx={referencePath[0].x} cy={referencePath[0].y} r="4.5" fill="#f43f5e" />
+                      <circle cx={referencePath[referencePath.length-1].x} cy={referencePath[referencePath.length-1].y} r="4.5" fill="#10b981" />
+                    </>
+                  )}
+                </svg>
+              </div>
             </div>
             
             {/* Right Canvas: User Drawing */}
-            <div className="flex-1 bg-surface border-2 border-blue-300 rounded-xl overflow-hidden relative shadow-inner cursor-crosshair" style={gridStyle}>
-               <div className="absolute top-2 left-2 bg-surface/ px-2 py-1 rounded text-xs font-bold text-blue-700 shadow-sm z-10 pointer-events-none">Draw Here</div>
-               <canvas 
-                 ref={drawingCanvasRef}
-                 className="w-full h-full block touch-none cursor-crosshair"
-                 width={400}
-                 height={300}
-                 onClick={handleCanvasClick}
-                 onTouchEnd={handleCanvasClick}
-                 style={{ width: '100%', height: '100%' }}
-               />
+            <div className="flex-1 flex flex-col gap-3 group">
+               <div className="inline-flex self-start bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-md items-center gap-2 group-hover:scale-105 transition-transform origin-left">
+                 <span>✍️</span> Draw Here
+               </div>
+               <div className="flex-1 bg-white border-4 border-blue-400 rounded-2xl overflow-hidden relative shadow-[0_0_30px_rgba(59,130,246,0.15)] group-hover:shadow-[0_0_40px_rgba(59,130,246,0.25)] transition-all cursor-crosshair">
+                 <div className="absolute inset-0 pointer-events-none opacity-50" style={dotGridStyle} />
+                 <canvas 
+                   ref={drawingCanvasRef}
+                   className="w-full h-full block touch-none cursor-crosshair relative z-10"
+                   width={400}
+                   height={300}
+                   onClick={handleCanvasClick}
+                   onTouchEnd={handleCanvasClick}
+                   style={{ width: '100%', height: '100%' }}
+                 />
+               </div>
             </div>
           </div>
         </div>

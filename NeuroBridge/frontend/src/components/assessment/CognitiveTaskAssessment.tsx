@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkipForward } from 'lucide-react';
+import { getSpeechService } from '../../services/speechService';
 
 interface CognitiveTaskProps {
   onComplete: (scores: { phonological: number; visual: number; workingMemory: number; processingSpeed: number; orthographic: number; executive: number }) => void;
@@ -49,7 +50,7 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 animate-in fade-in duration-300">
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
@@ -160,18 +161,21 @@ function PhonologicalTask({ onComplete }: { onComplete: (score: number) => void 
   const currentSet = wordSets[currentIndex];
   const [options, setOptions] = useState(() => generateOptions(currentSet.word));
 
-  const playSound = () => {
-    if ('speechSynthesis' in window) {
-      const letters = currentSet.word.split('').join(' – ');
-      const utterance = new SpeechSynthesisUtterance(letters);
-      utterance.rate = 0.65;
-      utterance.lang = 'en-US';
-      speechSynthesis.speak(utterance);
+  const playSound = async () => {
+    // Add spaces and periods to make it pronounce individual letters distinctively
+    const letters = currentSet.word.split('').join(' . ');
+    const speech = getSpeechService();
+    try {
+      await speech.speak(letters, { speed: 0.65 });
+    } catch (e) {
+      console.error('Speech synthesis failed:', e);
     }
   };
 
   const handleAnswer = (selected: string) => {
     if (attempted) return;
+    const speech = getSpeechService();
+    speech.stopSpeaking(); // Stop any currently playing sounds
     setAttempted(true);
     setSelectedAnswer(selected);
     const isCorrect = selected === currentSet.word;

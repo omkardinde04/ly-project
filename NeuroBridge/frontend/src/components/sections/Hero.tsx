@@ -1,8 +1,9 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
+import { ParticleNetwork } from '../ui/ParticleNetwork';
 import {
   Sparkles,
   ArrowRight,
@@ -25,8 +26,38 @@ export function Hero() {
   const { language, reduceMotion } = useDyslexia();
   const t = getTranslation(language);
 
+  const phrases = [
+    "for your brain.",
+    "for your goals.",
+    "for your future.",
+    "for every learner.",
+    "for you."
+  ];
+
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
+    }, 3000);
+    return () => clearInterval(intervalId);
+  }, [phrases.length]);
+
   return (
-    <section className="relative overflow-hidden pt-4 pb-12 sm:pb-16" aria-label="Hero Section">
+    <section 
+      className="relative overflow-hidden pt-4 pb-12 sm:pb-16" 
+      style={{
+        width: '100vw',
+        left: '50%',
+        marginLeft: '-50vw',
+        right: '50%',
+        marginRight: '-50vw',
+      }}
+      aria-label="Hero Section"
+    >
+      {/* Anti-Gravity Neural Particle Network */}
+      <ParticleNetwork />
+
       {/* Background Subtle Accent Gradients */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-blue-100/40 via-indigo-50/30 to-purple-100/20 blur-3xl -z-10 rounded-full pointer-events-none" />
 
@@ -52,8 +83,19 @@ export function Hero() {
             className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#1A202C] tracking-tight leading-[1.12]"
           >
             Learning should work <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-[#2563EB] to-[#8B5CF6] bg-clip-text text-transparent">
-              for your brain.
+            <span className="grid relative mt-1">
+              <AnimatePresence>
+                <motion.span
+                  key={currentPhraseIndex}
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+                  animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="col-start-1 row-start-1 bg-gradient-to-r from-[#2563EB] to-[#8B5CF6] bg-clip-text text-transparent"
+                >
+                  {phrases[currentPhraseIndex]}
+                </motion.span>
+              </AnimatePresence>
             </span>
           </motion.h1>
 

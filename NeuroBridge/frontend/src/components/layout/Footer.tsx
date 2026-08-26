@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import brain from '../assets/brain.png';
+import { LogoIcon } from '../ui/LogoIcon';
 import { Heart, Sparkles } from 'lucide-react';
 
 export function Footer() {
@@ -11,8 +11,8 @@ export function Footer() {
           {/* Brand Col */}
           <div className="space-y-3 md:col-span-2">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] p-1.5 flex items-center justify-center">
-                <img src={brain} alt="NeuroBridge Logo" className="w-full h-full object-contain" />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                <LogoIcon className="w-full h-full" />
               </div>
               <span className="font-black text-xl text-[#1A202C] tracking-tight">NeuroBridge</span>
             </Link>

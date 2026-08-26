@@ -77,6 +77,7 @@ export function CommunityPage() {
   const navigate = useNavigate();
   const [activeChip, setActiveChip] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showRecommendModal, setShowRecommendModal] = useState(false);
 
   const fade = (delay = 0) => ({
     initial: { opacity: 0, y: 18 },
@@ -95,9 +96,15 @@ export function CommunityPage() {
         <h1 className="text-4xl sm:text-5xl font-black mb-6 leading-tight">
           Learn From Others <span className="text-primary">Like You</span>
         </h1>
-        <p className="text-text-muted text-lg mt-2 max-w-2xl leading-relaxed">
+        <p className="text-text-muted text-lg mt-2 max-w-2xl leading-relaxed mb-6">
           Connect, share, and explore together.
         </p>
+        <button 
+           onClick={() => setShowRecommendModal(true)}
+           className="px-6 py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl shadow-md transition-colors"
+        >
+           Recommend a Course
+        </button>
       </motion.div>
 
       {/* ══ SECTION 1 — WHAT WE OFFER ════════════════════════════════════════ */}
@@ -333,6 +340,85 @@ export function CommunityPage() {
               <p className="text-text-muted text-xs">
                 🔒 Your data is private and secure. We never share personal information.
               </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* ══ RECOMMEND COURSE MODAL ══════════════════════════════════════════════════ */}
+      {showRecommendModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowRecommendModal(false)}
+        >
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          />
+
+          {/* Modal card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.88, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-surface rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+          >
+            <div className="bg-surface-2 border-b border-border px-8 pt-8 pb-6">
+              <button
+                onClick={() => setShowRecommendModal(false)}
+                className="absolute top-4 right-4 text-text-muted hover:text-text transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <h2 className="text-2xl font-black text-text leading-tight">Recommend a Course</h2>
+              <p className="text-text-muted text-sm mt-2 leading-relaxed">
+                Help others by sharing a course you loved!
+              </p>
+            </div>
+
+            <div className="px-8 py-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-text mb-2">Select Course</label>
+                <select className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none">
+                   <option>Phonological Awareness Mastery</option>
+                   <option>Reading Faster Without Stress</option>
+                   <option>Focus & Attention Strategies</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-text mb-2">Rating</label>
+                <div className="flex gap-2">
+                   {[1,2,3,4,5].map(star => (
+                      <button key={star} className="text-amber-400 text-2xl hover:scale-110 transition-transform">★</button>
+                   ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-text mb-2">Why are you recommending this?</label>
+                <textarea 
+                  rows={3} 
+                  className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:ring-2 focus:ring-[#2563EB] outline-none resize-none text-sm"
+                  placeholder="e.g. The visual explanations were really helpful..."
+                />
+              </div>
+              
+              <button 
+                 onClick={() => {
+                    alert('Recommendation submitted for review!');
+                    setShowRecommendModal(false);
+                 }}
+                 className="w-full py-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl shadow-md transition-colors mt-4"
+              >
+                 Submit Recommendation
+              </button>
             </div>
           </motion.div>
         </div>

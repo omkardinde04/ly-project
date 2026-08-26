@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   BookOpen,
@@ -19,6 +19,146 @@ import {
   Layers,
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+
+const jarvisConversations = [
+  {
+    user: "Can you summarize this paragraph and explain the key ideas simply?",
+    intro: "Here are the 3 key takeaways broken down into easy words:",
+    bullets: [
+      "Visual anchors stop letters from jumping on the page.",
+      "Audio narration speeds up reading comprehension.",
+      "Short sprints keep mental stamina high."
+    ]
+  },
+  {
+    user: "How can I make my project experience sound more professional?",
+    intro: "Let's rephrase it using action verbs. Instead of 'I made a website', try:",
+    bullets: [
+      "Developed a responsive e-commerce platform for a local business.",
+      "Increased online engagement and sales by over 20%.",
+      "Utilized modern web technologies for optimal performance."
+    ]
+  },
+  {
+    user: "I missed the last 20 minutes. What were the key points on cell division?",
+    intro: "No problem! Here is a quick summary of the final concepts:",
+    bullets: [
+      "Mitosis creates 2 identical cells for growth.",
+      "Meiosis creates 4 unique cells for reproduction.",
+      "Both processes start with DNA replication."
+    ]
+  }
+];
+
+function JarvisChatAnimation() {
+  const { reduceMotion } = useDyslexia();
+  const [index, setIndex] = useState(0);
+  const [phase, setPhase] = useState<'user' | 'thinking' | 'response'>('user');
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setPhase('response');
+      const timer = setInterval(() => {
+         setIndex(prev => (prev + 1) % jarvisConversations.length);
+      }, 6000);
+      return () => clearInterval(timer);
+    }
+
+    let isMounted = true;
+    let sequenceTimeout: NodeJS.Timeout;
+
+    const runSequence = () => {
+      setPhase('user');
+      sequenceTimeout = setTimeout(() => {
+        if (!isMounted) return;
+        setPhase('thinking');
+        sequenceTimeout = setTimeout(() => {
+          if (!isMounted) return;
+          setPhase('response');
+          sequenceTimeout = setTimeout(() => {
+            if (!isMounted) return;
+            setIndex(prev => (prev + 1) % jarvisConversations.length);
+          }, 4500); // 4.5s reading response
+        }, 1200); // 1.2s thinking
+      }, 1000); // 1s reading user
+    };
+
+    runSequence();
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(sequenceTimeout);
+    };
+  }, [index, reduceMotion]);
+
+  const current = jarvisConversations[index];
+
+  return (
+    <div className="space-y-3 text-xs sm:text-sm min-h-[170px] flex flex-col justify-end overflow-hidden">
+      <AnimatePresence mode="wait">
+        {/* User Message */}
+        <motion.div
+          key={`user-${index}`}
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.3 }}
+          className="ml-auto max-w-[85%] bg-[#2563EB] text-white p-3.5 rounded-2xl rounded-tr-xs font-medium shadow-2xs"
+        >
+          "{current.user}"
+        </motion.div>
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {/* AI Response Area */}
+        {phase === 'thinking' && (
+          <motion.div
+            key={`thinking-${index}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? false : { opacity: 0, y: -5 }}
+            transition={{ duration: 0.3 }}
+            className="mr-auto max-w-[90%] bg-white border border-blue-100 p-4 rounded-2xl rounded-tl-xs text-[#64748B] font-medium italic flex items-center gap-1.5 shadow-2xs"
+          >
+            <span>JARVIS is thinking</span>
+            <span className="flex gap-0.5">
+               <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }}>.</motion.span>
+               <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}>.</motion.span>
+               <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}>.</motion.span>
+            </span>
+          </motion.div>
+        )}
+
+        {phase === 'response' && (
+          <motion.div
+            key={`response-${index}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? false : { opacity: 0, y: -5 }}
+            transition={{ duration: 0.3 }}
+            className="mr-auto w-full max-w-[90%] bg-white border border-blue-100 p-4 rounded-2xl rounded-tl-xs space-y-2 text-[#1A202C] shadow-2xs"
+          >
+            <p className="font-semibold text-xs leading-relaxed">
+              {current.intro}
+            </p>
+            <div className="space-y-1.5 text-xs text-[#64748B] pl-2.5 border-l-2 border-[#2563EB]">
+              {current.bullets.map((bullet, i) => (
+                <motion.p
+                  key={i}
+                  initial={reduceMotion ? false : { opacity: 0, x: -5 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.15 + 0.1 }}
+                >
+                  • {bullet}
+                </motion.p>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export function Features() {
   const navigate = useNavigate();
@@ -87,18 +227,22 @@ export function Features() {
 
         {/* 4 Pillars Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {corePillars.map((pillar) => {
+          {corePillars.map((pillar, index) => {
             const Icon = pillar.icon;
             return (
               <motion.div
                 key={pillar.title}
-                whileHover={reduceMotion ? {} : { y: -4 }}
-                className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/80 shadow-xs hover:border-blue-200 hover:shadow-sm transition-all flex flex-col justify-between"
+                initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, margin: "-40px" }}
+                transition={{ duration: 0.5, delay: index * 0.12, ease: "easeOut" }}
+                whileHover={reduceMotion ? {} : { y: -5, boxShadow: "0 14px 28px -6px rgba(37, 99, 235, 0.1)" }}
+                className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/80 shadow-xs hover:border-blue-200 transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
                     <div
-                      className={`w-12 h-12 rounded-2xl ${pillar.bg} ${pillar.color} ${pillar.border} border flex items-center justify-center`}
+                      className={`w-12 h-12 rounded-2xl ${pillar.bg} ${pillar.color} ${pillar.border} border flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
                     >
                       <Icon size={24} />
                     </div>
@@ -182,22 +326,7 @@ export function Features() {
             </div>
 
             {/* Conversation Preview */}
-            <div className="space-y-3 text-xs sm:text-sm">
-              <div className="ml-auto max-w-[85%] bg-[#2563EB] text-white p-3.5 rounded-2xl rounded-tr-xs font-medium">
-                "Can you summarize this paragraph and explain the key ideas simply?"
-              </div>
-
-              <div className="mr-auto max-w-[90%] bg-white border border-blue-100 p-4 rounded-2xl rounded-tl-xs space-y-2 text-[#1A202C]">
-                <p className="font-semibold text-xs leading-relaxed">
-                  Here are the 3 key takeaways broken down into easy words:
-                </p>
-                <div className="space-y-1 text-xs text-[#64748B] pl-2 border-l-2 border-[#2563EB]">
-                  <p>• Visual anchors stop letters from jumping on the page.</p>
-                  <p>• Audio narration speeds up reading comprehension.</p>
-                  <p>• Short sprints keep mental stamina high.</p>
-                </div>
-              </div>
-            </div>
+            <JarvisChatAnimation />
           </div>
         </div>
       </section>

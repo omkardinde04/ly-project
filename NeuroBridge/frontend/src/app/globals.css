@@ -90,6 +90,18 @@ body.dyslexia-mode {
   --section-gap:     2.5rem;
 }
 
+body.dark-mode {
+  --color-bg:          #0F2647; /* Medium-dark blue */
+  --color-surface:     #1B355E; /* One shade lighter for cards */
+  --color-surface-2:   #1B355E; /* Cards */
+  --color-text:        #EAF1FB; /* Off-white for body text */
+  --color-text-muted:  #9FB4D6; /* Soft blue-gray */
+  --color-accent:      #1B355E; 
+  --color-accent-soft: #1B355E; 
+  --color-primary:     #5DA3F5; /* Lighter tint for links/accents */
+  --color-border:      rgba(255, 255, 255, 0.1); /* Low-opacity white */
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    BASE STYLES — use token variables throughout
 ───────────────────────────────────────────────────────────────────────────── */
@@ -321,6 +333,56 @@ body.dyslexia-mode .nb-surface {
 /* Larger spacing between sections */
 body.dyslexia-mode .nb-section {
   margin-bottom: var(--section-gap);
+}
+
+/* Override hardcoded Tailwind color classes used throughout the app */
+body.dark-mode .bg-white,
+body.dark-mode .bg-\[\#F8FAFC\],
+body.dark-mode .bg-\[\#F1F5F9\],
+body.dark-mode .bg-slate-50,
+body.dark-mode .bg-blue-50 {
+  background-color: var(--color-surface) !important;
+}
+
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode h4, 
+body.dark-mode h5, 
+body.dark-mode h6 {
+  color: #F0F5FC !important;
+}
+
+body.dark-mode .text-\[\#1A202C\],
+body.dark-mode .text-slate-900,
+body.dark-mode .text-slate-800 {
+  color: var(--color-text) !important;
+}
+
+body.dark-mode .text-\[\#64748B\],
+body.dark-mode .text-slate-500,
+body.dark-mode .text-slate-600 {
+  color: var(--color-text-muted) !important;
+}
+
+body.dark-mode .border-slate-100,
+body.dark-mode .border-slate-200,
+body.dark-mode .border-slate-200\/80,
+body.dark-mode .border-blue-100,
+body.dark-mode .border-blue-100\/80,
+body.dark-mode .border-blue-100\/90 {
+  border-color: var(--color-border) !important;
+}
+
+body.dark-mode .text-\[\#2563EB\],
+body.dark-mode .text-blue-600,
+body.dark-mode .text-blue-700 {
+  color: var(--color-primary) !important;
+}
+
+body.dark-mode .bg-\[\#2563EB\] {
+  background-color: var(--color-primary) !important;
+  color: #0F2647 !important; /* Ensure dark text on light blue button */
 }
 
 /* Accessibility preferences are shared by every dashboard tab. */

@@ -10,6 +10,7 @@ import {
   Users,
   Settings,
   User as UserIcon,
+  BookOpen
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -81,6 +82,12 @@ export function DashboardSidebar({
       badge: '12 New',
     },
     {
+      id: 'courses',
+      label: 'Courses',
+      tooltipDescription: 'Explore and Learn',
+      icon: BookOpen,
+    },
+    {
       id: 'notebook',
       label: t.notebookLLM || 'AI Notebook',
       tooltipDescription: 'AI Notebook Copilot',
@@ -113,7 +120,9 @@ export function DashboardSidebar({
       navigate('/dashboard/resume-builder');
     } else if (id === 'opportunities') {
       navigate('/dashboard/opportunities');
-    } else if (location.pathname.startsWith('/dashboard/resume-builder')) {
+    } else if (id === 'courses') {
+      navigate('/dashboard/courses');
+    } else if (location.pathname.startsWith('/dashboard/')) {
       navigate('/dashboard');
     }
     onNavigate(id);

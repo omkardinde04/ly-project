@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Users,
@@ -50,6 +50,22 @@ export function CommunitySectionPreview() {
       author: 'Elena R. · 52 Peers discussing',
     },
   ];
+  const [cards, setCards] = useState(previewCards);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    
+    const interval = setInterval(() => {
+      setCards((prevCards) => {
+        const next = [...prevCards];
+        const first = next.shift();
+        if (first) next.push(first);
+        return next;
+      });
+    }, 4000); // smoothly shift every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [reduceMotion]);
 
   return (
     <section className="space-y-10 text-left" aria-label="Community Support Preview">
@@ -79,40 +95,63 @@ export function CommunitySectionPreview() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {previewCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <motion.div
-              key={card.id}
-              whileHover={reduceMotion ? {} : { y: -4 }}
-              onClick={() => navigate('/community')}
-              className="bg-white rounded-3xl p-7 border border-blue-100/80 shadow-xs hover:border-blue-200 hover:shadow-sm transition-all flex flex-col justify-between cursor-pointer group"
-            >
-              <div>
-                <div
-                  className={`w-11 h-11 rounded-2xl ${card.bg} ${card.color} ${card.border} border flex items-center justify-center mb-5 group-hover:scale-105 transition-transform`}
-                >
-                  <Icon size={22} />
-                </div>
-
-                <h3 className="text-lg font-black text-[#1A202C] group-hover:text-[#2563EB] transition-colors mb-2">
-                  {card.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-[#64748B] font-medium leading-relaxed mb-6">
-                  {card.desc}
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#64748B]">
-                <span className="text-[11px] text-[#94A3B8]">{card.author}</span>
-                <span className="text-[#2563EB] group-hover:translate-x-1 transition-transform">
-                  →
-                </span>
-              </div>
-            </motion.div>
-          );
-        })}
+        {cards.map((card) => (
+          <SpotlightCard key={card.id} card={card} reduceMotion={reduceMotion} navigate={navigate} />
+        ))}
       </div>
     </section>
+  );
+}
+
+function SpotlightCard({ card, reduceMotion, navigate }: any) {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  const Icon = card.icon;
+
+  return (
+    <motion.div
+      layout={!reduceMotion}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      whileHover={reduceMotion ? {} : { y: -4 }}
+      onClick={() => navigate('/community')}
+      onMouseMove={handleMouseMove}
+      className="relative bg-white rounded-3xl p-7 border border-blue-100/80 shadow-xs hover:border-blue-200 hover:shadow-sm transition-all flex flex-col justify-between cursor-pointer group overflow-hidden"
+    >
+      <motion.div
+        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          background: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, rgba(37,99,235,0.06), transparent 40%)`,
+        }}
+      />
+      
+      <div className="relative z-10">
+        <div
+          className={`w-11 h-11 rounded-2xl ${card.bg} ${card.color} ${card.border} border flex items-center justify-center mb-5 group-hover:scale-105 transition-transform`}
+        >
+          <Icon size={22} />
+        </div>
+
+        <h3 className="text-lg font-black text-[#1A202C] group-hover:text-[#2563EB] transition-colors mb-2">
+          {card.title}
+        </h3>
+        <p className="text-xs sm:text-sm text-[#64748B] font-medium leading-relaxed mb-6">
+          {card.desc}
+        </p>
+      </div>
+
+      <div className="relative z-10 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#64748B]">
+        <span className="text-[11px] text-[#94A3B8]">{card.author}</span>
+        <span className="text-[#2563EB] group-hover:translate-x-1 transition-transform">
+          →
+        </span>
+      </div>
+    </motion.div>
   );
 }

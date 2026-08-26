@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import brain from '../assets/brain.png';
+import { LogoIcon } from '../ui/LogoIcon';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { AudioControl } from '../ui/AudioControl';
+import { DarkModeToggle } from '../ui/DarkModeToggle';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { Menu, X, ArrowRight } from 'lucide-react';
@@ -41,8 +42,8 @@ export function Navbar({
           {/* 1. Left: Brand Logo & Title */}
           <div className="flex items-center shrink-0">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] p-2 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
-                <img src={brain} alt="NeuroBridge Logo" className="w-full h-full object-contain" />
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
+                <LogoIcon className="w-full h-full" />
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-xl text-[#1A202C] tracking-tight group-hover:text-[#2563EB] transition-colors leading-none">
@@ -86,9 +87,9 @@ export function Navbar({
 
           {/* 3. Right: Utility Controls & CTAs with generous spacing */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 pr-1">
-            {/* Top Accessibility Tools */}
             <div className="hidden md:flex items-center gap-2">
               <AudioControl showControls={false} />
+              <DarkModeToggle />
               <LanguageSelector />
               <DyslexiaToggle />
             </div>

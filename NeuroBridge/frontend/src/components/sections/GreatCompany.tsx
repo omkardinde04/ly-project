@@ -50,10 +50,15 @@ export function GreatCompany() {
       accent: 'text-cyan-700 bg-cyan-50 border-cyan-100',
     },
   ];
-
   return (
     <section className="space-y-10 text-left" aria-label="Inspirational Dyslexic Pioneers">
-      <div className="max-w-3xl space-y-3">
+      <motion.div 
+        initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, margin: "-40px" }}
+        transition={{ duration: 0.5 }}
+        className="max-w-3xl space-y-3"
+      >
         <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200 text-xs font-extrabold">
           <Sparkles size={13} />
           <span>You're in Great Company</span>
@@ -64,14 +69,18 @@ export function GreatCompany() {
         <p className="text-sm sm:text-base text-[#64748B] font-medium leading-relaxed">
           Some of the world's greatest innovators, artists, and leaders think differently—just like you.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {people.map((person) => (
+        {people.map((person, index) => (
           <motion.div
             key={person.name}
-            whileHover={reduceMotion ? {} : { y: -4 }}
-            className="bg-white rounded-3xl p-7 border border-blue-100/80 shadow-xs hover:border-blue-200 hover:shadow-sm transition-all flex flex-col justify-between"
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, margin: "-40px" }}
+            transition={{ duration: 0.5, delay: 0.2 + index * 0.12, ease: "easeOut" }}
+            whileHover={reduceMotion ? {} : { y: -4, boxShadow: "0 14px 28px -6px rgba(37, 99, 235, 0.1)" }}
+            className="bg-white rounded-3xl p-7 border border-blue-100/80 shadow-xs hover:border-blue-200 transition-all duration-300 flex flex-col justify-between"
           >
             <div>
               <div
@@ -87,7 +96,19 @@ export function GreatCompany() {
 
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
               <div>
-                <h4 className="font-extrabold text-sm text-[#1A202C]">{person.name}</h4>
+                <h4 className="font-extrabold text-sm text-[#1A202C] whitespace-pre-wrap">
+                  {person.name.split('').map((char, i) => (
+                    <motion.span
+                      key={i}
+                      initial={reduceMotion ? false : { opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: false, margin: "-40px" }}
+                      transition={{ duration: 0.01, delay: 0.2 + index * 0.12 + 0.25 + (i * 0.08) }}
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                </h4>
                 <p className="text-[11px] text-[#64748B] font-medium mt-0.5">{person.role}</p>
               </div>
               <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100 shrink-0">
