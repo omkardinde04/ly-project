@@ -99,9 +99,9 @@ function JarvisChatAnimation() {
         {/* User Message */}
         <motion.div
           key={`user-${index}`}
-          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
+          exit={reduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3 }}
           className="ml-auto max-w-[85%] bg-[#2563EB] text-white p-3.5 rounded-2xl rounded-tr-xs font-medium shadow-2xs"
         >
@@ -114,9 +114,9 @@ function JarvisChatAnimation() {
         {phase === 'thinking' && (
           <motion.div
             key={`thinking-${index}`}
-            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? false : { opacity: 0, y: -5 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
             transition={{ duration: 0.3 }}
             className="mr-auto max-w-[90%] bg-white border border-blue-100 p-4 rounded-2xl rounded-tl-xs text-[#64748B] font-medium italic flex items-center gap-1.5 shadow-2xs"
           >
@@ -132,9 +132,9 @@ function JarvisChatAnimation() {
         {phase === 'response' && (
           <motion.div
             key={`response-${index}`}
-            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? false : { opacity: 0, y: -5 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
             transition={{ duration: 0.3 }}
             className="mr-auto w-full max-w-[90%] bg-white border border-blue-100 p-4 rounded-2xl rounded-tl-xs space-y-2 text-[#1A202C] shadow-2xs"
           >

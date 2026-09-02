@@ -218,7 +218,7 @@ function AppContent() {
           </Routes>
         </main>
         {isLandingPage && <Footer />}
-        {!isAssessment && <AIAssistant autoStart={true} />}
+        <AIAssistant autoStart={true} />
         {/* On-Page Word Spotlight Overlay */}
         <OnPageWordSpotlight />
         <GlobalLanguageBridge />
@@ -231,13 +231,13 @@ function App() {
   return (
     <AuthProvider>
       <DyslexiaProvider>
-        <AssistantProvider>
-          <SpotlightReaderProvider>
-            <Router>
+        <SpotlightReaderProvider>
+          <Router>
+            <AssistantProvider>
               <AppContent />
-            </Router>
-          </SpotlightReaderProvider>
-        </AssistantProvider>
+            </AssistantProvider>
+          </Router>
+        </SpotlightReaderProvider>
       </DyslexiaProvider>
     </AuthProvider>
   );

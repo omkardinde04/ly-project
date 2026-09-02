@@ -119,6 +119,7 @@ export function Hero() {
           >
             <button
               type="button"
+              data-jarvis-id="hero-get-started"
               onClick={() => navigate('/assessment')}
               className="px-7 py-3.5 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-sm shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer group"
             >
@@ -131,6 +132,7 @@ export function Hero() {
 
             <button
               type="button"
+              data-jarvis-id="hero-explore-features"
               onClick={() => {
                 document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' });
               }}

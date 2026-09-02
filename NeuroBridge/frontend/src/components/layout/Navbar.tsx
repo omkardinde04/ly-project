@@ -71,6 +71,7 @@ export function Navbar({
                   <button
                     key={link}
                     type="button"
+                    data-jarvis-id={`nav-${link.toLowerCase()}`}
                     onClick={() => handleNavigation(link)}
                     className={`px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold transition-all cursor-pointer ${
                       isActive
@@ -98,6 +99,7 @@ export function Navbar({
             {isLoginPage ? (
               <Link
                 to="/"
+                data-jarvis-id="nav-go-back"
                 className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-[#1A202C] text-xs font-bold hover:bg-slate-50 transition-colors shadow-2xs"
               >
                 Go Back
@@ -107,12 +109,14 @@ export function Navbar({
                 <div className="flex items-center gap-2 pl-1">
                   <Link
                     to="/login"
+                    data-jarvis-id="nav-login"
                     className="px-3.5 py-2 rounded-xl text-xs font-bold text-[#1A202C] hover:text-[#2563EB] hover:bg-slate-50 transition-colors"
                   >
                     Log in
                   </Link>
                   <Link
                     to="/assessment"
+                    data-jarvis-id="get-started"
                     className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
                   >
                     <span>Get Started</span>

@@ -35,6 +35,7 @@ export function SidebarNavItem({
     <li className="relative list-none my-1">
       <motion.button
         type="button"
+        data-jarvis-id={`sidebar-${id}`}
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

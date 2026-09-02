@@ -21,21 +21,30 @@ export interface SpeechSegment {
 const PREFERRED_VOICE_NAMES: Record<Language, string[]> = {
   en: [
     // Top-tier Siri-like Apple voices (macOS / iOS)
-    'Samantha (Enhanced)',
-    'Samantha (Premium)',
-    'Ava (Enhanced)',
     'Ava (Premium)',
-    'Zoe (Enhanced)',
+    'Ava (Enhanced)',
+    'Samantha (Premium)',
+    'Samantha (Enhanced)',
     'Zoe (Premium)',
-    'Serena (Enhanced)',
+    'Zoe (Enhanced)',
     'Serena (Premium)',
-    'Nicky (Enhanced)',
+    'Serena (Enhanced)',
+    'Daniel (Enhanced)',
+    'Oliver (Enhanced)',
+    'Kate (Enhanced)',
+    'Jamie (Premium)',
+    'Jamie (Enhanced)',
     'Evan (Enhanced)',
     'Allison (Enhanced)',
-    'Samantha',
+    'Nicky (Enhanced)',
+    'Siri',
     'Ava',
+    'Samantha',
     'Zoe',
     'Serena',
+    'Daniel',
+    'Oliver',
+    'Kate',
     // Microsoft Natural / Neural voices (Edge / Windows)
     'Microsoft Jenny Online (Natural)',
     'Microsoft Aria Online (Natural)',
@@ -50,20 +59,18 @@ const PREFERRED_VOICE_NAMES: Record<Language, string[]> = {
     'Google UK English Male',
     // Standard fallbacks
     'Karen',
-    'Daniel',
-    'Alex',
-    'Microsoft Zira',
+    'Moira',
+    'Fiona',
+    'Tessa',
   ],
   hi: [
-    // Microsoft Natural
+    // Microsoft Natural & Google
     'Microsoft Swara Online (Natural)',
     'Microsoft Madhur Online (Natural)',
     'Microsoft Aarav Online (Natural)',
     'Swara (Natural)',
-    // Google
     'Google हिन्दी',
     'Google Hindi',
-    // Apple & Microsoft standard
     'Lekha (Enhanced)',
     'Lekha',
     'Microsoft Kalpana',
@@ -110,7 +117,7 @@ export function getBestNaturalVoice(language: Language = 'en'): SpeechSynthesisV
 
   const targetLang = language.toLowerCase();
   const langCandidates = voices.filter((v) => {
-    const vLang = v.lang.toLowerCase();
+    const vLang = v.lang.toLowerCase().replace('_', '-');
     if (targetLang === 'en') return vLang.startsWith('en');
     if (targetLang === 'hi') return vLang.startsWith('hi');
     if (targetLang === 'mr') return vLang.startsWith('mr') || vLang.startsWith('hi');
@@ -130,28 +137,35 @@ export function getBestNaturalVoice(language: Language = 'en'): SpeechSynthesisV
     if (found) return found;
   }
 
-  // 2. Prefer any voice labeled 'Natural', 'Enhanced', 'Neural', or 'Premium'
-  const naturalFallback = voicePool.find((v) => {
+  // 2. Prefer any voice labeled 'Enhanced', 'Premium', 'Natural', or 'Neural' (skipping legacy robotic voices like Alex/Fred/Albert)
+  const roboticFilter = ['alex', 'fred', 'albert', 'bad news', 'bahh', 'bells', 'boing', 'bubbles', 'cellos', 'deranged', 'good news', 'hysterical', 'pipe organ', 'trinoids', 'whisper', 'zarvox'];
+  const highQualityCandidate = voicePool.find((v) => {
     const name = v.name.toLowerCase();
+    const isRobotic = roboticFilter.some((r) => name.includes(r));
+    if (isRobotic) return false;
+
     return (
-      name.includes('natural') ||
       name.includes('enhanced') ||
-      name.includes('neural') ||
       name.includes('premium') ||
-      name.includes('online')
+      name.includes('natural') ||
+      name.includes('neural') ||
+      name.includes('siri') ||
+      name.includes('google')
     );
   });
-  if (naturalFallback) return naturalFallback;
+  if (highQualityCandidate) return highQualityCandidate;
 
-  // 3. Prefer non-local service (cloud high quality) if available
-  const remoteVoice = voicePool.find((v) => !v.localService);
-  if (remoteVoice) return remoteVoice;
+  // 3. Fallback to any non-robotic voice in the pool
+  const cleanFallback = voicePool.find((v) => {
+    const name = v.name.toLowerCase();
+    return !roboticFilter.some((r) => name.includes(r));
+  });
 
-  return voicePool[0] || null;
+  return cleanFallback || voicePool[0] || null;
 }
 
 /**
- * Returns optimized acoustic and prosody parameters for warm, human-like cadence.
+ * Returns optimized acoustic and prosody parameters for warm, human-like conversational voice.
  */
 export function getNaturalVoiceConfig(
   language: Language = 'en',
@@ -165,13 +179,13 @@ export function getNaturalVoiceConfig(
     mr: 'mr-IN',
   };
 
-  // Siri-like natural rate & warm human pitch
-  const baseRate = language === 'en' ? 0.94 : 0.92;
-  const basePitch = language === 'en' ? 1.02 : 1.0;
+  // Human conversational speaking speed and pitch
+  const baseRate = 1.0;
+  const basePitch = 1.0;
 
   return {
     voice,
-    rate: Math.max(0.6, Math.min(1.8, baseRate * speedMultiplier)),
+    rate: Math.max(0.7, Math.min(1.5, baseRate * speedMultiplier)),
     pitch: basePitch,
     volume: 1.0,
     lang: langMap[language] || 'en-US',
@@ -206,7 +220,7 @@ export function cleanTextForSpeech(text: string): string {
 }
 
 /**
- * Analyzes the semantic meaning of a sentence to determine the most natural emotional tone.
+ * Analyzes the semantic meaning of a sentence to determine subtle inflection.
  */
 export function analyzeSentenceTone(text: string, language: Language = 'en'): SpeechTone {
   const lower = text.toLowerCase();
@@ -238,13 +252,12 @@ export function analyzeSentenceTone(text: string, language: Language = 'en'): Sp
 }
 
 /**
- * Splits conversational text into natural speaking segments with Siri-like halts/pauses between sentences and clauses.
+ * Splits conversational text into natural speaking segments with Siri-like halts/pauses between sentences.
  */
 export function splitTextIntoSpeechSegments(text: string, language: Language = 'en'): SpeechSegment[] {
   const cleaned = cleanTextForSpeech(text);
   if (!cleaned) return [];
 
-  // Match sentences ending with punctuation, ellipsis, newlines, or clauses
   const regex = /([^.!?\n\r]+[.!?\n\r]*)/g;
   const matches = cleaned.match(regex) || [cleaned];
   const segments: SpeechSegment[] = [];
@@ -255,19 +268,9 @@ export function splitTextIntoSpeechSegments(text: string, language: Language = '
 
     const lastChar = trimmed[trimmed.length - 1];
     const isQuestion = lastChar === '?';
-    const isExclamation = lastChar === '!';
-    const isPeriod = lastChar === '.';
-    const isEllipsis = trimmed.endsWith('...');
 
-    // Calculate natural halt/breath duration:
-    // Period / Question / Exclamation: 350-420ms halt
-    // Ellipsis / comma / clause: 200-260ms halt
-    let pauseAfterMs = 280;
-    if (isQuestion || isExclamation || isPeriod) {
-      pauseAfterMs = 380;
-    } else if (isEllipsis) {
-      pauseAfterMs = 450;
-    }
+    // Natural breath pause duration: 250ms for normal sentences
+    const pauseAfterMs = isQuestion ? 300 : 250;
 
     segments.push({
       text: trimmed,
