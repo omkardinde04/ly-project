@@ -125,12 +125,12 @@ async function getOllamaEmbedding(text: string): Promise<number[]> {
     res = await fetch('http://localhost:11434/api/embeddings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama3', prompt: text })
+      body: JSON.stringify({ model: 'nomic-embed-text', prompt: text })
     });
   } catch (err) {
-    throw new Error("Cannot connect to Ollama. Is the Ollama app running on your Mac? (Run 'ollama run llama3' in a new terminal)");
+    throw new Error("Cannot connect to Ollama. Is the Ollama app running on your Mac/PC? (Run 'ollama run llama3' in a new terminal)");
   }
-  if (!res.ok) throw new Error("Ollama embedding failed. Did you pull the llama3 model?");
+  if (!res.ok) throw new Error("Ollama embedding failed. Did you pull the embedding model? Run: ollama pull nomic-embed-text");
   const data = await res.json() as { embedding: number[] };
   return data.embedding;
 }
