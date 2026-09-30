@@ -7,7 +7,7 @@ import Battle, { IBattle } from '../models/Battle';
 
 export const progressRouter = Router();
 const skills: LearningSkill[] = ['sound', 'focus', 'memory', 'speed'];
-const dayKey = () => new Date().toISOString().slice(0, 10);
+const dayKey = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 const userId = (req: any) => String(req.user.userId);
 
 function validSkill(value: unknown): value is LearningSkill { return typeof value === 'string' && skills.includes(value as LearningSkill); }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useDyslexia } from '../contexts/DyslexiaContext';
 import type { ResumeData } from '../components/resume-builder/types';
+import { istDayKey, istWeekKeys } from '../utils/istDate';
 import { initialResumeData } from '../components/resume-builder/types';
 
 export type SkillId = 'sound' | 'focus' | 'memory' | 'speed';
@@ -244,25 +245,16 @@ export function useDashboardData(): DashboardData {
 
   // Compute Monday-Sunday date range for current week in local calendar
   const weekActivity = useMemo<DayActivity[]>(() => {
-    const now = new Date();
-    const currentDayOfWeek = now.getDay(); // 0 is Sunday, 1 is Mon...
-    // In ISO week, Monday is 1, Sunday is 7 (or 0)
-    const distanceToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - distanceToMonday);
-    monday.setHours(0, 0, 0, 0);
-
-    const todayStr = now.toISOString().slice(0, 10);
+    const todayStr = istDayKey();
+    const weekKeys = istWeekKeys();
 
     return DAYS_SHORT.map((dayName, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      const dateStr = date.toISOString().slice(0, 10);
+      const dateStr = weekKeys[index];
       const isToday = dateStr === todayStr;
 
       // Find activity in recentActivity or activityDays for this date
       const activitiesOnDay = (progressState.recentActivity || []).filter((act) => {
-        const actDateStr = typeof act.createdAt === 'string' ? act.createdAt.slice(0, 10) : new Date(act.createdAt).toISOString().slice(0, 10);
+        const actDateStr = istDayKey(act.createdAt);
         return actDateStr === dateStr;
       });
 
@@ -314,9 +306,9 @@ export function useDashboardData(): DashboardData {
 
   // Lessons completed today
   const completedToday = useMemo(() => {
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = istDayKey();
     const todayActivities = (progressState.recentActivity || []).filter((act) => {
-      const actDateStr = typeof act.createdAt === 'string' ? act.createdAt.slice(0, 10) : new Date(act.createdAt).toISOString().slice(0, 10);
+      const actDateStr = istDayKey(act.createdAt);
       return actDateStr === todayStr;
     });
     if (todayActivities.length > 0) return todayActivities.length;

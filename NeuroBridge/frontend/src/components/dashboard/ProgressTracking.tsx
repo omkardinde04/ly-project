@@ -16,6 +16,7 @@ import {
   ArrowRight,
   TrendingUp,
 } from 'lucide-react';
+import { istDayKey, istWeekKeys } from '../../utils/istDate';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProgressGame, type GameResult } from './ProgressGame';
@@ -60,7 +61,7 @@ export type ArenaState = {
 };
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => istDayKey();
 
 const labels = {
   en: {
@@ -327,15 +328,13 @@ export function ProgressTracking() {
     },
   ];
 
-  const daily = skills[new Date().getDate() % skills.length];
+  const daily = skills[Number(today().slice(8, 10)) % skills.length];
   const dailyDone = state.days.includes(today()) || state.dailyChallenges.includes(today());
 
-  // Weekday activity array based on real days
-  const weekActivity = DAYS.map((_, index) =>
-    state.days.includes(
-      new Date(Date.now() - (6 - index) * 86400000).toISOString().slice(0, 10)
-    )
-  );
+  // Mon–Sun of the current IST week, aligned with the day labels
+  const weekKeys = istWeekKeys();
+  const weekActivity = weekKeys.map((key) => state.days.includes(key));
+  const todayIndex = weekKeys.indexOf(today());
 
   const complete = (result: GameResult) => {
     const date = today();
@@ -518,8 +517,8 @@ export function ProgressTracking() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-7 pb-12">
-      {/* ─── 1. HEADER: YOUR READING ARENA ─────────────────────────── */}
+    <div className="max-w-4xl mx-auto space-y-8 sm:space-y-10 pb-12">
+      {/* ─── HEADER ─────────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -547,7 +546,6 @@ export function ProgressTracking() {
           </p>
         </div>
 
-        {/* Summary Metric Cluster */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl px-4 py-3 text-center min-w-[85px]">
             <div className="text-lg font-black text-[#1A202C]">{state.plays}</div>
@@ -564,200 +562,128 @@ export function ProgressTracking() {
         </div>
       </motion.div>
 
-      {/* ─── 2. BADGES & ACHIEVEMENTS CARD ──────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
+      {/* ═══ SECTION 1: CHALLENGE & COMPETE ═══════════════════════════ */}
+      <section
+        aria-label="Challenges and competition"
+        className="rounded-[2rem] border border-amber-200/70 bg-amber-50/30 p-4 sm:p-6 space-y-5"
       >
-        <BadgeProgressBar state={state} onOpen={() => setShowBadges(true)} />
-      </motion.div>
-
-      {/* ─── 3. DAILY CHALLENGE HERO CARD ──────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        aria-label="Daily challenge"
-        className="relative overflow-hidden rounded-3xl border border-amber-200/80 bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 p-6 sm:p-7 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6"
-      >
-        {/* Subtle decorative background detail */}
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-100/40 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 space-y-2 max-w-xl">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-200">
-              <Zap size={13} className="fill-amber-600 text-amber-600" />
-              {t.daily}
-            </span>
-            <span className="text-xs font-bold text-[#64748B] bg-white/80 px-2.5 py-0.5 rounded-full border border-slate-100">
-              10 questions · {daily.construct}
-            </span>
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl font-black text-[#1A202C]">
-            {daily.name}
-          </h2>
-
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <div className="flex items-baseline gap-1 bg-white/90 px-3 py-1.5 rounded-xl border border-slate-100 shadow-xs">
-              <span className="text-xs font-bold text-[#64748B]">Rating:</span>
-              <span className="text-base font-black text-[#1A202C]">{daily.rating}</span>
-            </div>
-            <div className="text-xs font-semibold text-[#64748B] flex items-center gap-2">
-              <span>🔥 {state.streak} {t.streak}</span>
-              <span>·</span>
-              <span>{t.best}: {daily.rating}</span>
-              <span>·</span>
-              <span className="text-[#2563EB] font-bold">+{state.weeklyGain} {t.week}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right CTA Button */}
-        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-          <button
-            disabled={dailyDone}
-            onClick={() => setGame({ skillId: daily.id, isMatch: false })}
-            className="h-12 px-7 rounded-2xl bg-[#E86F51] hover:bg-[#D45E40] text-white font-bold text-sm shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Gamepad2 size={18} />
-            <span>{dailyDone ? t.completedToday : t.playNow}</span>
-            {!dailyDone && <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />}
-          </button>
-        </div>
-      </motion.section>
-
-      {/* ─── 4. YOUR SKILLS GRID ───────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        aria-label="Your reading skills"
-      >
-        <div className="flex items-center justify-between mb-4 px-1">
+        <div className="flex items-center gap-3 px-1">
+          <span className="w-9 h-9 rounded-2xl bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
+            <Trophy size={18} />
+          </span>
           <div>
-            <h2 className="text-lg font-extrabold text-[#1A202C]">
-              {t.skills}
+            <h2 className="text-lg font-extrabold text-[#1A202C] leading-tight">
+              Challenges &amp; Competition
             </h2>
             <p className="text-xs text-[#64748B] font-medium mt-0.5">
-              Targeted cognitive and multisensory reading practice
+              Earn badges, take the daily challenge, or compete with a peer
             </p>
           </div>
-          <span className="text-xs font-bold text-[#64748B] bg-slate-100 px-3 py-1 rounded-full">
-            4 Core Constructs
-          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
-          {skills.map((skill) => {
-            const Icon = skill.icon;
-            return (
-              <article
-                key={skill.id}
-                className="bg-white rounded-3xl p-6 border border-blue-100/80 shadow-xs hover:shadow-sm hover:border-blue-200 transition-all flex flex-col justify-between h-full group"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div
-                        className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border ${skill.bgClass} ${skill.textClass} ${skill.borderClass}`}
-                      >
-                        <Icon size={22} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-extrabold text-base text-[#1A202C] truncate">
-                          {skill.name}
-                        </h3>
-                        <p className="text-xs font-medium text-[#64748B] truncate mt-0.5">
-                          {skill.construct}
-                        </p>
-                      </div>
-                    </div>
-
-                    <span
-                      className={`text-xs font-extrabold px-2.5 py-1 rounded-full shrink-0 border ${skill.bgClass} ${skill.textClass} ${skill.borderClass}`}
-                    >
-                      +{skill.delta}% accuracy
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
-                      Skill Rating
-                    </span>
-                    <span className="text-2xl font-black text-[#1A202C]">
-                      {skill.rating}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setGame({ skillId: skill.id, isMatch: false })}
-                    className="h-10 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Gamepad2 size={15} />
-                    <span>{t.play}</span>
-                  </button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </motion.section>
-
-      {/* ─── 5. BOTTOM: CHALLENGE A PEER & WEEKLY ACTIVITY ─────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        {/* Card 1: Challenge a Peer */}
-        <motion.section
+        {/* Badges */}
+        <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/80 shadow-xs flex flex-col justify-between h-full"
+          transition={{ delay: 0.05 }}
         >
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#2563EB]">
-                  <Swords size={20} />
-                </div>
-                <div>
-                  <div className="text-[11px] font-bold text-[#2563EB] uppercase tracking-wider">
-                    {t.peer}
-                  </div>
-                  <h3 className="text-lg font-extrabold text-[#1A202C]">
-                    {t.peerText}
-                  </h3>
-                </div>
-              </div>
+          <BadgeProgressBar state={state} onOpen={() => setShowBadges(true)} />
+        </motion.div>
 
-              <span className="text-xs font-bold text-[#64748B] bg-slate-100 px-2.5 py-1 rounded-full shrink-0">
-                {state.acceptedChallenges} {t.accepted}
+        {/* Daily Challenge */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          aria-label="Daily challenge"
+          className="relative overflow-hidden rounded-3xl border border-amber-200/80 bg-gradient-to-r from-amber-50/60 via-white to-blue-50/40 p-6 sm:p-7 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6"
+        >
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-100/40 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative z-10 space-y-2 max-w-xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-200">
+                <Zap size={13} className="fill-amber-600 text-amber-600" />
+                {t.daily}
+              </span>
+              <span className="text-xs font-bold text-[#64748B] bg-white/80 px-2.5 py-0.5 rounded-full border border-slate-100">
+                10 questions · {daily.construct}
               </span>
             </div>
 
-            {/* VS Matchup Box */}
-            <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-4 my-4 flex items-center justify-around">
-              <div className="text-center">
-                <div className="text-xs font-semibold text-[#64748B]">{t.you}</div>
-                <div className="text-2xl font-black text-[#2563EB] mt-0.5">
-                  {daily.rating}
-                </div>
+            <h3 className="text-2xl sm:text-3xl font-black text-[#1A202C]">{daily.name}</h3>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="flex items-baseline gap-1 bg-white/90 px-3 py-1.5 rounded-xl border border-slate-100 shadow-xs">
+                <span className="text-xs font-bold text-[#64748B]">Rating:</span>
+                <span className="text-base font-black text-[#1A202C]">{daily.rating}</span>
               </div>
+              <div className="text-xs font-semibold text-[#64748B] flex flex-wrap items-center gap-2">
+                <span>🔥 {state.streak} {t.streak}</span>
+                <span>·</span>
+                <span>{t.best}: {daily.rating}</span>
+                <span>·</span>
+                <span className="text-[#2563EB] font-bold">+{state.weeklyGain} {t.week}</span>
+              </div>
+            </div>
+          </div>
 
-              <span className="w-9 h-9 rounded-full bg-white border border-slate-200 text-[#64748B] font-black text-xs flex items-center justify-center shadow-xs">
-                VS
-              </span>
+          <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            <button
+              disabled={dailyDone}
+              onClick={() => setGame({ skillId: daily.id, isMatch: false })}
+              className="h-12 px-7 rounded-2xl bg-[#E86F51] hover:bg-[#D45E40] text-white font-bold text-sm shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <Gamepad2 size={18} />
+              <span>{dailyDone ? t.completedToday : t.playNow}</span>
+              {!dailyDone && (
+                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              )}
+            </button>
+          </div>
+        </motion.div>
 
-              <div className="text-center">
-                <div className="text-xs font-semibold text-[#1A202C] truncate max-w-[120px]">
-                  {state.opponent?.name || 'No opponent yet'}
+        {/* Challenge a Peer */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/80 shadow-xs"
+        >
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#2563EB] shrink-0">
+                <Swords size={20} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[11px] font-bold text-[#2563EB] uppercase tracking-wider">
+                  {t.peer}
                 </div>
-                <div className="text-2xl font-black text-[#E86F51] mt-0.5">
-                  {state.opponent?.rating ?? '—'}
-                </div>
+                <h3 className="text-lg font-extrabold text-[#1A202C]">{t.peerText}</h3>
+              </div>
+            </div>
+
+            <span className="text-xs font-bold text-[#64748B] bg-slate-100 px-2.5 py-1 rounded-full shrink-0">
+              {state.acceptedChallenges} {t.accepted}
+            </span>
+          </div>
+
+          <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-4 my-4 flex items-center justify-around">
+            <div className="text-center">
+              <div className="text-xs font-semibold text-[#64748B]">{t.you}</div>
+              <div className="text-2xl font-black text-[#2563EB] mt-0.5">{daily.rating}</div>
+            </div>
+
+            <span className="w-9 h-9 rounded-full bg-white border border-slate-200 text-[#64748B] font-black text-xs flex items-center justify-center shadow-xs">
+              VS
+            </span>
+
+            <div className="text-center">
+              <div className="text-xs font-semibold text-[#1A202C] truncate max-w-[120px]">
+                {state.opponent?.name || 'No opponent yet'}
+              </div>
+              <div className="text-2xl font-black text-[#E86F51] mt-0.5">
+                {state.opponent?.rating ?? '—'}
               </div>
             </div>
           </div>
@@ -765,66 +691,143 @@ export function ProgressTracking() {
           <button
             type="button"
             onClick={() => setMatchmaking(daily.id)}
-            className="w-full h-11 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer mt-2"
+            className="w-full h-11 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
           >
             <Swords size={16} />
             <span>{t.find}</span>
           </button>
-        </motion.section>
+        </motion.div>
+      </section>
 
-        {/* Card 2: Weekly Activity */}
-        <motion.section
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/80 shadow-xs flex flex-col justify-between h-full"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#E86F51]">
-                  <Target size={20} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-extrabold text-[#1A202C]">
-                    {t.activity}
-                  </h3>
-                  <p className="text-xs text-[#64748B] font-medium">
-                    Weekly practice consistency
-                  </p>
-                </div>
-              </div>
-
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-0.5 rounded-full">
-                Active Week
-              </span>
-            </div>
-
-            {/* Weekday Row (Mon - Sun) */}
-            <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-4 my-2 flex items-center justify-between">
-              {DAYS.map((day, i) => {
-                const isActive = weekActivity[i];
-                return (
-                  <div key={day} className="flex flex-col items-center gap-1.5 flex-1">
-                    <span
-                      className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold transition-colors ${
-                        isActive
-                          ? 'bg-[#2563EB] text-white shadow-xs'
-                          : 'bg-slate-200/70 text-slate-400'
-                      }`}
-                    >
-                      {isActive ? <Check size={14} strokeWidth={2.5} /> : '·'}
-                    </span>
-                    <span className="text-[11px] font-bold text-[#64748B]">
-                      {day}
-                    </span>
-                  </div>
-                );
-              })}
+      {/* ═══ SECTION 2: PRACTICE AT YOUR OWN PACE ═════════════════════ */}
+      <section
+        aria-label="Practice at your own pace"
+        className="rounded-[2rem] border border-blue-100 bg-blue-50/30 p-4 sm:p-6 space-y-5"
+      >
+        <div className="flex items-center justify-between gap-3 px-1">
+          <div className="flex items-center gap-3">
+            <span className="w-9 h-9 rounded-2xl bg-blue-100 border border-blue-200 text-[#2563EB] flex items-center justify-center shrink-0">
+              <TrendingUp size={18} />
+            </span>
+            <div>
+              <h2 className="text-lg font-extrabold text-[#1A202C] leading-tight">
+                Practice at Your Own Pace
+              </h2>
+              <p className="text-xs text-[#64748B] font-medium mt-0.5">
+                Targeted cognitive and multisensory reading practice
+              </p>
             </div>
           </div>
+          <span className="hidden sm:inline text-xs font-bold text-[#64748B] bg-white px-3 py-1 rounded-full border border-slate-100">
+            4 Core Constructs
+          </span>
+        </div>
 
-          {/* Metric Stats */}
+        {/* Skills: one per row */}
+        <div className="flex flex-col gap-4">
+          {skills.map((skill, i) => {
+            const Icon = skill.icon;
+            return (
+              <motion.article
+                key={skill.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + i * 0.05 }}
+                className="bg-white rounded-3xl p-5 sm:p-6 border border-blue-100/80 shadow-xs hover:shadow-sm hover:border-blue-200 transition-all flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
+              >
+                <div className="flex items-center gap-3.5 min-w-0 sm:flex-1">
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${skill.bgClass} ${skill.textClass} ${skill.borderClass}`}
+                  >
+                    <Icon size={24} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-extrabold text-base text-[#1A202C] truncate">
+                      {skill.name}
+                    </h3>
+                    <p className="text-xs font-medium text-[#64748B] truncate mt-0.5">
+                      {skill.construct}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  <span
+                    className={`text-xs font-extrabold px-2.5 py-1 rounded-full shrink-0 border ${skill.bgClass} ${skill.textClass} ${skill.borderClass}`}
+                  >
+                    +{skill.delta}% accuracy
+                  </span>
+
+                  <div className="text-left sm:text-center">
+                    <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
+                      Skill Rating
+                    </span>
+                    <span className="text-2xl font-black text-[#1A202C]">{skill.rating}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setGame({ skillId: skill.id, isMatch: false })}
+                    className="h-10 px-5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Gamepad2 size={15} />
+                    <span>{t.play}</span>
+                  </button>
+                </div>
+              </motion.article>
+            );
+          })}
+        </div>
+
+        {/* Weekly Activity */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/80 shadow-xs"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#E86F51]">
+                <Target size={20} />
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-[#1A202C]">{t.activity}</h3>
+                <p className="text-xs text-[#64748B] font-medium">Weekly practice consistency</p>
+              </div>
+            </div>
+
+            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-0.5 rounded-full">
+              Active Week
+            </span>
+          </div>
+
+          <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-4 my-2 flex items-center justify-between">
+            {DAYS.map((day, i) => {
+              const isActive = weekActivity[i];
+              return (
+                <div key={day} className="flex flex-col items-center gap-1.5 flex-1">
+                  <span
+                    className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold transition-colors ${
+                      isActive
+                        ? 'bg-[#2563EB] text-white shadow-xs'
+                        : 'bg-slate-200/70 text-slate-400'
+                    } ${i === todayIndex ? 'ring-2 ring-blue-300 ring-offset-2' : ''}`}
+                  >
+                    {isActive ? <Check size={14} strokeWidth={2.5} /> : '·'}
+                  </span>
+                  <span
+                    className={`text-[11px] font-bold ${
+                      i === todayIndex ? 'text-[#2563EB]' : 'text-[#64748B]'
+                    }`}
+                  >
+                    {day}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
           <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 mt-3">
             <div className="bg-[#F8FAFC] p-3 rounded-2xl border border-slate-100">
               <div className="text-lg font-black text-[#1A202C]">{state.plays}</div>
@@ -835,8 +838,8 @@ export function ProgressTracking() {
               <div className="text-xs font-medium text-[#64748B]">{t.rating}</div>
             </div>
           </div>
-        </motion.section>
-      </div>
+        </motion.div>
+      </section>
     </div>
   );
 }
