@@ -23,6 +23,8 @@ import { getPageTitleForRoute } from '../services/jarvisActionRegistry';
 import { getSpeechService } from '../services/speechService';
 import { useAuth } from './AuthContext';
 import { useDyslexia } from './DyslexiaContext';
+import { useSpotlightReader } from './SpotlightReaderContext';
+import { extractCleanPageText, getSelectedPageText } from '../services/pageContentExtractor';
 
 interface AssistantContextType {
   // Floating Window & Session States
@@ -39,6 +41,13 @@ interface AssistantContextType {
   agentStatus: AgentExecutionStatus;
   currentActionName: string | null;
   pendingConfirmation: PendingConfirmation | null;
+
+  // Page Reading Controls
+  isReadingPage: boolean;
+  startPageReading: () => void;
+  pauseReading: () => void;
+  resumeReading: () => void;
+  stopReading: () => void;
 
   // Actions & Callbacks
   addMessage: (type: 'assistant' | 'user', text: string) => void;
@@ -67,6 +76,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const { user, logout } = useAuth();
   const dyslexia = useDyslexia();
+  const spotlightReader = useSpotlightReader();
   const speechService = useRef(getSpeechService()).current;
 
   const [conversationManager] = useState(() => new ConversationManager('welcome'));
@@ -92,7 +102,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         sessionStorage.setItem('neurobridge.jarvis_session_welcomed', 'true');
         setIsOpen(true);
         setIsAutoStarted(true);
-        const greeting = `Hi ${user?.name ? user.name.split(' ')[0] : 'there'}! I'm JARVIS, your persistent website assistant. You can ask me to navigate, scroll, or adjust reading settings anytime.`;
+        const firstName = user?.name ? user.name.split(' ')[0] : 'there';
+        const greeting = `Hi ${firstName}! I'm JARVIS. I can read pages out loud with word highlighting, summarize articles, navigate anywhere, or answer your questions. Just say "Hey Jarvis" or tap below.`;
         conversationManager.addMessage('assistant', greeting, userProfile.language || 'en');
         setConversationState(conversationManager.getState());
       }
@@ -119,8 +130,20 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       assistantContext: {
         closeAssistant: () => setIsOpen(false),
       },
+      spotlightReaderContext: {
+        isActive: spotlightReader.isActive,
+        isPlaying: spotlightReader.isPlaying,
+        isPaused: spotlightReader.isPaused,
+        startPageReading: spotlightReader.startPageReading,
+        startTextReading: spotlightReader.startTextReading,
+        pauseReading: spotlightReader.pauseReading,
+        resumeReading: spotlightReader.resumeReading,
+        stopReading: spotlightReader.stopReading,
+        setSpeed: spotlightReader.setSpeed,
+        speed: spotlightReader.speed,
+      },
     });
-  }, [navigate, location.pathname, dyslexia, logout]);
+  }, [navigate, location.pathname, dyslexia, logout, spotlightReader]);
 
   // Keep executor dependencies synchronized with current route and contexts
   useEffect(() => {
@@ -141,8 +164,20 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       assistantContext: {
         closeAssistant: () => setIsOpen(false),
       },
+      spotlightReaderContext: {
+        isActive: spotlightReader.isActive,
+        isPlaying: spotlightReader.isPlaying,
+        isPaused: spotlightReader.isPaused,
+        startPageReading: spotlightReader.startPageReading,
+        startTextReading: spotlightReader.startTextReading,
+        pauseReading: spotlightReader.pauseReading,
+        resumeReading: spotlightReader.resumeReading,
+        stopReading: spotlightReader.stopReading,
+        setSpeed: spotlightReader.setSpeed,
+        speed: spotlightReader.speed,
+      },
     });
-  }, [executor, navigate, location.pathname, dyslexia, logout]);
+  }, [executor, navigate, location.pathname, dyslexia, logout, spotlightReader]);
 
   // Update conversation state helper
   const updateConversationState = useCallback(() => {
@@ -206,7 +241,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setAgentStatus('thinking');
     setCurrentActionName(null);
 
-    // 3. Build Context Payload for Llama 3
+    // 3. Build Context Payload for Siri-like Engine
     const contextPayload = {
       currentRoute: location.pathname,
       pageTitle: getPageTitleForRoute(location.pathname),
@@ -217,6 +252,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         content: m.text,
       })),
       language: userProfile.language || 'en',
+      pageContent: extractCleanPageText(1500),
+      selectedText: getSelectedPageText(),
     };
 
     // 4. Determine Intent with Llama 3 / Heuristic Engine
@@ -356,6 +393,11 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     agentStatus,
     currentActionName,
     pendingConfirmation,
+    isReadingPage: spotlightReader.isPlaying,
+    startPageReading: () => spotlightReader.startPageReading(),
+    pauseReading: () => spotlightReader.pauseReading(),
+    resumeReading: () => spotlightReader.resumeReading(),
+    stopReading: () => spotlightReader.stopReading(),
     addMessage,
     processUserInput,
     confirmPendingAction,

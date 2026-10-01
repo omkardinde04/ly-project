@@ -24,6 +24,12 @@ import {
   AlertTriangle,
   Loader2,
   VolumeX,
+  BookOpen,
+  FileText,
+  HelpCircle,
+  Pause,
+  Play,
+  Square,
 } from 'lucide-react';
 import { useAssistant } from '../../contexts/AssistantContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -50,6 +56,10 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
     setLanguage,
     addMessage,
     wakeWordEnabled,
+    isReadingPage,
+    pauseReading,
+    resumeReading,
+    stopReading,
   } = useAssistant();
 
   const { user } = useAuth();
@@ -184,12 +194,12 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
 
   // Quick Action Suggestions
   const quickSuggestions = [
-    { label: 'Take me to Dashboard', icon: LayoutDashboard },
-    { label: 'Open Community', icon: Compass },
-    { label: 'Scroll down the page', icon: ArrowDown },
-    { label: 'Show Opportunities & Jobs', icon: Briefcase },
+    { label: 'Read this page out loud', icon: BookOpen },
+    { label: 'Summarize this page', icon: FileText },
+    { label: 'What can I do here?', icon: HelpCircle },
     { label: 'Toggle Dyslexia font', icon: Type },
-    { label: 'Open Learning Hub', icon: GraduationCap },
+    { label: 'Take me to Dashboard', icon: LayoutDashboard },
+    { label: 'Show Opportunities & Jobs', icon: Briefcase },
   ];
 
   return (
@@ -264,13 +274,13 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-black text-xs sm:text-sm tracking-tight">JARVIS Web Agent</span>
+                      <span className="font-black text-xs sm:text-sm tracking-tight">JARVIS</span>
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-400/20 text-emerald-100 border border-emerald-300/30">
-                        <Radio size={8} className="text-emerald-300 animate-pulse" /> Live
+                        <Radio size={8} className="text-emerald-300 animate-pulse" /> Siri-Style Voice
                       </span>
                     </div>
-                    <p className="text-[10px] text-white/80 font-medium truncate max-w-[180px]">
-                      Say "Hey Jarvis" or type
+                    <p className="text-[10px] text-white/80 font-medium truncate max-w-[200px]">
+                      Say "Hey Jarvis" or "Read this page"
                     </p>
                   </div>
                 </div>
@@ -315,6 +325,34 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                 </div>
               </div>
 
+              {/* Live Reading Active Banner */}
+              {isReadingPage && (
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between shrink-0 shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>Reading page aloud with spotlight...</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => pauseReading()}
+                      className="p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer text-white"
+                      title="Pause Reading"
+                    >
+                      <Pause size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stopReading()}
+                      className="p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer text-red-200 hover:text-white"
+                      title="Stop Reading"
+                    >
+                      <Square size={12} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Real-Time Action Status Bar */}
               {agentStatus !== 'idle' && (
                 <motion.div
@@ -337,19 +375,19 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                   {agentStatus === 'thinking' && (
                     <>
                       <Loader2 size={13} className="animate-spin text-blue-600 shrink-0" />
-                      <span>Understanding intent with Llama 3...</span>
+                      <span>Working on it...</span>
                     </>
                   )}
                   {agentStatus === 'executing' && (
                     <>
                       <Sparkles size={13} className="text-purple-600 shrink-0 animate-bounce" />
-                      <span>{currentActionName || 'Executing website action...'}</span>
+                      <span>{currentActionName || 'On it...'}</span>
                     </>
                   )}
                   {agentStatus === 'success' && (
                     <>
                       <Check size={13} className="text-emerald-600 shrink-0" />
-                      <span>Action verified & complete ✓</span>
+                      <span>Done ✓</span>
                     </>
                   )}
                   {agentStatus === 'awaiting_confirmation' && (
@@ -533,7 +571,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                         handleUserSubmit(userInput);
                       }
                     }}
-                    placeholder="Ask JARVIS (e.g. 'Take me to dashboard')..."
+                    placeholder="Ask JARVIS (e.g. 'Read this page' or 'Summarize')..."
                     className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 bg-[#F8FAFC] focus:bg-white text-xs text-[#1A202C] placeholder-[#94A3B8] font-medium outline-none transition-all"
                     disabled={isListening || isSpeaking || agentStatus === 'thinking' || agentStatus === 'executing'}
                   />

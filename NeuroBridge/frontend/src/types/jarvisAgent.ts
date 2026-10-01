@@ -52,6 +52,8 @@ export interface JarvisContext {
   recentHistory: Array<{ role: 'user' | 'assistant'; content: string; actionExecuted?: string }>;
   userName?: string;
   language: 'en' | 'hi' | 'mr';
+  pageContent?: string;
+  selectedText?: string;
 }
 
 export interface ActionResult {

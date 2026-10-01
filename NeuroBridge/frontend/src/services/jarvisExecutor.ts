@@ -4,6 +4,11 @@
 import type { NavigateFunction } from 'react-router-dom';
 import type { StructuredIntent, ActionResult, PendingConfirmation } from '../types/jarvisAgent';
 import { GLOBAL_ACTIONS } from './jarvisActionRegistry';
+import {
+  getExtractedPageSummary,
+  getSelectedPageText,
+  scrollToPageMatch,
+} from './pageContentExtractor';
 
 export interface ExecutorDependencies {
   navigate: NavigateFunction;
@@ -21,6 +26,18 @@ export interface ExecutorDependencies {
   };
   assistantContext?: {
     closeAssistant: () => void;
+  };
+  spotlightReaderContext?: {
+    isActive: boolean;
+    isPlaying: boolean;
+    isPaused: boolean;
+    startPageReading: (container?: HTMLElement | string) => void;
+    startTextReading?: (text: string, sourceElement?: HTMLElement | null) => void;
+    pauseReading: () => void;
+    resumeReading: () => void;
+    stopReading: () => void;
+    setSpeed: (speed: number) => void;
+    speed: number;
   };
 }
 
@@ -310,6 +327,184 @@ export class JarvisExecutor {
             };
           }
           return { success: false, message: 'Accessibility context not available.' };
+
+        // ── Page Reading & Audio Controls (Spotlight Reader) ──────────────────
+        case 'read_page': {
+          if (this.deps.spotlightReaderContext) {
+            this.deps.spotlightReaderContext.startPageReading();
+            return {
+              success: true,
+              actionId: action,
+              message: 'Reading page aloud with word spotlight',
+              spokenResponse: intent.spokenResponse || "Reading this page for you now. Just say 'stop' or 'pause' whenever you'd like.",
+            };
+          }
+          return {
+            success: false,
+            message: 'Spotlight reader is not available.',
+            spokenResponse: "I'm unable to start page reading right now.",
+          };
+        }
+
+        case 'pause_reading': {
+          if (this.deps.spotlightReaderContext) {
+            this.deps.spotlightReaderContext.pauseReading();
+            return {
+              success: true,
+              actionId: action,
+              message: 'Paused reading',
+              spokenResponse: 'Paused reading.',
+            };
+          }
+          return { success: false, message: 'Spotlight reader not active.' };
+        }
+
+        case 'resume_reading': {
+          if (this.deps.spotlightReaderContext) {
+            this.deps.spotlightReaderContext.resumeReading();
+            return {
+              success: true,
+              actionId: action,
+              message: 'Resumed reading',
+              spokenResponse: 'Resuming reading.',
+            };
+          }
+          return { success: false, message: 'Spotlight reader not active.' };
+        }
+
+        case 'stop_reading': {
+          if (this.deps.spotlightReaderContext) {
+            this.deps.spotlightReaderContext.stopReading();
+            return {
+              success: true,
+              actionId: action,
+              message: 'Stopped page reading',
+              spokenResponse: 'Stopped reading.',
+            };
+          }
+          return { success: false, message: 'Spotlight reader not active.' };
+        }
+
+        case 'speed_up_reading': {
+          if (this.deps.spotlightReaderContext) {
+            const currentSpeed = this.deps.spotlightReaderContext.speed || 1.0;
+            const newSpeed = Math.min(2.0, Math.round((currentSpeed + 0.2) * 10) / 10);
+            this.deps.spotlightReaderContext.setSpeed(newSpeed);
+            return {
+              success: true,
+              actionId: action,
+              message: `Reading speed increased to ${newSpeed}x`,
+              spokenResponse: 'Reading a bit faster now.',
+            };
+          }
+          return { success: false, message: 'Spotlight reader not active.' };
+        }
+
+        case 'slow_down_reading': {
+          if (this.deps.spotlightReaderContext) {
+            const currentSpeed = this.deps.spotlightReaderContext.speed || 1.0;
+            const newSpeed = Math.max(0.6, Math.round((currentSpeed - 0.2) * 10) / 10);
+            this.deps.spotlightReaderContext.setSpeed(newSpeed);
+            return {
+              success: true,
+              actionId: action,
+              message: `Reading speed decreased to ${newSpeed}x`,
+              spokenResponse: 'Reading a bit slower for comfort.',
+            };
+          }
+          return { success: false, message: 'Spotlight reader not active.' };
+        }
+
+        case 'summarize_page': {
+          const summary = getExtractedPageSummary();
+          const pageTitle = summary.pageTitle || 'the current page';
+          
+          let displayMsg = `📄 Summary of ${pageTitle}:\n\n`;
+          if (summary.summaryBulletPoints.length > 0) {
+            displayMsg += summary.summaryBulletPoints.slice(0, 3).map((bp) => `• ${bp}`).join('\n\n');
+          } else {
+            displayMsg += summary.mainText.slice(0, 240) + '...';
+          }
+
+          const spoken = intent.spokenResponse || `Here is a summary of ${pageTitle}. ${summary.summaryBulletPoints[0] || 'It outlines key features and learning resources on this page.'}`;
+
+          return {
+            success: true,
+            actionId: action,
+            message: displayMsg,
+            spokenResponse: spoken,
+          };
+        }
+
+        case 'explain_page': {
+          const summary = getExtractedPageSummary();
+          const route = this.deps.currentRoute;
+          let explanation = `You are on the ${summary.pageTitle} page.`;
+
+          if (route === '/') {
+            explanation = "You are on the NeuroBridge home page. You can take the dyslexia cognitive assessment, explore accessible courses, search for neurodivergent-friendly careers, or ask me to read any part aloud.";
+          } else if (route.startsWith('/dashboard')) {
+            explanation = "You are on your student dashboard. You can track your reading streak, play cognitive mini-games, open your enrolled courses, or practice in the learning hub.";
+          } else if (route.startsWith('/learn')) {
+            explanation = "This is the Learning Hub! Here you can practice reading with font customization, try syllable breakdowns, or use interactive exercises.";
+          } else if (route.startsWith('/courses')) {
+            explanation = "You're in the courses catalog. You can browse courses on dyslexia strategies, web development, and career skills. Tell me a topic or say 'read first course'.";
+          } else if (route.startsWith('/opportunities')) {
+            explanation = "This is Opportunities & Jobs. You can explore verified dyslexia-friendly employers, internships, or use the AI resume builder.";
+          } else if (route.startsWith('/assessment')) {
+            explanation = "This is the Cognitive Assessment test. It evaluates your reading patterns and tailors the platform font, spacing, and exercises to your needs.";
+          } else if (route.startsWith('/about')) {
+            explanation = "This is the About page detailing NeuroBridge's mission, team, and assistive technologies for neurodiverse minds.";
+          }
+
+          return {
+            success: true,
+            actionId: action,
+            message: explanation,
+            spokenResponse: explanation,
+          };
+        }
+
+        case 'read_selection': {
+          const selectedText = getSelectedPageText();
+          if (selectedText) {
+            if (this.deps.spotlightReaderContext?.startTextReading) {
+              this.deps.spotlightReaderContext.startTextReading(selectedText);
+            }
+            return {
+              success: true,
+              actionId: action,
+              message: `Reading selected text: "${selectedText.slice(0, 60)}..."`,
+              spokenResponse: selectedText,
+            };
+          }
+          return {
+            success: false,
+            message: 'No text is selected. Highlight text with your mouse and ask me to read it.',
+            spokenResponse: "Highlight any text with your cursor first, then say 'read this'.",
+          };
+        }
+
+        case 'search_page': {
+          const query = parameters.query || parameters.term || parameters.text;
+          if (!query) {
+            return { success: false, message: 'Please specify what to find on this page.' };
+          }
+          const matched = scrollToPageMatch(query);
+          if (matched) {
+            return {
+              success: true,
+              actionId: action,
+              message: `Found and scrolled to "${query}"`,
+              spokenResponse: `Found "${query}" on this page.`,
+            };
+          }
+          return {
+            success: false,
+            message: `Could not find "${query}" on this page.`,
+            spokenResponse: `I couldn't find "${query}" on this page.`,
+          };
+        }
 
         // ── Interactive Element Clicking ──────────────────────────────────────
         case 'click_element': {
