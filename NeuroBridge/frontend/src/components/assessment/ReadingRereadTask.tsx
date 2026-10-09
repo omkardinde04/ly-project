@@ -1,103 +1,72 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowUp, ArrowDown, CheckCircle2, ThumbsUp } from 'lucide-react';
 
-export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: number) => void }) {
-  const [paragraphs] = useState([
-    "The vast ocean covers most of our planet and is home to countless mysterious creatures. Many people dream of exploring its deepest trenches, where the sunlight never reaches. The pressure down there is immense, yet life still finds a way to thrive in the darkness. We still have so much to learn about the ocean.",
-    "A dense forest can feel like a completely different world, filled with towering trees and a thick canopy that blocks out the sky. As you walk through the woods, you can hear the crunch of dry leaves under your boots and the distant call of exotic birds. Nature has a unique way of making us feel both small and connected.",
-    "Space exploration has always captured the imagination of humanity, inspiring us to look up at the stars and wonder what lies beyond. Building rockets requires incredible precision and thousands of hours of testing by brilliant engineers. One day, we might even establish a permanent colony on another planet in our solar system.",
-    "Learning a new language opens up doors to new cultures and entirely different ways of thinking about the world. It can be challenging at first, especially when trying to memorize unfamiliar grammar rules and vocabulary. However, the feeling of having your first real conversation with a native speaker makes all the effort worthwhile.",
-    "The history of ancient civilizations is full of fascinating mysteries and monumental architectural achievements. For example, the great pyramids were built using techniques that historians and engineers are still trying to fully understand today. These ancient structures stand as a testament to human ingenuity and perseverance over time."
-  ]);
-  
-  const [selectedParagraph] = useState(() => paragraphs[Math.floor(Math.random() * paragraphs.length)]);
-  const [words] = useState(selectedParagraph.split(' '));
-  
-  const [phase, setPhase] = useState<'idle' | 'listening' | 'done'>('idle');
-  const [wordStatuses, setWordStatuses] = useState<('idle' | 'green' | 'red' | 'yellow')[]>(Array(words.length).fill('idle'));
-  const [rereadCount, setRereadCount] = useState(0);
+interface ReadingRereadTaskProps {
+  question: any;
+  onComplete?: (rereadCount: number) => void;
+}
+
+export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskProps) {
+  const [phase, setPhase] = useState<'instruction' | 'reading' | 'done'>('instruction');
   const [transcript, setTranscript] = useState('');
-
-  const recogRef = useRef<any>(null);
+  const [rereadCount, setRereadCount] = useState(0);
   const isMounted = useRef(true);
-  const transcriptRef = useRef('');
+
+  // Use fixed paragraph for testing if none provided
+  const paragraphText = question?.paragraph || 'Dyslexia is not a reflection of intelligence. It is simply a different way that the brain processes language. Many highly successful people are dyslexic.';
+  const words = typeof paragraphText === 'string' ? paragraphText.split(/\s+/) : paragraphText[0].split(/\s+/);
+  
+  const [wordStatuses, setWordStatuses] = useState<('idle' | 'green' | 'yellow' | 'red')[]>(Array(words.length).fill('idle'));
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const recogRef = useRef<any>(null);
 
   useEffect(() => {
-    return () => { isMounted.current = false; stopCurrentRecognition(); };
+    return () => {
+      isMounted.current = false;
+      if (recogRef.current) {
+        try { recogRef.current.stop(); } catch (e) { /* ignore */ }
+      }
+    };
   }, []);
 
-  const stopCurrentRecognition = () => {
-    if (recogRef.current) {
-      try {
-        recogRef.current.onresult = null;
-        recogRef.current.onend = null;
-        recogRef.current.onerror = null;
-        recogRef.current.stop();
-      } catch (e) {}
-      recogRef.current = null;
-    }
-  };
-
-  const startListening = () => {
-    stopCurrentRecognition();
-    
+  const handleStartReading = () => {
+    setPhase('reading');
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
-       alert("Speech recognition not supported in this browser.");
-       setPhase('done');
-       onComplete(0);
+       console.warn("Speech recognition not supported in this browser.");
        return;
     }
-
-    setTranscript('');
-    transcriptRef.current = '';
-    
     const rec = new SR();
     rec.lang = 'en-US';
     rec.continuous = true;
     rec.interimResults = true;
+    recogRef.current = rec;
 
     rec.onresult = (e: any) => {
       let currentTranscript = '';
       for (let i = 0; i < e.results.length; ++i) {
         currentTranscript += e.results[i][0].transcript;
       }
-      transcriptRef.current = currentTranscript;
-      if (isMounted.current) setTranscript(currentTranscript);
+      setTranscript(currentTranscript);
     };
 
-    rec.onend = () => {
-      // Re-start ONLY if deliberate
-      if (isMounted.current && phase === 'listening') {
-        try { rec.start(); } catch (err) {}
-      }
-    };
-
-    rec.onerror = (e: any) => {
-      console.error('Reading Review recognition error:', e.error);
-      if (e.error === 'not-allowed') {
-        alert("Camera and Mic permission required for this task.");
-      }
-    };
-
-    recogRef.current = rec;
-    setPhase('listening');
-    
-    try {
-      rec.start();
-    } catch (e) {
-      console.error('Failed to start reading review:', e);
-      setPhase('idle');
-    }
+    rec.start();
   };
 
-  const stopListening = () => {
-    stopCurrentRecognition();
+  const handleFinishReading = () => {
+    if (recogRef.current) {
+      try { recogRef.current.stop(); } catch (e) { /* ignore */ }
+    }
     setPhase('done');
-    onComplete(rereadCount);
+    setIsCompleted(true);
+    if (onComplete) onComplete(rereadCount);
   };
 
   useEffect(() => {
-    if (phase !== 'listening') return;
+    if (phase !== 'reading') return;
+    
     const spokenWords = transcript.toLowerCase().split(/\s+/).filter(Boolean);
     if (spokenWords.length === 0) return;
 
@@ -106,10 +75,12 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
       let spokenCursor = 0;
       let textCursor = 0;
       let newRereadCount = rereadCount;
+      let maxMatchedIndex = currentWordIndex > 0 ? currentWordIndex - 1 : -1;
+      let finalMaxIndex = maxMatchedIndex;
 
-      let maxMatchedIndex = -1;
+      for (let i = 0; i < 500; i++) { // safeguard
+        if (spokenCursor >= spokenWords.length || textCursor >= words.length) break;
 
-      while (spokenCursor < spokenWords.length && textCursor < words.length) {
         const expectedWord = words[textCursor].toLowerCase().replace(/[^a-z0-9]/g, '');
         const currentSpoken = spokenWords[spokenCursor].replace(/[^a-z0-9]/g, '');
 
@@ -139,7 +110,7 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
           if (!foundEarlier) {
              let foundAhead = false;
              let targetNextIdx = textCursor + 1;
-             for (let nextIdx = textCursor + 1; nextIdx <= Math.min(textCursor + 2, words.length - 1); nextIdx++) {
+             for (let nextIdx = textCursor + 1; nextIdx <= Math.min(textCursor + 3, words.length - 1); nextIdx++) {
                 const aheadWord = words[nextIdx].toLowerCase().replace(/[^a-z0-9]/g, '');
                 if (currentSpoken === aheadWord) {
                    targetNextIdx = nextIdx;
@@ -162,55 +133,130 @@ export function ReadingRereadTask({ onComplete }: { onComplete: (rereadCount: nu
       }
 
       setRereadCount(newRereadCount);
+      finalMaxIndex = maxMatchedIndex;
+      
+      if (textCursor >= words.length - 1) {
+        setTimeout(() => {
+          if (isMounted.current && !isCompleted) {
+            handleFinishReading();
+          }
+        }, 1500);
+      }
+      
       return newStatuses;
     });
+
+    setCurrentWordIndex(Math.min(finalMaxIndex + 1, words.length - 1));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transcript]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 w-full h-full bg-slate-50">
-       <div className="mb-4">
-         <h2 className="text-2xl font-bold text-slate-800">Reading Fluency</h2>
-         <p className="text-slate-600">Please read the paragraph aloud. We will highlight words you read fluently in green, and words you repeat in red.</p>
-       </div>
+    <div className="w-full flex flex-col items-center bg-transparent py-6 sm:py-8 px-4" style={{ minHeight: '0' }}>
+      
+      <div className="w-full max-w-[520px] flex flex-col gap-6 sm:gap-8 mx-auto">
+        
+        {/* Header Block */}
+        <div className="flex flex-col items-center text-center">
+          <h2 className="text-xl font-black tracking-wider text-slate-800 mb-1 uppercase">READING TIME</h2>
+          <p className="text-base font-bold text-slate-500 mb-4">Follow the path →</p>
+        </div>
 
-       {phase === 'idle' && (
-         <button onClick={startListening} className="mb-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 transition-transform hover:scale-105">
-           🎤 Start Recording
-         </button>
-       )}
-       {phase === 'listening' && (
-         <div className="flex flex-col items-center mb-6">
-           <button onClick={stopListening} className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 animate-pulse">
-             🛑 Finish Reading
-           </button>
-         </div>
-       )}
-       {phase === 'done' && (
-         <div className="mb-6 bg-green-100 text-green-700 px-6 py-3 rounded-xl border border-green-200 font-bold text-lg flex items-center gap-2">
-           ✅ Done! Proceed to the next question.
-         </div>
-       )}
+        {/* Phase: Instruction */}
+        <AnimatePresence mode="wait">
+          {phase === 'instruction' && (
+            <motion.div
+              key="instruction"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex flex-col items-center w-full gap-6"
+            >
+              <div className="text-center text-lg font-normal text-slate-700 flex flex-col gap-1 w-full">
+                <p>Read the paragraph at your own pace.</p>
+                <p>Any way that feels comfortable is fine.</p>
+              </div>
 
-       <div className="text-2xl leading-relaxed max-w-3xl text-left p-8 bg-surface rounded-2xl border-2 border-slate-200 shadow-sm" style={{ lineHeight: '2.5' }}>
-         {words.map((word, idx) => {
-           let statusClass = 'text-text-muted';
-           if (wordStatuses[idx] === 'green') statusClass = 'text-green-600 bg-green-50 rounded px-1 font-semibold';
-           if (wordStatuses[idx] === 'red') statusClass = 'text-red-600 bg-red-100 rounded px-1 font-bold line-through decoration-red-400 decoration-2';
-           if (wordStatuses[idx] === 'yellow') statusClass = 'text-yellow-600 bg-yellow-100 rounded px-1 font-semibold';
+              <div className="flex flex-col items-center gap-3 mt-4">
+                <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-blue-500">
+                  <ArrowUp size={32} strokeWidth={2.5} />
+                </motion.div>
+                <div className="bg-blue-600 text-white text-[17px] font-medium py-2 pl-6 pr-2 rounded-xl shadow-md flex items-center gap-4">
+                  <span>Read instructions.</span>
+                  <button
+                    onClick={handleStartReading}
+                    title="Start Reading"
+                    className="bg-white/20 hover:bg-white/30 p-2 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer"
+                  >
+                    <ThumbsUp size={20} strokeWidth={2} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-           return (
-             <span key={idx} className={`inline-block mx-0.5 transition-colors duration-300 ${statusClass}`}>
-               {word}
-             </span>
-           );
-         })}
-       </div>
-       
-       <div className="mt-4 text-sm text-slate-500 font-medium flex gap-4 justify-center">
-         <span className="inline-block"><span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span> Read perfectly</span>
-         <span className="inline-block"><span className="inline-block w-3 h-3 bg-yellow-400 rounded-full mr-1"></span> Mispronounced / Skipped</span>
-         <span className="inline-block"><span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-1"></span> Repeated / Re-read</span>
-       </div>
+          {/* Phase: Reading / Done */}
+          {(phase === 'reading' || phase === 'done') && (
+            <motion.div 
+              key="reading"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center w-full gap-5"
+            >
+              {phase === 'reading' && (
+                <div className="bg-blue-50/80 px-4 py-2 rounded-xl border border-blue-100 flex items-center justify-center gap-2 shadow-sm w-full">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-blue-800 font-semibold text-sm">Start reading aloud when you are ready.</span>
+                </div>
+              )}
+
+              <div 
+                className="text-left bg-[#FAFAFA] rounded-3xl border border-slate-100 shadow-sm w-full p-6 text-lg sm:text-xl text-slate-700" 
+                style={{ lineHeight: 1.7, letterSpacing: '0.02em' }}
+              >
+                {words.map((word, idx) => {
+                  let statusClass = 'text-slate-700';
+                  if (wordStatuses[idx] === 'green') statusClass = 'text-emerald-700 bg-emerald-50 rounded-lg px-1 transition-colors duration-300';
+                  if (wordStatuses[idx] === 'red') statusClass = 'text-rose-700 bg-rose-50 rounded-lg px-1 transition-colors duration-300';
+                  if (wordStatuses[idx] === 'yellow') statusClass = 'text-slate-700'; 
+                  
+                  const isSpotlight = idx === currentWordIndex && phase === 'reading';
+                  if (isSpotlight) {
+                    statusClass = 'text-blue-900 bg-blue-100/80 rounded-md border-b-2 border-blue-400 font-medium z-10 relative';
+                  }
+                  
+                  return (
+                    <span key={idx} className={`inline-block mx-0.5 transition-all duration-200 ${statusClass}`}>
+                      {word}
+                    </span>
+                  );
+                })}
+              </div>
+              
+              <div className="w-full text-center text-sm text-slate-400 italic overflow-hidden text-ellipsis whitespace-nowrap min-h-[20px]">
+                {transcript || (phase === 'reading' ? "Listening for your voice..." : "")}
+              </div>
+              
+              <div className="flex justify-center mt-2">
+                {phase === 'reading' ? (
+                  <button 
+                    onClick={handleFinishReading} 
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-bold text-base shadow-lg shadow-emerald-200/50 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
+                  >
+                    <CheckCircle2 size={20} strokeWidth={2.5} />
+                    Finish Reading
+                  </button>
+                ) : (
+                  <div className="text-emerald-600 font-bold flex items-center gap-2 px-8 py-3 bg-emerald-50 rounded-full border border-emerald-200">
+                    <CheckCircle2 size={24} />
+                    Activity Completed
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
     </div>
   );
 }

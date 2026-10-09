@@ -100,6 +100,17 @@ export const partAQuestions: AssessmentQuestion[] = [
     difficulty: 'medium',
   },
   {
+    id: 44,
+    type: 'hand_raising',
+    instruction: 'Raise your left or right hand as instructed.',
+    options: [
+      { id: 'correct', text: 'Correct', weight: 0 },
+      { id: 'wrong', text: 'Wrong', weight: 3 }
+    ],
+    dimension: 'visual',
+    difficulty: 'medium',
+  },
+  {
     id: 4,
     type: 'camera_direction',
     instruction: 'When following directions, confirm your left vs right:',
@@ -111,19 +122,9 @@ export const partAQuestions: AssessmentQuestion[] = [
     difficulty: 'easy',
   },
   {
-    id: 5,
-    type: 'eye_tracking_maze',
-    instruction: 'Draw the same path on the right canvas. We will track your eye movements to see how often you check the map.',
-    options: [
-      { id: 'done', text: 'Finish Drawing', weight: 0 }
-    ],
-    dimension: 'visual',
-    difficulty: 'medium',
-  },
-  {
     id: 6,
     type: 'reading_reread_tracking',
-    instruction: 'Please read the paragraph aloud. We will highlight words you read fluently in green, and words you repeat in red.',
+    instruction: 'Please read the paragraph aloud at your natural pace. Take your time and read comfortably.',
     options: [
       { id: 'done', text: 'Finish Reading', weight: 0 }
     ],

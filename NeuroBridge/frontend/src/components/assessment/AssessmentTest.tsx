@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SkipForward } from 'lucide-react';
+import { SkipForward, ArrowDown, ArrowRight } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { partAQuestions } from './assessmentQuestions';
 import { speakText } from '../../utils/textToSpeech';
@@ -12,6 +12,9 @@ import { SituationSeriesTask } from './SituationSeriesTask';
 import { MultiplicationRecallTask } from './MultiplicationRecallTask';
 import { VoiceAlphabetTask } from './VoiceAlphabetTask';
 import { ReadAloudTask } from './ReadAloudTask';
+import { ReadingAssessmentQ1 } from './ReadingAssessmentQ1';
+import { ObjectNamingTask } from './ObjectNamingTask';
+import { HandRaisingTask } from './HandRaisingTask';
 
 interface AssessmentTestProps {
   onComplete: (score: number, metrics: AssessmentMetrics) => void;
@@ -454,12 +457,23 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const [audioReplays, setAudioReplays] = useState<number[]>(Array(partAQuestions.length).fill(0));
   const [backtrackCount, setBacktrackCount] = useState(0);
   const [trackingMetrics, setTrackingMetrics] = useState({ trackCount: 0 });
+  const [justCompleted, setJustCompleted] = useState(false);
+  const [showObjectNamingOptions, setShowObjectNamingOptions] = useState(false);
   const previousQuestionRef = useRef(0);
+
+  useEffect(() => {
+    if (partAQuestions[currentQuestion].type === 'object_naming') {
+      setShowObjectNamingOptions(false);
+      const timer = setTimeout(() => setShowObjectNamingOptions(true), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [currentQuestion]);
 
   const currentQ = partAQuestions[currentQuestion];
   const IllustrationComponent = questionIllustrations[currentQ.id];
 
   useEffect(() => {
+    setJustCompleted(false);
     if (currentQuestion !== previousQuestionRef.current) {
       if (currentQuestion < previousQuestionRef.current) {
         setBacktrackCount(prev => prev + 1);
@@ -482,6 +496,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = optionIndex;
     setAnswers(newAnswers);
+    setJustCompleted(true);
     if (previousAnswer !== -1 && previousAnswer !== optionIndex) {
       setOptionChanges(prev => {
         const n = [...prev];
@@ -546,9 +561,21 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const progress = Math.round(((currentQuestion + 1) / partAQuestions.length) * 100);
   const isAnswered = answers[currentQuestion] !== -1;
 
+  if (currentQuestion === 0 && currentQ.type === 'reading_tracking') {
+    return (
+      <ReadingAssessmentQ1 
+        onComplete={() => {
+          setTrackingMetrics({ trackCount: 0 });
+          handleAnswer(0);
+          setTimeout(() => handleNext(0), 100);
+        }} 
+      />
+    );
+  }
+
   return (
     <div
-      className="w-full max-w-3xl mx-auto flex flex-col overflow-hidden relative py-2"
+      className="w-full max-w-4xl mx-auto flex flex-col overflow-hidden relative py-2"
       style={{ height: '88vh', maxHeight: '860px', minHeight: '520px' }}
     >
       <AnimatePresence mode="wait">
@@ -589,15 +616,6 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               Question {currentQuestion + 1} of {partAQuestions.length}
             </span>
             <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={handleAudioPlay}
-                title="Listen to question"
-                className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-[#2563EB] text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
-              >
-                <span>🔊</span>
-                <span className="hidden sm:inline">Listen</span>
-              </button>
               <span className="text-xs font-black text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 tabular-nums">
                 {progress}%
               </span>
@@ -624,9 +642,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             className="flex-1 min-h-0 flex flex-col bg-white rounded-3xl shadow-xs border border-blue-100/90 overflow-hidden"
           >
             {/* QUESTION TEXT */}
-            <div className="flex-none px-6 pt-5 pb-4 border-b border-slate-100 text-left">
-              <p
-                className="font-bold text-[#1A202C]"
+            {currentQ.type !== 'object_naming' && currentQ.type !== 'hand_raising' && currentQ.type !== 'reading_reread_tracking' && currentQ.type !== 'mission_control' && (
+              <div className="flex-none px-6 pt-5 pb-4 border-b border-slate-100 text-left">
+                <p
+                  className="font-bold text-[#1A202C]"
                 style={{
                   fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
                   lineHeight: 1.5,
@@ -644,6 +663,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 </div>
               )}
             </div>
+            )}
 
             {currentQ.type === 'reading_tracking' ? (
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
@@ -655,25 +675,25 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                   }}
                 />
               </div>
-            ) : currentQ.type === 'camera_direction' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto">
-                <CameraDirectionTask
+            ) : currentQ.type === 'object_naming' ? (
+              <ObjectNamingTask 
+                question={currentQ} 
+                currentAnswer={answers[currentQuestion]}
+                onComplete={(index) => handleAnswer(index)} 
+              />
+            ) : currentQ.type === 'hand_raising' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <HandRaisingTask
+                  question={currentQ}
                   onComplete={(isCorrect) => {
                     handleAnswer(isCorrect ? 0 : 1);
-                  }}
-                />
-              </div>
-            ) : currentQ.type === 'eye_tracking_maze' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
-                <EyeTrackingMazeTask
-                  onComplete={(lookCount) => {
-                    handleAnswer(0);
                   }}
                 />
               </div>
             ) : currentQ.type === 'reading_reread_tracking' ? (
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <ReadingRereadTask
+                  question={currentQ}
                   onComplete={(rereadCount) => {
                     handleAnswer(0);
                   }}
@@ -738,23 +758,6 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               <>
                 {/* ILLUSTRATION CONTAINER */}
                 <div className="flex-1 min-h-0 relative bg-gradient-to-br from-[#F8FAFC] to-blue-50/40 flex items-center justify-center overflow-hidden">
-                  {/* Difficulty badge */}
-                  <span
-                    className={`absolute top-3 right-3 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                      currentQ.difficulty === 'easy'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : currentQ.difficulty === 'medium'
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                        : 'bg-orange-50 text-orange-700 border border-orange-200'
-                    }`}
-                  >
-                    {currentQ.difficulty === 'easy'
-                      ? '★ Easy'
-                      : currentQ.difficulty === 'medium'
-                      ? '★★ Medium'
-                      : '★★★ Hard'}
-                  </span>
-
                   {IllustrationComponent ? (
                     <div className="w-full h-full p-4 flex items-center justify-center">
                       <IllustrationComponent question={currentQ} />
@@ -781,20 +784,11 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                           whileTap={{ scale: 0.98 }}
                           className={`relative py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all border text-center cursor-pointer ${
                             isSelected
-                              ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
+                              ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs'
                               : 'bg-[#F8FAFC] text-[#1A202C] border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
                           }`}
                         >
                           <span>{option.text}</span>
-                          {isSelected && (
-                            <motion.span
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-xs text-emerald-600 text-xs font-black border border-emerald-200"
-                            >
-                              ✓
-                            </motion.span>
-                          )}
                         </motion.button>
                       );
                     })}
@@ -821,34 +815,58 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 <span>Back</span>
               </button>
 
-              <p className="text-xs text-[#64748B] font-medium hidden sm:block">
+              <p className={`text-xs text-[#64748B] font-medium hidden sm:block ${isAnswered && justCompleted ? 'invisible' : ''}`}>
                 🌟 Take your time · No wrong answers
               </p>
 
-              <div className="flex items-center gap-2">
+              <div className="relative flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleForceNext}
                   title="Skip this question for testing"
-                  className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 font-bold text-xs transition-all cursor-pointer"
+                  className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-full font-medium transition-colors text-sm border border-orange-200 text-orange-600 hover:bg-orange-50 bg-white"
                 >
-                  <SkipForward className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span className="hidden md:inline">Force next</span>
+                  <SkipForward className="h-4 w-4" aria-hidden="true" />
+                  <span>Force next</span>
                 </button>
+
+                <AnimatePresence>
+                  {isAnswered && justCompleted && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="absolute right-[115%] flex items-center whitespace-nowrap"
+                    >
+                      <div className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm mr-2 font-medium border border-emerald-500">
+                        Ready! Click Next.
+                      </div>
+                      <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-emerald-600 mr-2">
+                        <ArrowRight size={24} />
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <button
                   type="button"
                   onClick={() => handleNext()}
                   disabled={!isAnswered}
-                  className={`flex items-center gap-1.5 px-6 py-2.5 rounded-2xl font-extrabold text-xs sm:text-sm transition-all shadow-xs cursor-pointer ${
-                    !isAnswered
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white'
+                  className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full font-bold transition-colors text-sm ${
+                    isAnswered
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md ring-2 ring-blue-600 ring-offset-2'
+                      : 'bg-[#e2e8f0] text-[#64748b] cursor-not-allowed'
                   }`}
                 >
-                  <span>{currentQuestion === partAQuestions.length - 1 ? 'Finish Assessment ✓' : 'Next'}</span>
+                  <span>{currentQuestion === partAQuestions.length - 1 ? 'Finish' : 'Next'}</span>
                   {currentQuestion < partAQuestions.length - 1 && (
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg 
+                      className="h-4 w-4 ml-1" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor" 
+                      strokeWidth={2.5}
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   )}

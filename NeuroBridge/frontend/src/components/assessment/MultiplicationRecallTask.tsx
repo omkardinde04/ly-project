@@ -31,20 +31,31 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
   const [allMetrics, setAllMetrics] = useState<MultiplicationMetrics[]>([]);
   const startTime = useRef<number>(Date.now());
 
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+
   useEffect(() => {
     startTime.current = Date.now();
   }, [currentIdx]);
 
   const handleSelect = (option: number) => {
+    if (selectedOption === null) {
+      setSelectedOption(option);
+    }
+  };
+
+  const handleNext = () => {
+    if (selectedOption === null) return;
+    
     const now = Date.now();
     const metric: MultiplicationMetrics = {
       question_id: QUESTIONS[currentIdx].id,
       time_taken_ms: now - startTime.current,
-      is_correct: option === QUESTIONS[currentIdx].correctAnswer
+      is_correct: selectedOption === QUESTIONS[currentIdx].correctAnswer
     };
 
     const updatedMetrics = [...allMetrics, metric];
     setAllMetrics(updatedMetrics);
+    setSelectedOption(null);
 
     if (currentIdx < QUESTIONS.length - 1) {
       setCurrentIdx(currentIdx + 1);
@@ -57,7 +68,7 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
     <div className="w-full max-w-lg mx-auto bg-surface rounded-2xl p-8 border border-border shadow-sm font-sans flex flex-col items-center justify-center min-h-[400px]">
       <div className="text-center mb-10">
         <h2 className="text-xl font-bold text-text mb-2">Pop Quiz Activity</h2>
-        <p className="text-sm text-text-muted">Tap the correct answer</p>
+        <p className="text-sm text-text-muted">Tap the correct answer, then click Next</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -77,15 +88,35 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
             {QUESTIONS[currentIdx].options.map((option, i) => (
               <motion.button
                 key={i}
-                whileHover={{ scale: 1.05, backgroundColor: '#F0F7FF' }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={selectedOption === null ? { scale: 1.05, backgroundColor: '#F0F7FF' } : {}}
+                whileTap={selectedOption === null ? { scale: 0.95 } : {}}
                 onClick={() => handleSelect(option)}
-                className="py-6 bg-[#F8FBFF] border-2 border-[#EBF4FF] rounded-2xl text-2xl font-bold text-text hover:border-[#4DA6FF] hover:text-[#4DA6FF] transition-all shadow-sm"
+                className={`py-6 border-2 rounded-2xl text-2xl font-bold transition-all shadow-sm ${
+                  selectedOption === option 
+                    ? 'bg-[#4DA6FF] border-[#4DA6FF] text-white' 
+                    : selectedOption !== null
+                    ? 'bg-[#F8FBFF] border-[#EBF4FF] text-gray-400 cursor-default'
+                    : 'bg-[#F8FBFF] border-[#EBF4FF] text-text hover:border-[#4DA6FF] hover:text-[#4DA6FF]'
+                }`}
               >
                 {option}
               </motion.button>
             ))}
           </div>
+
+          <AnimatePresence>
+            {selectedOption !== null && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                onClick={handleNext}
+                className="mt-8 flex items-center gap-2 bg-[#2563EB] hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-md transition-all"
+              >
+                Next <span>→</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
       </AnimatePresence>
 

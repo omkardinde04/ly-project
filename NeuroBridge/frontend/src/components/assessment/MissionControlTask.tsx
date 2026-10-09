@@ -1,75 +1,51 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowDown, ArrowRight } from 'lucide-react';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 type StepType = 'KEYPRESS' | 'CLICK';
 
 interface ActivityStep {
-  label: string;      // shown to the user e.g. "Click the blue circle"
+  label: string;
   type: StepType;
   expectedValue: string;
+  icon: string;
 }
 
 export interface FollowStepsData {
   activity_id: number;
   first_action_delay_ms: number | null;
   step_delays_ms: number[];
-  sequence_errors: number;        // steps done out of order
+  sequence_errors: number;
   wrong_key_count: number;
   extra_click_count: number;
-  completion_rate: number;        // 0–100
+  completion_rate: number;
   total_time_ms: number;
 }
 
-// ─── Activity variants (system randomly picks one) ───────────────────────────
-const ACTIVITIES: ActivityStep[][] = [
-  // Version 1
-  [
-    { label: 'Click the blue circle',  type: 'CLICK',    expectedValue: 'blue-circle'     },
-    { label: 'Press the LEFT arrow',   type: 'KEYPRESS', expectedValue: 'ArrowLeft'       },
-    { label: 'Type the letter A',      type: 'KEYPRESS', expectedValue: 'a'               },
-  ],
-  // Version 2
-  [
-    { label: 'Press the LEFT arrow',   type: 'KEYPRESS', expectedValue: 'ArrowLeft'       },
-    { label: 'Click the green square', type: 'CLICK',    expectedValue: 'green-square'    },
-    { label: 'Type the letter B',      type: 'KEYPRESS', expectedValue: 'b'               },
-  ],
-  // Version 3
-  [
-    { label: 'Click the triangle',     type: 'CLICK',    expectedValue: 'orange-triangle' },
-    { label: 'Press the DOWN arrow',   type: 'KEYPRESS', expectedValue: 'ArrowDown'       },
-    { label: 'Press SPACE',            type: 'KEYPRESS', expectedValue: ' '               },
-  ],
+const ACTIVITY: ActivityStep[] = [
+  { label: 'CLICK', type: 'CLICK', expectedValue: 'blue-circle', icon: '🔵' },
+  { label: 'PRESS', type: 'KEYPRESS', expectedValue: 'ArrowLeft', icon: '←' },
+  { label: 'TYPE', type: 'KEYPRESS', expectedValue: 'a', icon: 'A' },
 ];
 
-const SHOW_DURATION_MS = 3000;
+const SHOW_DURATION_MS = 4000;
 
-// ─── Props ────────────────────────────────────────────────────────────────────
 interface FollowStepsProps {
   onComplete?: (data: FollowStepsData) => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export function MissionControlTask({ onComplete }: FollowStepsProps) {
-  // Pick a random activity once, stably
-  const [activity] = useState<ActivityStep[]>(
-    () => ACTIVITIES[Math.floor(Math.random() * ACTIVITIES.length)]
-  );
-  const [activityId] = useState(() => Math.floor(Math.random() * ACTIVITIES.length) + 1);
-
   type Phase = 'ready' | 'instructions' | 'playing' | 'done' | 'timeout';
   const [phase, setPhase] = useState<Phase>('ready');
   const [completedSteps, setCompletedSteps] = useState(0);
   const [clickedShape, setClickedShape] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(40);
 
-  // ── Telemetry refs ──────────────────────────────────────────────────────────
-  const playStartTime    = useRef<number>(0);
-  const lastActionTime   = useRef<number>(0);
-  const timerInterval    = useRef<any>(null);
-  const metrics          = useRef<FollowStepsData>({
-    activity_id: activityId,
+  const playStartTime = useRef<number>(0);
+  const lastActionTime = useRef<number>(0);
+  const timerInterval = useRef<any>(null);
+  const metrics = useRef<FollowStepsData>({
+    activity_id: 1,
     first_action_delay_ms: null,
     step_delays_ms: [],
     sequence_errors: 0,
@@ -79,7 +55,6 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
     total_time_ms: 0,
   });
 
-  // ── Start: show instructions then begin playing ──────────────────────────────
   const beginActivity = () => {
     setPhase('instructions');
     setCompletedSteps(0);
@@ -88,12 +63,11 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
 
     setTimeout(() => {
       setPhase('playing');
-      playStartTime.current  = Date.now();
+      playStartTime.current = Date.now();
       lastActionTime.current = Date.now();
     }, SHOW_DURATION_MS);
   };
 
-  // ── Timer Effect ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (phase === 'playing') {
       timerInterval.current = setInterval(() => {
@@ -114,38 +88,29 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
     };
   }, [phase]);
 
-  // ── End ─────────────────────────────────────────────────────────────────────
   const endActivity = useCallback((stepsCompleted: number) => {
     if (timerInterval.current) clearInterval(timerInterval.current);
     const now = Date.now();
-    metrics.current.completion_rate = Math.round((stepsCompleted / activity.length) * 100);
-    metrics.current.total_time_ms   = now - playStartTime.current;
+    metrics.current.completion_rate = Math.round((stepsCompleted / ACTIVITY.length) * 100);
+    metrics.current.total_time_ms = now - playStartTime.current;
 
     setPhase('done');
-    console.log('[FollowSteps Telemetry]', metrics.current);
-
-    setTimeout(() => {
-      if (onComplete) onComplete(metrics.current);
-    }, 1500);
-  }, [activity.length, onComplete]);
+  }, []);
 
   const handleProceed = () => {
     if (onComplete) onComplete(metrics.current);
   };
 
-  // Watch for full completion
   useEffect(() => {
-    if (phase === 'playing' && completedSteps === activity.length) {
+    if (phase === 'playing' && completedSteps === ACTIVITY.length) {
       endActivity(completedSteps);
     }
-  }, [completedSteps, phase, activity.length, endActivity]);
+  }, [completedSteps, phase, endActivity]);
 
-  // ── Handle an incoming user action ──────────────────────────────────────────
   const handleAction = useCallback((type: StepType, value: string) => {
     if (phase !== 'playing') return;
     const now = Date.now();
 
-    // Telemetry: timing
     if (metrics.current.first_action_delay_ms === null) {
       metrics.current.first_action_delay_ms = now - playStartTime.current;
     } else {
@@ -153,21 +118,19 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
     }
     lastActionTime.current = now;
 
-    // Visual pulse on shape click
     if (type === 'CLICK') {
       setClickedShape(value);
       setTimeout(() => setClickedShape(null), 350);
     }
 
-    if (completedSteps >= activity.length) return;
+    if (completedSteps >= ACTIVITY.length) return;
 
-    const target = activity[completedSteps];
+    const target = ACTIVITY[completedSteps];
     const correct = target.type === type && target.expectedValue.toLowerCase() === value.toLowerCase();
 
     if (correct) {
       setCompletedSteps(prev => prev + 1);
     } else {
-      // Silent error tracking
       if (type === 'CLICK') {
         metrics.current.extra_click_count += 1;
       } else {
@@ -175,9 +138,8 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
       }
       metrics.current.sequence_errors += 1;
     }
-  }, [phase, completedSteps, activity]);
+  }, [phase, completedSteps]);
 
-  // ── Keyboard listener ────────────────────────────────────────────────────────
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
@@ -191,327 +153,232 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleAction, phase]);
 
-  // ── Derived styles ────────────────────────────────────────────────────────────
   const shapeGlow = (id: string) =>
     clickedShape === id
       ? '0 0 0 6px rgba(77,166,255,0.25), 0 4px 18px rgba(77,166,255,0.3)'
       : '0 2px 10px rgba(0,0,0,0.06)';
 
-  // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <div
-      style={{
-        width: '100%',
-        maxWidth: '560px',
-        margin: '0 auto',
-        background: '#F5F9FF',
-        borderRadius: '20px',
-        padding: '32px 28px',
-        boxShadow: '0 8px 32px rgba(77,166,255,0.10)'}}
-    >
-      {/* Header */}
-      <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#1A2340', margin: 0, letterSpacing: '-0.3px' }}>
-          Let's try a quick activity ✨
-        </h2>
-        <p style={{ fontSize: '0.88rem', color: '#7A8CAA', marginTop: '6px', marginBottom: 0 }}>
-          Simple · Fun · Short
-        </p>
-      </div>
-
+    <div className="w-full h-full flex flex-col items-center justify-center p-4">
       <AnimatePresence mode="wait">
-
-        {/* ── READY phase ──────────────────────────────────────────────────── */}
+        
         {phase === 'ready' && (
           <motion.div
             key="ready"
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex flex-col items-center w-full max-w-xl bg-white rounded-3xl p-6 shadow-sm border border-slate-100"
           >
-            <div style={{
-              background: '#fff',
-              border: '1px solid #DCEBFF',
-              borderRadius: '14px',
-              padding: '20px 24px',
-              maxWidth: '340px',
-              color: '#2A3A5A',
-              fontSize: '0.95rem',
-              lineHeight: 1.7,
-              textAlign: 'left',
-            }}>
-              <p style={{ margin: '0 0 10px', fontWeight: 600, color: '#4DA6FF' }}>How it works:</p>
-              <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <li>You'll see <strong>3 short steps</strong></li>
-                <li>They'll disappear after a few seconds</li>
-                <li>Then do them in order — keyboard & mouse</li>
-              </ul>
-              <p style={{ margin: '14px 0 0', color: '#7A8CAA', fontSize: '0.85rem' }}>
-                No right or wrong. Just follow along 🙂
-              </p>
+            <h2 className="text-xl font-black tracking-wider text-slate-800 mb-1 uppercase">Mission Control</h2>
+            <p className="text-base font-bold text-slate-500 mb-5">Follow the path →</p>
+
+            <div className="flex flex-col gap-3 text-lg font-bold text-slate-700 mb-6 w-full max-w-sm">
+              <div className="grid grid-cols-[3rem_2rem_2rem_1fr] items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <span className="text-2xl text-center">🔵</span>
+                <span className="text-blue-500 text-xl font-black text-center">1</span>
+                <span className="text-slate-400 text-lg text-center">→</span>
+                <span className="text-lg tracking-widest uppercase text-left pl-2">CLICK</span>
+              </div>
+              <div className="grid grid-cols-[3rem_2rem_2rem_1fr] items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <span className="text-2xl text-center font-black">←</span>
+                <span className="text-blue-500 text-xl font-black text-center">2</span>
+                <span className="text-slate-400 text-lg text-center">→</span>
+                <span className="text-lg tracking-widest uppercase text-left pl-2">PRESS</span>
+              </div>
+              <div className="grid grid-cols-[3rem_2rem_2rem_1fr] items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <span className="text-2xl text-center font-black">A</span>
+                <span className="text-blue-500 text-xl font-black text-center">3</span>
+                <span className="text-slate-400 text-lg text-center">→</span>
+                <span className="text-lg tracking-widest uppercase text-left pl-2">TYPE A</span>
+              </div>
             </div>
 
-            <motion.button
-              onClick={beginActivity}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              style={{
-                background: 'linear-gradient(135deg, #4DA6FF 0%, #7B6AFF 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '50px',
-                padding: '13px 36px',
-                fontSize: '1rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 4px 18px rgba(77,166,255,0.35)',
-                letterSpacing: '0.2px',
-              }}
-            >
-              Try this quick challenge →
-            </motion.button>
+            <div className="bg-slate-100 rounded-2xl py-4 px-8 mb-6 flex items-center justify-center gap-4 text-3xl shadow-inner w-full max-w-sm">
+              <span className="w-10 text-center">🔵</span>
+              <span className="text-slate-300 text-2xl">→</span>
+              <span className="font-black text-slate-700 w-10 text-center">←</span>
+              <span className="text-slate-300 text-2xl">→</span>
+              <span className="font-black text-slate-800 w-10 text-center">A</span>
+            </div>
+
+            <p className="text-lg font-bold text-slate-700 mb-6">Do these 3 steps in order.</p>
+
+            <div className="flex flex-col items-center">
+              <div className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow-md text-xs flex items-center gap-3 border border-blue-500 mb-2">
+                <span className="font-bold tracking-wide">Ready? Click Start.</span>
+              </div>
+              <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-blue-500 mb-2 drop-shadow-md">
+                <ArrowDown size={24} strokeWidth={3} />
+              </motion.div>
+              <button
+                onClick={beginActivity}
+                className="bg-blue-500 hover:bg-blue-600 text-white text-lg font-black tracking-widest py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+              >
+                START
+              </button>
+            </div>
           </motion.div>
         )}
 
-        {/* ── INSTRUCTIONS phase (auto-disappear after 3 s) ─────────────────── */}
         {phase === 'instructions' && (
           <motion.div
             key="instructions"
-            initial={{ opacity: 0, scale: 0.96 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.94 }}
-            transition={{ duration: 0.3 }}
-            style={{ textAlign: 'center', width: '100%' }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex flex-col items-center w-full max-w-sm"
           >
-            <p style={{ color: '#7A8CAA', fontSize: '0.85rem', marginBottom: '12px', marginTop: 0 }}>
-              Follow these steps in order:
-            </p>
-            <div style={{
-              background: '#fff',
-              border: '1.5px solid #DCEBFF',
-              borderRadius: '14px',
-              padding: '20px 28px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-            }}>
-              {activity.map((step, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.12 }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
-                >
-                  <span style={{
-                    width: '26px', height: '26px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #4DA6FF, #7B6AFF)',
-                    color: '#fff', fontWeight: 700, fontSize: '0.78rem',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
-                    {i + 1}
-                  </span>
-                  <span style={{ fontSize: '1rem', fontWeight: 600, color: '#1A2340' }}>
-                    {step.label}
-                  </span>
-                </motion.div>
-              ))}
+            <div className="flex flex-col items-center gap-3 w-full">
+              <div className="flex flex-col items-center bg-white p-4 rounded-3xl shadow-md border-2 border-slate-100 w-full">
+                <div className="text-blue-500 font-black text-xl mb-1">①</div>
+                <div className="text-5xl mb-2">🔵</div>
+                <div className="text-2xl font-black text-slate-800 tracking-widest">CLICK</div>
+              </div>
+              
+              <div className="text-slate-300 text-3xl font-black">↓</div>
+              
+              <div className="flex flex-col items-center bg-white p-4 rounded-3xl shadow-md border-2 border-slate-100 w-full">
+                <div className="text-blue-500 font-black text-xl mb-1">②</div>
+                <div className="text-5xl font-black text-slate-700 mb-2">←</div>
+                <div className="text-2xl font-black text-slate-800 tracking-widest">PRESS</div>
+              </div>
+              
+              <div className="text-slate-300 text-3xl font-black">↓</div>
+              
+              <div className="flex flex-col items-center bg-white p-4 rounded-3xl shadow-md border-2 border-slate-100 w-full">
+                <div className="text-blue-500 font-black text-xl mb-1">③</div>
+                <div className="text-5xl font-black text-slate-800 mb-2">A</div>
+                <div className="text-2xl font-black text-slate-800 tracking-widest">TYPE</div>
+              </div>
             </div>
           </motion.div>
         )}
 
-        {/* ── PLAYING phase ────────────────────────────────────────────────── */}
         {phase === 'playing' && (
           <motion.div
             key="playing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '18px' }}
+            className="flex flex-col items-center w-full max-w-lg bg-white p-6 rounded-3xl shadow-sm border border-slate-100"
           >
-            {/* Soft hint */}
-            <p style={{ color: '#7A8CAA', fontSize: '0.84rem', margin: 0 }}>
-              You're doing great — go for it!
-            </p>
+            {/* Visual Sequence Feedback */}
+            <div className="bg-slate-100 rounded-3xl py-4 px-8 mb-8 flex items-center justify-center gap-6 text-4xl shadow-inner w-full">
+              <div className="relative">
+                <span className={completedSteps > 0 ? "opacity-30" : "opacity-100"}>🔵</span>
+                {completedSteps > 0 && <span className="absolute -bottom-1 -right-2 text-green-500 text-2xl font-black bg-white rounded-full p-1 shadow-sm border border-green-100">✓</span>}
+              </div>
+              
+              <span className="text-slate-300 text-3xl mx-1">→</span>
+              
+              <div className="relative">
+                <span className={`font-black text-slate-700 ${completedSteps > 1 ? "opacity-30" : "opacity-100"}`}>←</span>
+                {completedSteps > 1 && <span className="absolute -bottom-1 -right-2 text-green-500 text-2xl font-black bg-white rounded-full p-1 shadow-sm border border-green-100">✓</span>}
+              </div>
 
-            {/* Step progress dots */}
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {activity.map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ scale: i === completedSteps ? 1.25 : 1 }}
-                  style={{
-                    width: '10px', height: '10px', borderRadius: '50%',
-                    background: i < completedSteps
-                      ? 'linear-gradient(135deg, #4DA6FF, #7B6AFF)'
-                      : i === completedSteps
-                      ? '#BFDCFF'
-                      : '#E2ECFF',
-                    transition: 'background 0.3s',
-                  }}
-                />
-              ))}
+              <span className="text-slate-300 text-3xl mx-1">→</span>
+              
+              <div className="relative">
+                <span className={`font-black text-slate-800 ${completedSteps > 2 ? "opacity-30" : "opacity-100"}`}>A</span>
+                {completedSteps > 2 && <span className="absolute -bottom-1 -right-2 text-green-500 text-2xl font-black bg-white rounded-full p-1 shadow-sm border border-green-100">✓</span>}
+              </div>
             </div>
 
             {/* Shape canvas */}
-            <div style={{
-              background: '#fff',
-              border: '2px dashed #DCEBFF',
-              borderRadius: '18px',
-              width: '100%',
-              height: '210px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-around',
-              padding: '0 24px',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              {/* Timer Bar */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                height: '4px',
-                background: timeLeft < 10 ? '#FF7070' : '#4DA6FF',
-                width: `${(timeLeft / 40) * 100}%`,
-                transition: 'width 1s linear, background-color 0.3s'
-              }} />
-
-              {/* Blue Circle */}
-              <motion.button
-                whileTap={{ scale: 0.88 }}
+            <div className="w-full flex items-center justify-center gap-8 py-10 bg-slate-50 rounded-3xl border-2 border-slate-100 shadow-sm">
+              <button
                 onClick={() => handleAction('CLICK', 'blue-circle')}
-                aria-label="Blue Circle"
-                title="Blue Circle"
+                className="w-24 h-24 rounded-full outline-none flex-shrink-0 transition-transform active:scale-90"
                 style={{
-                  width: '66px', height: '66px', borderRadius: '50%',
                   background: 'radial-gradient(circle at 35% 35%, #7EC8FF, #4DA6FF)',
-                  border: 'none', cursor: 'pointer',
-                  boxShadow: shapeGlow('blue-circle'),
-                  transition: 'box-shadow 0.2s',
-                  outline: 'none',
+                  boxShadow: shapeGlow('blue-circle')
                 }}
               />
-
-              {/* Green Square */}
-              <motion.button
-                whileTap={{ scale: 0.88 }}
+              
+              <button
                 onClick={() => handleAction('CLICK', 'green-square')}
-                aria-label="Green Square"
-                title="Green Square"
+                className="w-20 h-20 rounded-2xl outline-none flex-shrink-0 transition-transform active:scale-90"
                 style={{
-                  width: '62px', height: '62px', borderRadius: '12px',
                   background: 'linear-gradient(135deg, #85EAA6, #50C878)',
-                  border: 'none', cursor: 'pointer',
-                  boxShadow: shapeGlow('green-square'),
-                  transition: 'box-shadow 0.2s',
-                  outline: 'none',
+                  boxShadow: shapeGlow('green-square')
                 }}
               />
-
-              {/* Orange Triangle */}
-              <motion.button
-                whileTap={{ scale: 0.88 }}
+              
+              <button
                 onClick={() => handleAction('CLICK', 'orange-triangle')}
-                aria-label="Orange Triangle"
-                title="Orange Triangle"
+                className="w-24 h-24 outline-none flex-shrink-0 transition-transform active:scale-90"
                 style={{
-                  width: '66px', height: '66px',
                   clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
                   background: 'linear-gradient(160deg, #FFD580, #FFB347)',
-                  border: 'none', cursor: 'pointer',
-                  boxShadow: clickedShape === 'orange-triangle'
-                    ? '0 0 0 6px rgba(255,179,71,0.22)'
-                    : 'none',
-                  transition: 'box-shadow 0.2s',
-                  outline: 'none',
+                  boxShadow: clickedShape === 'orange-triangle' ? '0 0 0 6px rgba(255,179,71,0.2)' : 'none'
                 }}
               />
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.85rem', color: timeLeft < 10 ? '#FF7070' : '#7A8CAA', fontWeight: 600 }}>
-                 ⏱️ {timeLeft}s left
-              </span>
+            
+            <div className="mt-6 text-lg font-bold text-slate-400 flex items-center gap-2">
+              <span className="text-xl">⏱️</span> {timeLeft}s left
             </div>
           </motion.div>
         )}
 
-        {/* ── DONE phase ───────────────────────────────────────────────────── */}
         {phase === 'done' && (
           <motion.div
             key="done"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}
+            className="flex flex-col items-center text-center gap-4 bg-white p-10 rounded-3xl shadow-sm border border-slate-100"
           >
-            <div style={{
-              width: '70px', height: '70px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4DA6FF22, #7B6AFF22)',
-              border: '2px solid #DCEBFF',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '2rem',
-            }}>
-              🏁
+            <div className="text-6xl mb-2 text-green-500 bg-green-50 rounded-full p-6 shadow-sm border border-green-100">
+              ✓
             </div>
-            <p style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1A2340', margin: 0 }}>
-              Mission Accomplished!
+            <h2 className="text-3xl font-black text-slate-800">Done!</h2>
+            <p className="text-xl font-bold text-slate-500 mb-6">
+              Great job following the sequence.
             </p>
-            <p style={{ fontSize: '0.9rem', color: '#7A8CAA', margin: 0 }}>
-              Let's find the next discovery...
-            </p>
+            
+            <div className="flex items-center">
+              <div className="bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-md text-sm font-bold border border-emerald-500 mr-4">
+                Click Next
+              </div>
+              <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-emerald-500 mr-4">
+                <ArrowRight size={28} strokeWidth={3} />
+              </motion.div>
+              <button
+                onClick={handleProceed}
+                className="bg-blue-500 hover:bg-blue-600 text-white text-xl font-black tracking-widest py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+              >
+                NEXT
+              </button>
+            </div>
           </motion.div>
         )}
 
-        {/* ── TIMEOUT phase ────────────────────────────────────────────────── */}
         {phase === 'timeout' && (
           <motion.div
             key="timeout"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}
+            className="flex flex-col items-center text-center gap-4 bg-white p-10 rounded-3xl shadow-sm border border-slate-100"
           >
-            <div style={{
-              width: '70px', height: '70px', borderRadius: '50%',
-              background: '#FFF5F5',
-              border: '2px solid #FFEBEB',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '2rem',
-            }}>
+            <div className="text-6xl mb-2">
               ⏰
             </div>
+            <h2 className="text-3xl font-black text-slate-800">Time's up!</h2>
+            <p className="text-lg font-bold text-slate-500 mb-6">
+              You did a great job following along.
+            </p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FF7070', margin: 0 }}>
-                Times up, no worries! 
-              </p>
-              <p style={{ fontSize: '0.9rem', color: '#7A8CAA', margin: 0 }}>
-                You did a great job following along.
-              </p>
+            <div className="flex items-center">
+              <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-blue-500 mr-4">
+                <ArrowRight size={28} strokeWidth={3} />
+              </motion.div>
+              <button
+                onClick={handleProceed}
+                className="bg-blue-500 hover:bg-blue-600 text-white text-xl font-black tracking-widest py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105"
+              >
+                NEXT
+              </button>
             </div>
-
-            <motion.button
-              onClick={handleProceed}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                background: 'linear-gradient(135deg, #4DA6FF 0%, #7B6AFF 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '50px',
-                padding: '14px 32px',
-                fontSize: '1rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 4px 18px rgba(77,166,255,0.3)',
-              }}
-            >
-              Click next to find next puzzle →
-            </motion.button>
           </motion.div>
         )}
 
