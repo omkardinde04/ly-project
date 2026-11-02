@@ -7,13 +7,13 @@ export function DyslexiaToggle({ className = '' }: { className?: string }) {
 
   return (
     <div
-      className={`flex items-center gap-2 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl shadow-2xs border border-blue-100/90 hover:border-blue-200 transition-all ${className}`}
+      className={`flex items-center gap-2 bg-white dark:bg-slate-800 backdrop-blur-md px-2.5 py-1.5 rounded-xl shadow-2xs border border-slate-200 dark:border-slate-700 transition-all ${className}`}
       role="group"
       aria-label="Dyslexia Font Accessibility Switch"
     >
-      <div className="flex items-center gap-1 text-xs font-bold text-[#1A202C]">
-        <Type size={13} className="text-[#8B5CF6]" />
-        <span className="hidden xl:inline">Dyslexia</span>
+      <div className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-200">
+        <Type size={13} className="text-[#8B5CF6] dark:text-purple-400" />
+        <span className="hidden 2xl:inline">Dyslexia</span>
       </div>
 
       <button

@@ -14,8 +14,12 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
   const isMounted = useRef(true);
 
   // Use fixed paragraph for testing if none provided
-  const paragraphText = question?.paragraph || 'Dyslexia is not a reflection of intelligence. It is simply a different way that the brain processes language. Many highly successful people are dyslexic.';
-  const words = typeof paragraphText === 'string' ? paragraphText.split(/\s+/) : paragraphText[0].split(/\s+/);
+  const paragraphText: string = typeof question?.paragraph === 'string' 
+    ? question.paragraph 
+    : Array.isArray(question?.paragraph) 
+    ? question.paragraph[0] 
+    : 'Dyslexia is not a reflection of intelligence. It is simply a different way that the brain processes language. Many highly successful people are dyslexic.';
+  const words: string[] = paragraphText.split(/\s+/);
   
   const [wordStatuses, setWordStatuses] = useState<('idle' | 'green' | 'yellow' | 'red')[]>(Array(words.length).fill('idle'));
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -70,13 +74,15 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
     const spokenWords = transcript.toLowerCase().split(/\s+/).filter(Boolean);
     if (spokenWords.length === 0) return;
 
+    let finalMaxIndex = -1;
+
     setWordStatuses((prev) => {
       const newStatuses = [...prev];
       let spokenCursor = 0;
       let textCursor = 0;
       let newRereadCount = rereadCount;
       let maxMatchedIndex = currentWordIndex > 0 ? currentWordIndex - 1 : -1;
-      let finalMaxIndex = maxMatchedIndex;
+      finalMaxIndex = maxMatchedIndex;
 
       for (let i = 0; i < 500; i++) { // safeguard
         if (spokenCursor >= spokenWords.length || textCursor >= words.length) break;

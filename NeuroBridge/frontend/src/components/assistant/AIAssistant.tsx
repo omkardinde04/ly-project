@@ -216,9 +216,9 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
               className="relative group flex items-center gap-2"
             >
               {/* Wake Word Tooltip Pill */}
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-100 text-[#1A202C] text-xs font-bold shadow-lg shadow-blue-500/10">
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-bold shadow-lg shadow-blue-500/10">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-[11px] text-[#64748B]">Say <strong className="text-[#2563EB]">"Hey Jarvis"</strong></span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">Say <strong className="text-[#2563EB] dark:text-blue-400 font-extrabold">"Hey Jarvis"</strong></span>
               </div>
 
               {/* Main Glowing Floating Trigger Orb */}

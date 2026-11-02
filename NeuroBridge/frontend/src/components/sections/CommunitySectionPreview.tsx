@@ -1,157 +1,159 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import {
-  Users,
-  MessageSquare,
-  BookOpen,
-  Headphones,
-  ShieldCheck,
-  ArrowRight,
-  Sparkles,
-  Heart,
-  Share2,
-} from 'lucide-react';
+import { Users, MessageSquare, BookOpen, Lightbulb, ArrowRight } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 
 export function CommunitySectionPreview() {
   const navigate = useNavigate();
-  const { reduceMotion } = useDyslexia();
+  const { isDarkMode, reduceMotion, isDyslexiaMode } = useDyslexia();
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+
+  const springConfig = { damping: 24, stiffness: 90 };
+
+  const rawCard1Y = useTransform(scrollYProgress, [0, 1], [25, -25]);
+  const card1Y = useSpring(rawCard1Y, springConfig);
+
+  const rawCard2Y = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const card2Y = useSpring(rawCard2Y, springConfig);
+
+  const rawCard3Y = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const card3Y = useSpring(rawCard3Y, springConfig);
+
+  const cardParallax = [card1Y, card2Y, card3Y];
 
   const previewCards = [
     {
-      id: 'reading',
-      icon: BookOpen,
+      id: '1',
+      icon: MessageSquare,
+      title: 'Multisensory Phonics Hacks',
+      desc: 'How I use rhythmic clapping and audio narration to master tricky syllable breakdowns.',
+      author: 'Aarav M. · 12th Grade Student',
+      tag: 'Phonics Strategy',
       color: 'text-[#2563EB]',
-      bg: 'bg-blue-50',
-      border: 'border-blue-100',
-      title: 'Reading Strategies',
-      desc: 'Discover line-tracking and sensory contrast techniques shared by dyslexic learners.',
-      author: 'Aarav S. · 24 Peers discussing',
+      bg: 'bg-blue-50 dark:bg-blue-950/60',
+      border: 'border-blue-200 dark:border-blue-900',
     },
     {
-      id: 'learning',
-      icon: Headphones,
-      color: 'text-[#8B5CF6]',
-      bg: 'bg-purple-50',
-      border: 'border-purple-100',
-      title: 'Multisensory Phonics',
-      desc: 'Explore audio-guided phonics sprints and memory anchor workflows.',
-      author: 'Sarah J. · 38 Peers discussing',
+      id: '2',
+      icon: BookOpen,
+      title: 'Reading Without Exhaustion',
+      desc: 'Setting my line spacing to 1.8x and using 15-minute intervals transformed my exams.',
+      author: 'Priya K. · College Freshman',
+      tag: 'Study Habit',
+      color: 'text-[#7C3AED]',
+      bg: 'bg-purple-50 dark:bg-purple-950/60',
+      border: 'border-purple-200 dark:border-purple-900',
     },
     {
-      id: 'career',
-      icon: ShieldCheck,
-      color: 'text-emerald-700',
-      bg: 'bg-emerald-50',
-      border: 'border-emerald-100',
-      title: 'Career & Interview Prep',
-      desc: 'Tips for disclosing neurodiversity, requesting accommodations, and highlighting strengths.',
-      author: 'Elena R. · 52 Peers discussing',
+      id: '3',
+      icon: Lightbulb,
+      title: 'Studying in Friend Chat Circles',
+      desc: 'Our study group uses peer audio chat and shared brain game sprints to master dense chapters together.',
+      author: 'Rohan D. · 11th Grade Student',
+      tag: 'Friend Chat & Games',
+      color: 'text-emerald-700 dark:text-emerald-400',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/60',
+      border: 'border-emerald-200 dark:border-emerald-900',
     },
   ];
-  const [cards, setCards] = useState(previewCards);
-
-  useEffect(() => {
-    if (reduceMotion) return;
-    
-    const interval = setInterval(() => {
-      setCards((prevCards) => {
-        const next = [...prevCards];
-        const first = next.shift();
-        if (first) next.push(first);
-        return next;
-      });
-    }, 4000); // smoothly shift every 4 seconds
-
-    return () => clearInterval(interval);
-  }, [reduceMotion]);
 
   return (
-    <section className="space-y-10 text-left" aria-label="Community Support Preview">
+    <section ref={sectionRef} className="space-y-12 text-left" aria-label="Community Support Preview">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200 text-xs font-extrabold">
-            <Users size={13} />
+          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-semibold">
+            <Users size={14} />
             <span>Inclusive Peer Circles</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1A202C] tracking-tight">
+          <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
+            isDarkMode ? 'text-white' : 'text-slate-900'
+          }`}>
             You don't have to learn alone.
           </h2>
-          <p className="text-sm sm:text-base text-[#64748B] font-medium leading-relaxed">
-            Connect with fellow students, exchange proven learning strategies, and grow alongside a
-            supportive neuro-inclusive community.
+          <p className={`text-base sm:text-lg font-normal leading-relaxed ${
+            isDarkMode ? 'text-slate-300' : 'text-slate-600'
+          }`}>
+            Connect with fellow students, exchange proven dyslexia study strategies, and grow alongside
+            a supportive neuro-inclusive community.
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => navigate('/community')}
-          className="px-6 py-3 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs sm:text-sm transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer shrink-0 self-start sm:self-auto"
+          className="px-7 py-3.5 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm transition-all shadow-md shadow-blue-500/20 inline-flex items-center gap-2 cursor-pointer shrink-0 self-start sm:self-auto hover:scale-[1.02] active:scale-[0.98]"
         >
           <span>Join the Community</span>
-          <ArrowRight size={15} />
+          <ArrowRight size={16} />
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {cards.map((card) => (
-          <SpotlightCard key={card.id} card={card} reduceMotion={reduceMotion} navigate={navigate} />
-        ))}
+      {/* 3-Card Grid with Parallax Floating */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        {previewCards.map((card, index) => {
+          const Icon = card.icon;
+          return (
+            <motion.div
+              key={card.id}
+              style={reduceMotion || isDyslexiaMode ? {} : { y: cardParallax[index] }}
+              initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.45, delay: index * 0.1 }}
+              whileHover={reduceMotion ? {} : { y: -6, transition: { duration: 0.2 } }}
+              onClick={() => navigate('/community')}
+              className={`rounded-2xl p-7 border transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
+                isDarkMode
+                  ? 'bg-slate-900 border-slate-800 text-white shadow-xs hover:border-slate-700'
+                  : 'bg-white border-slate-200 shadow-xs hover:border-slate-300 text-slate-900'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <div
+                    className={`w-11 h-11 rounded-2xl ${card.bg} ${card.color} ${card.border} border flex items-center justify-center shadow-2xs`}
+                  >
+                    <Icon size={22} />
+                  </div>
+                  <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
+                    isDarkMode 
+                      ? 'bg-slate-800 text-slate-300 border-slate-700' 
+                      : 'bg-slate-50 text-slate-600 border-slate-200'
+                  }`}>
+                    {card.tag}
+                  </span>
+                </div>
+
+                <h3 className={`text-lg font-bold group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors mb-2 ${
+                  isDarkMode ? 'text-white' : 'text-slate-900'
+                }`}>
+                  {card.title}
+                </h3>
+                <p className={`text-xs sm:text-sm font-normal leading-relaxed mb-6 ${
+                  isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                }`}>
+                  {card.desc}
+                </p>
+              </div>
+
+              <div className={`pt-4 border-t flex items-center justify-between text-xs ${
+                isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-slate-500'
+              }`}>
+                <span className="text-[11px] font-normal">{card.author}</span>
+                <span className="text-[#2563EB] dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+                  →
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
-  );
-}
-
-function SpotlightCard({ card, reduceMotion, navigate }: any) {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
-    const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
-  }
-
-  const Icon = card.icon;
-
-  return (
-    <motion.div
-      layout={!reduceMotion}
-      transition={{ duration: 0.8, ease: "easeInOut" }}
-      whileHover={reduceMotion ? {} : { y: -4 }}
-      onClick={() => navigate('/community')}
-      onMouseMove={handleMouseMove}
-      className="relative bg-white rounded-3xl p-7 border border-blue-100/80 shadow-xs hover:border-blue-200 hover:shadow-sm transition-all flex flex-col justify-between cursor-pointer group overflow-hidden"
-    >
-      <motion.div
-        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{
-          background: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, rgba(37,99,235,0.06), transparent 40%)`,
-        }}
-      />
-      
-      <div className="relative z-10">
-        <div
-          className={`w-11 h-11 rounded-2xl ${card.bg} ${card.color} ${card.border} border flex items-center justify-center mb-5 group-hover:scale-105 transition-transform`}
-        >
-          <Icon size={22} />
-        </div>
-
-        <h3 className="text-lg font-black text-[#1A202C] group-hover:text-[#2563EB] transition-colors mb-2">
-          {card.title}
-        </h3>
-        <p className="text-xs sm:text-sm text-[#64748B] font-medium leading-relaxed mb-6">
-          {card.desc}
-        </p>
-      </div>
-
-      <div className="relative z-10 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#64748B]">
-        <span className="text-[11px] text-[#94A3B8]">{card.author}</span>
-        <span className="text-[#2563EB] group-hover:translate-x-1 transition-transform">
-          →
-        </span>
-      </div>
-    </motion.div>
   );
 }

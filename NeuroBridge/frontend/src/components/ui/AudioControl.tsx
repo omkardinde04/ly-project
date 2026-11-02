@@ -54,7 +54,7 @@ export function AudioControl({
 
   return (
     <div
-      className="flex items-center gap-1.5 sm:gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 sm:px-3 py-1.5 shadow-2xs border border-blue-100/90 transition-all hover:border-blue-200"
+      className="flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-800 backdrop-blur-md rounded-2xl px-2.5 sm:px-3 py-1.5 shadow-2xs border border-slate-200 dark:border-slate-700 transition-all hover:border-slate-300 dark:hover:border-slate-600"
       role="region"
       aria-label="Text to speech narration controls"
     >
@@ -64,8 +64,8 @@ export function AudioControl({
         onClick={handlePlay}
         className={`group flex items-center gap-1.5 px-3 py-1 rounded-xl font-bold text-xs transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 ${
           isReading
-            ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 animate-pulse'
-            : 'bg-blue-50 text-[#2563EB] hover:bg-blue-100/80 border border-blue-200/80'
+            ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 border border-red-200 dark:border-red-800 animate-pulse'
+            : 'bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-300 hover:bg-blue-100/80 border border-blue-200/80 dark:border-blue-800'
         }`}
         aria-label={isReading ? t.stop : t.listen}
       >

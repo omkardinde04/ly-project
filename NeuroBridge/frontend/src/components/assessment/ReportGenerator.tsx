@@ -17,6 +17,8 @@ import {
   Eye,
   Activity,
   Layers,
+  Chrome,
+  Download,
 } from 'lucide-react';
 
 interface AssessmentMetrics {
@@ -338,6 +340,41 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           </div>
         </motion.div>
       </div>
+
+      {/* ─── 4.5 UNLOCKED CHROME EXTENSION DOWNLOAD BANNER ─── */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.15 }}
+        className="rounded-3xl p-6 sm:p-7 border border-blue-200 bg-gradient-to-br from-blue-50/90 via-indigo-50/40 to-white shadow-xs flex flex-col sm:flex-row items-center justify-between gap-5 text-left"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-13 h-13 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/25">
+            <Chrome size={26} />
+          </div>
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black mb-1">
+              <CheckCircle2 size={12} />
+              <span>Assessment Completed • Extension Unlocked</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-black text-[#1A202C]">
+              Download NeuroBridge Chrome Extension
+            </h3>
+            <p className="text-xs text-slate-600 font-medium leading-relaxed max-w-lg mt-0.5">
+              Take your calibrated OpenDyslexic font, line-tracking ruler, and multisensory audio reader to any webpage across the internet.
+            </p>
+          </div>
+        </div>
+
+        <a
+          href="/assets/neurobridge-chrome-extension.zip"
+          download="neurobridge-chrome-extension.zip"
+          className="shrink-0 w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Download size={16} />
+          <span>Download Chrome Extension</span>
+        </a>
+      </motion.div>
 
       {/* 5. Reassurance & Action CTAs */}
       <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">

@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+/* Landing page components (explicit so new files are always scanned) */
+@source "../components/landing";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ─────────────────────────────────────────────────────────────────────────────
    DESIGN TOKEN SYSTEM
@@ -8,9 +12,9 @@
 ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* ── Typography ── */
-  --font-body:        'Nunito', Arial, sans-serif;
-  --font-heading:     'Nunito', Arial, sans-serif;
+  /* ── Typography (Lexend provides superior optical legibility & dyslexia clarity) ── */
+  --font-body:        'Lexend', 'Nunito', Arial, sans-serif;
+  --font-heading:     'Lexend', 'Nunito', Arial, sans-serif;
 
   --text-xs:     0.75rem;
   --text-sm:     0.875rem;
@@ -21,7 +25,7 @@
   --text-3xl:    1.875rem;
   --text-4xl:    2.25rem;
 
-  --line-height-body:    1.55;
+  --line-height-body:    1.65;
   --line-height-heading: 1.25;
   --letter-spacing-body: 0.015em;
   --word-spacing-body:   normal;
@@ -31,18 +35,18 @@
   --accessibility-letter-spacing: var(--letter-spacing-body);
   --accessibility-content-width:   100%;
 
-  /* ── Colors ── */
-  --color-bg:          #F0F7FA;
+  /* ── Colors (High-Contrast, Zero Faintness) ── */
+  --color-bg:          #FFFFFF;
   --color-surface:     #FFFFFF;
   --color-surface-2:   #F8FAFC;
-  --color-text:        #1A202C;
-  --color-text-muted:  #4A5568;
-  --color-accent:      #E0F0FA;
-  --color-accent-soft: #EEF5FB;
+  --color-text:        #0F172A;
+  --color-text-muted:  #334155;
+  --color-accent:      #DBEAFE;
+  --color-accent-soft: #EFF6FF;
   --color-primary:     #2563EB;
-  --color-coral:       #F87171;
+  --color-coral:       #EF4444;
   --color-coral-soft:  #FEE2E2;
-  --color-border:      #E2E8F0;
+  --color-border:      #CBD5E1;
 
   /* ── Spacing & sizing ── */
   --btn-height:      40px;
@@ -453,6 +457,23 @@ body.dark-mode .bg-\[\#2563EB\] {
     background-color 0.25s ease,
     border-color 0.25s ease,
     opacity 0.2s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LANDING — persistent character idle motion (disabled for reduced motion /
+   dyslexia mode by the component itself, and by the rules below)
+───────────────────────────────────────────────────────────────────────────── */
+@keyframes nb-idle-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.nb-idle-float {
+  animation: nb-idle-float 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+.nb-character-layer {
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 
 /* Honour prefers-reduced-motion */

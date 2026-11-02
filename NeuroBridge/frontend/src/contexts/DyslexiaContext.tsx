@@ -98,9 +98,12 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
   }, [settings]);
 
   useEffect(() => {
+    const root = document.documentElement;
     if (settings.isDarkMode) {
+      root.classList.add('dark');
       document.body.classList.add('dark-mode');
     } else {
+      root.classList.remove('dark');
       document.body.classList.remove('dark-mode');
     }
   }, [settings.isDarkMode]);

@@ -1,6 +1,6 @@
 export interface AssessmentQuestion {
   id: number;
-  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'camera_direction' | 'eye_tracking_maze' | 'reading_reread_tracking' | 'mission_control' | 'situation_series' | 'multiplication_recall' | 'voice_alphabet' | 'read_aloud';
+  type: 'visual' | 'phonological' | 'memory' | 'sequencing' | 'comprehension' | 'confusion' | 'frequency' | 'reading_tracking' | 'object_naming' | 'hand_raising' | 'camera_direction' | 'eye_tracking_maze' | 'reading_reread_tracking' | 'mission_control' | 'situation_series' | 'multiplication_recall' | 'voice_alphabet' | 'read_aloud';
   instruction: string;
   example?: string;
   audioInstruction?: string;
