@@ -9,7 +9,6 @@ import {
   EyeOff,
   Sparkles,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
   Bot,
   Sliders,
@@ -267,11 +266,6 @@ export function Login() {
             </div>
           </div>
 
-          {/* Accessibility Indicator */}
-          <div className="inline-flex items-center gap-2 text-xs font-bold text-[#64748B] pt-2">
-            <ShieldCheck size={16} className="text-emerald-500" />
-            <span>WCAG AAA Accessible & Student Verified</span>
-          </div>
         </motion.div>
 
         {/* ─── RIGHT: AUTHENTICATION CARD (7 COLS) ────────────────────── */}
