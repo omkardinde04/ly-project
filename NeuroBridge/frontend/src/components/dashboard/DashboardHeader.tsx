@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, Calendar, ArrowRight, BookOpen, FileText, Bot, Users } from 'lucide-react';
+import { Search, Sparkles, Calendar, ArrowRight, BookOpen, Bot, Users, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
-import { AudioControl } from '../ui/AudioControl';
-import { DarkModeToggle } from '../ui/DarkModeToggle';
-import { LanguageSelector } from '../ui/LanguageSelector';
-import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 
 interface DashboardHeaderProps {
   onNavigate: (tab: string) => void;
@@ -27,7 +23,7 @@ export function DashboardHeader({ onNavigate }: DashboardHeaderProps) {
 
   const quickActions = [
     { label: 'Reading Practice', tab: 'learning', icon: BookOpen },
-    { label: 'Resume Builder', tab: 'resumeBuilder', icon: FileText },
+    { label: 'My Progress', tab: 'progress', icon: BarChart3 },
     { label: 'AI Notebook', tab: 'notebook', icon: Bot },
     { label: 'Peer Circle', tab: 'community', icon: Users },
   ];
@@ -36,10 +32,8 @@ export function DashboardHeader({ onNavigate }: DashboardHeaderProps) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     const query = searchQuery.toLowerCase();
-    if (query.includes('resume') || query.includes('cv')) {
-      onNavigate('resumeBuilder');
-    } else if (query.includes('job') || query.includes('opp') || query.includes('intern')) {
-      onNavigate('opportunities');
+    if (query.includes('course') || query.includes('class')) {
+      onNavigate('courses');
     } else if (query.includes('note') || query.includes('ai') || query.includes('ask')) {
       onNavigate('notebook');
     } else if (query.includes('peer') || query.includes('comm') || query.includes('friend')) {
@@ -105,14 +99,6 @@ export function DashboardHeader({ onNavigate }: DashboardHeaderProps) {
 
         {/* Right: Search / Quick Navigation / A11y */}
         <div className="w-full lg:w-96 flex flex-col gap-3">
-          {/* Accessibility Row */}
-          <div className="flex items-center justify-end gap-2 mb-1 hidden sm:flex">
-            <AudioControl showControls={false} />
-            <DarkModeToggle />
-            <LanguageSelector />
-            <DyslexiaToggle />
-          </div>
-
           <form onSubmit={handleSearchSubmit} className="relative">
             <div className="relative flex items-center">
               <Search size={18} className="absolute left-3.5 text-[#94A3B8] pointer-events-none" />

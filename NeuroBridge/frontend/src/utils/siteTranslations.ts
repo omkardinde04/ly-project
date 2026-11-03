@@ -406,6 +406,18 @@ const ROWS: [string, string, string][] = [
   ['Call someone', 'किसी को फ़ोन करें', 'कोणाला तरी फोन करा'],
   ['Try another room', 'दूसरा कमरा आज़माएँ', 'दुसरी खोली पाहा'],
   ['Adjust your plan', 'अपनी योजना बदलें', 'तुमची योजना बदला'],
+  ['Tap your answer, then press Next', 'अपना जवाब टैप करें, फिर Next दबाएँ', 'तुमचे उत्तर टॅप करा, मग Next दाबा'],
+  ['Word Reading', 'शब्द पढ़ना', 'शब्द वाचन'],
+  ['Tap the mic and read the word out loud.', 'माइक दबाएँ और शब्द ज़ोर से पढ़ें।', 'माइक दाबा आणि शब्द मोठ्याने वाचा.'],
+  ['Type the word you see.', 'जो शब्द दिख रहा है उसे लिखें।', 'दिसणारा शब्द लिहा.'],
+  ['Well read!', 'बहुत अच्छा पढ़ा!', 'छान वाचले!'],
+  ['No worries! Next word…', 'कोई बात नहीं! अगला शब्द…', 'काही हरकत नाही! पुढचा शब्द…'],
+  ['We heard you, but could not catch the word.', 'हमने आपको सुना, पर शब्द समझ नहीं आया।', 'आम्ही तुम्हाला ऐकले, पण शब्द समजला नाही.'],
+  ['We did not hear anything.', 'हमने कुछ नहीं सुना।', 'आम्हाला काही ऐकू आले नाही.'],
+  ['Skip word', 'शब्द छोड़ें', 'शब्द वगळा'],
+  ['Type the word…', 'शब्द लिखें…', 'शब्द लिहा…'],
+  ['Check', 'जाँचें', 'तपासा'],
+  ['My Progress', 'मेरी प्रगति', 'माझी प्रगती'],
 ];
 
 export const siteHindi: Record<string, string> = Object.fromEntries(ROWS.map(([en, hi]) => [en, hi]));

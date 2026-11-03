@@ -4,8 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   TrendingUp,
-  FileText,
-  Briefcase,
   Bot,
   Users,
   Settings,
@@ -43,7 +41,7 @@ export function DashboardSidebar({
   const location = useLocation();
   const t = getTranslation(language);
 
-  const { learningStreak, resume } = useDashboardData();
+  const { learningStreak } = useDashboardData();
 
   const handleLogout = () => {
     navigate('/');
@@ -66,20 +64,6 @@ export function DashboardSidebar({
       tooltipDescription: learningStreak > 0 ? `Progress · ${learningStreak} day streak` : 'Track Learning Progress',
       icon: TrendingUp,
       badge: learningStreak > 0 ? `🔥 ${learningStreak}d` : undefined,
-    },
-    {
-      id: 'resumeBuilder',
-      label: t.resumeBuilder || 'Resume Builder',
-      tooltipDescription: resume.completionPercent > 0 ? `Resume Builder · ${resume.completionPercent}% complete` : 'Build Inclusive Resume',
-      icon: FileText,
-      badge: resume.completionPercent > 0 ? `${resume.completionPercent}%` : undefined,
-    },
-    {
-      id: 'opportunities',
-      label: t.opportunities || 'Opportunities',
-      tooltipDescription: 'Opportunities · 12 new matches',
-      icon: Briefcase,
-      badge: '12 New',
     },
     {
       id: 'courses',
@@ -116,10 +100,6 @@ export function DashboardSidebar({
   const handleItemClick = (id: string) => {
     if (id === 'assessment') {
       navigate('/assessment');
-    } else if (id === 'resumeBuilder') {
-      navigate('/dashboard/resume-builder');
-    } else if (id === 'opportunities') {
-      navigate('/dashboard/opportunities');
     } else if (id === 'courses') {
       navigate('/dashboard/courses');
     } else if (location.pathname.startsWith('/dashboard/')) {

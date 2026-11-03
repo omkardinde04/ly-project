@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MultiplicationQuestion {
@@ -29,7 +29,7 @@ const QUESTIONS: MultiplicationQuestion[] = [
 export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTaskProps) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [allMetrics, setAllMetrics] = useState<MultiplicationMetrics[]>([]);
-  const startTime = useRef<number>(Date.now());
+  const startTime = useRef<number>(0);
 
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
@@ -37,10 +37,9 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
     startTime.current = Date.now();
   }, [currentIdx]);
 
+  // Students can change their mind before pressing Next
   const handleSelect = (option: number) => {
-    if (selectedOption === null) {
-      setSelectedOption(option);
-    }
+    setSelectedOption(option);
   };
 
   const handleNext = () => {
@@ -68,7 +67,7 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
     <div className="w-full max-w-lg mx-auto bg-surface rounded-2xl p-8 border border-border shadow-sm font-sans flex flex-col items-center justify-center min-h-[400px]">
       <div className="text-center mb-10">
         <h2 className="text-xl font-bold text-text mb-2">Pop Quiz Activity</h2>
-        <p className="text-sm text-text-muted">Tap the correct answer, then click Next</p>
+        <p className="text-sm text-text-muted">Tap your answer, then press Next</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -80,28 +79,40 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
           transition={{ duration: 0.2 }}
           className="w-full flex flex-col items-center"
         >
-          <div className="text-5xl font-black text-[#4DA6FF] mb-12 tracking-tight">
+          <div className="text-5xl font-black text-[#1E3A8A] mb-12 tracking-tight">
             {QUESTIONS[currentIdx].display}
           </div>
 
           <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
-            {QUESTIONS[currentIdx].options.map((option, i) => (
-              <motion.button
-                key={i}
-                whileHover={selectedOption === null ? { scale: 1.05, backgroundColor: '#F0F7FF' } : {}}
-                whileTap={selectedOption === null ? { scale: 0.95 } : {}}
-                onClick={() => handleSelect(option)}
-                className={`py-6 border-2 rounded-2xl text-2xl font-bold transition-all shadow-sm ${
-                  selectedOption === option 
-                    ? 'bg-[#4DA6FF] border-[#4DA6FF] text-white' 
-                    : selectedOption !== null
-                    ? 'bg-[#F8FBFF] border-[#EBF4FF] text-gray-400 cursor-default'
-                    : 'bg-[#F8FBFF] border-[#EBF4FF] text-text hover:border-[#4DA6FF] hover:text-[#4DA6FF]'
-                }`}
-              >
-                {option}
-              </motion.button>
-            ))}
+            {QUESTIONS[currentIdx].options.map((option, i) => {
+              const isSelected = selectedOption === option;
+              return (
+                <motion.button
+                  key={i}
+                  type="button"
+                  // No inline hover colours: framer-motion leaves them behind when the
+                  // button is selected under the pointer, hiding the white number.
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => handleSelect(option)}
+                  aria-pressed={isSelected}
+                  className={`relative py-6 border-2 rounded-2xl text-2xl font-black transition-colors shadow-sm cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
+                    isSelected
+                      ? 'bg-[#2563EB] border-[#1D4ED8] text-white ring-4 ring-blue-200'
+                      : selectedOption !== null
+                        ? 'bg-white border-slate-200 text-slate-600 hover:border-[#2563EB] hover:text-[#2563EB]'
+                        : 'bg-white border-blue-100 text-[#1A202C] hover:border-[#2563EB] hover:bg-blue-50 hover:text-[#2563EB]'
+                  }`}
+                >
+                  {option}
+                  {isSelected && (
+                    <span className="absolute top-1.5 right-2 text-sm font-black text-white" aria-hidden>
+                      ✓
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
 
           <AnimatePresence>

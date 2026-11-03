@@ -140,15 +140,6 @@ export class JarvisExecutor {
             spokenResponse: intent.spokenResponse || 'You are now on the courses catalog.',
           };
 
-        case 'open_resume_builder':
-          this.deps.navigate('/dashboard/resume-builder');
-          return {
-            success: true,
-            actionId: action,
-            message: 'Navigated to Resume Builder',
-            spokenResponse: intent.spokenResponse || 'You are now in the resume builder.',
-          };
-
         case 'open_assessment':
           this.deps.navigate('/assessment');
           return {

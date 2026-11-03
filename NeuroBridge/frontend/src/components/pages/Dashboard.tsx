@@ -11,26 +11,23 @@ import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { DashboardStatusCards } from '../dashboard/DashboardStatusCards';
 import { LearningProgressCard } from '../dashboard/LearningProgressCard';
 import { CoursesWidget } from '../dashboard/CoursesWidget';
-import { ResumeBuilderWidget } from '../dashboard/ResumeBuilderWidget';
-import { OpportunitiesWidget } from '../dashboard/OpportunitiesWidget';
 import { AINotebookWidget } from '../dashboard/AINotebookWidget';
 import { CommunityWidget } from '../dashboard/CommunityWidget';
 import { AccessibilityQuickActions } from '../dashboard/AccessibilityQuickActions';
 
 import { MyLearning } from '../dashboard/MyLearning';
 import { ProgressTracking } from '../dashboard/ProgressTracking';
-import { Opportunities } from '../dashboard/Opportunities';
 import { NotebookLLM } from '../dashboard/NotebookLLM';
 import { Community } from '../dashboard/Community';
 import { NearbyCare } from '../dashboard/NearbyCare';
 import { Settings } from '../dashboard/Settings';
 import { CoursesDashboard } from '../pages/CoursesDashboard';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
+import { DarkModeToggle } from '../ui/DarkModeToggle';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { AudioControl } from '../ui/AudioControl';
 import { LinkedInConnect } from '../dashboard/LinkedInConnect';
 import { Brain } from '../dashboard/Brain';
-import { ResumeBuilder } from '../resume-builder/ResumeBuilder';
 
 export function Dashboard() {
   const { user, token } = useAuth();
@@ -70,13 +67,9 @@ export function Dashboard() {
     }
   }, []);
 
-  // Support dashboard sub-routes like /dashboard/resume-builder
+  // Support dashboard sub-routes like /dashboard/courses
   useEffect(() => {
-    if (location.pathname.startsWith('/dashboard/resume-builder')) {
-      setActiveTab('resumeBuilder');
-    } else if (location.pathname.startsWith('/dashboard/opportunities')) {
-      setActiveTab('opportunities');
-    } else if (location.pathname.startsWith('/dashboard/courses')) {
+    if (location.pathname.startsWith('/dashboard/courses')) {
       setActiveTab('courses');
     }
   }, [location.pathname]);
@@ -116,12 +109,8 @@ export function Dashboard() {
         return <MyLearning />;
       case 'progress':
         return <ProgressTracking />;
-      case 'opportunities':
-        return <Opportunities />;
       case 'courses':
         return <div className="-m-5 sm:-m-7 lg:-m-8"><CoursesDashboard /></div>;
-      case 'resumeBuilder':
-        return <ResumeBuilder />;
       case 'linkedin':
         return <LinkedInConnect />;
       case 'brain':
@@ -177,8 +166,10 @@ export function Dashboard() {
 
           </div>
 
-          <div className="flex items-center gap-3 ml-auto">
+          {/* Listen · Dark mode · Language · Fun mode — one place, at the top */}
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 ml-auto">
             <AudioControl showControls={false} />
+            <DarkModeToggle />
             <LanguageSelector />
             <DyslexiaToggle />
           </div>
@@ -259,17 +250,13 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
         </div>
       </div>
 
-      {/* Row 3: Modular Workspace Cards (Resume Builder, Opportunities, AI Notebook) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-        <ResumeBuilderWidget onNavigate={onNavigate} dashboardData={dashboardData} />
-        <OpportunitiesWidget onNavigate={onNavigate} />
+      {/* Row 3: AI Notebook, Community & Accessibility Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
         <AINotebookWidget onNavigate={onNavigate} />
-      </div>
-
-      {/* Row 4: Community & Accessibility Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         <CommunityWidget onNavigate={onNavigate} />
-        <AccessibilityQuickActions onNavigate={onNavigate} />
+        <div className="md:col-span-2 xl:col-span-1 flex flex-col">
+          <AccessibilityQuickActions onNavigate={onNavigate} />
+        </div>
       </div>
     </div>
   );

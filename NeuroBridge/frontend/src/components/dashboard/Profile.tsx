@@ -20,7 +20,6 @@ import {
   Sparkles,
   CheckCircle2,
   Circle,
-  FileText,
   Sliders,
   Check,
   ArrowRight,
@@ -31,7 +30,6 @@ import {
   Layers,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'neurobridge-resume-data-v2';
 
 export function Profile() {
   const { user, token, logout, updateUser } = useAuth();
@@ -56,30 +54,14 @@ export function Profile() {
     platformReminders: true,
   });
 
-  // Calculate live resume stats if saved
-  const resumeInfo = useMemo(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const data = parsed.resumeData;
-        const skillsCount = data?.skills?.length || 0;
-        const projectsCount = data?.projects?.length || 0;
-        return { hasResume: true, skillsCount, projectsCount };
-      }
-    } catch {}
-    return { hasResume: false, skillsCount: 0, projectsCount: 0 };
-  }, []);
-
   // Compute profile completion percentage
   const completionPct = useMemo(() => {
     let score = 30; // base account
-    if (user?.name) score += 20;
-    if (user?.profile_picture) score += 15;
-    if (personalInfo.phone || personalInfo.location) score += 15;
-    if (resumeInfo.hasResume) score += 20;
+    if (user?.name) score += 25;
+    if (user?.profile_picture) score += 20;
+    if (personalInfo.phone || personalInfo.location) score += 25;
     return Math.min(100, score);
-  }, [user?.name, user?.profile_picture, personalInfo, resumeInfo]);
+  }, [user?.name, user?.profile_picture, personalInfo]);
 
   const handleSavePersonalInfo = async () => {
     const name = personalInfo.fullName.trim();
@@ -269,16 +251,6 @@ export function Profile() {
             }`}
           >
             {user?.profile_picture ? <CheckCircle2 size={13} /> : <Circle size={13} />} Avatar Photo
-          </span>
-
-          <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold border ${
-              resumeInfo.hasResume
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-slate-50 text-slate-500 border-slate-200'
-            }`}
-          >
-            {resumeInfo.hasResume ? <CheckCircle2 size={13} /> : <Circle size={13} />} Resume Profile
           </span>
 
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -621,50 +593,6 @@ export function Profile() {
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F8FAFC]">
                 <span className="text-[#64748B] font-medium">Text Scale</span>
                 <span className="font-bold text-[#2563EB]">{textSize}% Scale</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Resume & Career Snapshot */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center border border-blue-100">
-                  <FileText size={16} />
-                </div>
-                <h3 className="font-extrabold text-sm text-[#1A202C]">Resume Snapshot</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate('/dashboard/resume-builder')}
-                className="text-xs font-bold text-[#2563EB] hover:underline inline-flex items-center gap-1 cursor-pointer"
-              >
-                <span>Builder</span> <ArrowRight size={12} />
-              </button>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F8FAFC]">
-                <span className="text-[#64748B] font-medium">Resume Status</span>
-                <span className="font-bold text-emerald-700">
-                  {resumeInfo.hasResume ? 'Active Draft Saved' : 'Draft Incomplete'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F8FAFC]">
-                <span className="text-[#64748B] font-medium">Key Skills Included</span>
-                <span className="font-bold text-[#1A202C]">
-                  {resumeInfo.skillsCount > 0 ? `${resumeInfo.skillsCount} Skills` : 'None added'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F8FAFC]">
-                <span className="text-[#64748B] font-medium">Project Portfolios</span>
-                <span className="font-bold text-[#1A202C]">
-                  {resumeInfo.projectsCount > 0
-                    ? `${resumeInfo.projectsCount} Projects`
-                    : 'None added'}
-                </span>
               </div>
             </div>
           </div>

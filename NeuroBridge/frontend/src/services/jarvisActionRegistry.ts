@@ -53,14 +53,6 @@ export const GLOBAL_ACTIONS: Record<string, JarvisActionDefinition> = {
     safetyLevel: 'safe',
     synonyms: ['courses', 'classes', 'tutorials', 'video lessons', 'कोर्स', 'धडे'],
   },
-  open_resume_builder: {
-    id: 'open_resume_builder',
-    name: 'Resume Builder',
-    description: 'Navigate to the AI-assisted Resume & CV Builder',
-    category: 'navigation',
-    safetyLevel: 'safe',
-    synonyms: ['resume builder', 'resume', 'cv', 'build resume', 'बायोडाटा'],
-  },
   open_assessment: {
     id: 'open_assessment',
     name: 'Dyslexia Cognitive Assessment',

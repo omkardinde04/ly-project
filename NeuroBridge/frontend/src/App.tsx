@@ -143,14 +143,9 @@ function AppContent() {
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<AssessmentPage />} />
-            <Route 
-              path="/dashboard/resume-builder" 
-              element={
-                <ProtectedRoute requireAssessment={true}>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
+            {/* Resume builder & opportunities were removed from the dashboard */}
+            <Route path="/dashboard/resume-builder" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard/opportunities" element={<Navigate to="/dashboard" replace />} />
             <Route 
               path="/dashboard/courses" 
               element={
@@ -225,8 +220,7 @@ function AppContent() {
               } 
             />
             <Route path="/about" element={<AboutPage />} />
-            {/* Resume Builder is only accessible via Dashboard */}
-            <Route path="/resume-builder" element={<Navigate to="/dashboard/resume-builder" replace />} />
+            <Route path="/resume-builder" element={<Navigate to="/dashboard" replace />} />
             <Route path="/auth-redirect" element={<AuthRedirect />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

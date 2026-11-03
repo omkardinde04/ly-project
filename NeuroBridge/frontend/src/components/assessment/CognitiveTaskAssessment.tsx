@@ -2,6 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkipForward } from 'lucide-react';
 import { getSpeechService } from '../../services/speechService';
+import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useSpeechCapture, micStatusText } from './useSpeechCapture';
+import { MicButton, LevelBars, TimeBar, MicErrorBox } from './MicControls';
 
 interface CognitiveTaskProps {
   onComplete: (scores: { phonological: number; visual: number; workingMemory: number; processingSpeed: number; orthographic: number; executive: number }) => void;
@@ -883,235 +886,200 @@ const READING_WORDS: ReadingWord[] = [
   { word: 'February',    hint: 'Month of the year 🗓️',   accepted: ['february', 'febuary'] },
 ];
 
-// Browser SpeechRecognition — not fully typed in TS lib by default
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SpeechRecognitionCtor = new () => any;
+// Read-aloud uses the shared mic hook (same as Q9/Q10): it pauses "Hey Jarvis",
+// shows a live level meter, explains mic errors and falls back to typing.
+type WordResult = 'none' | 'correct' | 'wrong' | 'silent';
 
-declare global {
-  interface Window {
-    SpeechRecognition?: SpeechRecognitionCtor;
-    webkitSpeechRecognition?: SpeechRecognitionCtor;
-  }
+const normaliseWord = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
+
+function heardWord(transcript: string, accepted: string[]): boolean {
+  const targets = accepted.map(normaliseWord);
+  const tokens = transcript.split(/\s+/).map(normaliseWord).filter(Boolean);
+  const joined = normaliseWord(transcript);
+  return targets.some((t) => t === joined || tokens.includes(t) || (t.length > 5 && joined.includes(t)));
 }
 
-type VoicePhase = 'idle' | 'listening' | 'processing' | 'correct' | 'wrong' | 'error';
-
 function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void }) {
+  const { reduceMotion } = useDyslexia();
+  const mic = useSpeechCapture({ maxMs: 7000 });
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [phase, setPhase] = useState<VoicePhase>('idle');
-  const [transcript, setTranscript] = useState('');
-  const [fallbackInput, setFallbackInput] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [speechSupported] = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
-
-  // Use refs for values read inside setTimeout/callbacks to avoid stale closures
+  const [typed, setTyped] = useState('');
+  const [typedResult, setTypedResult] = useState<WordResult>('none');
   const correctRef = useRef(0);
-  const currentIdxRef = useRef(0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recogRef = useRef<any>(null);
 
   const q = READING_WORDS[currentIdx];
+  const matched = heardWord(mic.transcript, q.accepted);
 
-  const normalise = (s: string) =>
-    s.toLowerCase().replace(/[^a-z]/g, '').trim();
+  // Stop listening as soon as the word is heard
+  const { status, stop } = mic;
+  useEffect(() => {
+    if (status === 'listening' && matched) stop();
+  }, [status, matched, stop]);
 
-  const checkAnswer = (raw: string): boolean => {
-    const norm = normalise(raw);
-    // q is looked up from currentIdxRef to avoid stale closure
-    return READING_WORDS[currentIdxRef.current].accepted.some(a => normalise(a) === norm);
-  };
+  // Heard something else: finish 1.5 s after they stop talking (no 7 s wait)
+  const { transcript } = mic;
+  useEffect(() => {
+    if (status !== 'listening' || matched || !transcript) return;
+    const t = window.setTimeout(stop, 1500);
+    return () => window.clearTimeout(t);
+  }, [status, matched, transcript, stop]);
 
-  const abortRecognition = () => {
-    try { recogRef.current?.abort(); } catch (_) { /* ignore */ }
-    recogRef.current = null;
-  };
+  const micResult: WordResult =
+    mic.status !== 'stopped' ? 'none' : matched ? 'correct' : mic.transcript ? 'wrong' : 'silent';
+  const result: WordResult = mic.supported ? micResult : typedResult;
 
-  const goNext = (newCorrect: number) => {
-    abortRecognition();
-    const idx = currentIdxRef.current;
-    if (idx < READING_WORDS.length - 1) {
-      correctRef.current = newCorrect;
-      currentIdxRef.current = idx + 1;
-      setCurrentIdx(idx + 1);
-      setPhase('idle');
-      setTranscript('');
-      setFallbackInput('');
-    } else {
-      onComplete(Math.round((newCorrect / READING_WORDS.length) * 100));
-    }
-  };
-
-  const handleResult = (isCorrect: boolean) => {
-    if (isCorrect) {
-      setPhase('correct');
-      const newCorrect = correctRef.current + 1;
-      setTimeout(() => goNext(newCorrect), 1200);
-    } else {
-      setPhase('wrong');
-      setTimeout(() => goNext(correctRef.current), 1800);
-    }
-  };
-
-  const startListening = () => {
-    abortRecognition();
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-    const rec = new SR();
-    rec.lang = 'en-US';
-    rec.continuous = false;
-    rec.interimResults = false;
-    recogRef.current = rec;
-    setPhase('listening');
-    setTranscript('');
-    setErrorMsg('');
-
-    let resultReceived = false;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      resultReceived = true;
-      const text = e.results[0][0].transcript as string;
-      setTranscript(text);
-      setPhase('processing');
-      handleResult(checkAnswer(text));
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onerror = (e: any) => {
-      resultReceived = true; // prevent onend from double-triggering
-      const errorCode = e?.error || 'unknown';
-      let msg = 'Microphone error. Please try again.';
-      if (errorCode === 'not-allowed' || errorCode === 'permission-denied') {
-        msg = '🔒 Mic access denied. Please allow microphone in your browser settings.';
-      } else if (errorCode === 'no-speech') {
-        msg = '🔇 No speech detected. Speak louder or closer to the mic.';
-      } else if (errorCode === 'network') {
-        msg = '🌐 Network error. Check your connection and try again.';
+  const { reset } = mic;
+  const goNext = useCallback(
+    (wasCorrect: boolean) => {
+      if (wasCorrect) correctRef.current += 1;
+      reset();
+      setTyped('');
+      setTypedResult('none');
+      if (currentIdx < READING_WORDS.length - 1) {
+        setCurrentIdx(currentIdx + 1);
+      } else {
+        onComplete(Math.round((correctRef.current / READING_WORDS.length) * 100));
       }
-      setErrorMsg(msg);
-      setPhase('error');
-    };
+    },
+    [currentIdx, reset, onComplete],
+  );
 
-    // onend fires when recognition session closes — if no result was captured, reset to idle
-    rec.onend = () => {
-      if (!resultReceived) {
-        setPhase('idle');
-      }
-      recogRef.current = null;
-    };
+  // Show the result for a moment, then move on by itself
+  useEffect(() => {
+    if (result !== 'correct' && result !== 'wrong') return;
+    const t = window.setTimeout(() => goNext(result === 'correct'), result === 'correct' ? 1100 : 1600);
+    return () => window.clearTimeout(t);
+  }, [result, goNext]);
 
-    try {
-      rec.start();
-    } catch (err) {
-      setErrorMsg('Could not start microphone. Please try again.');
-      setPhase('error');
-    }
-  };
-
-  const handleFallbackSubmit = () => {
-    if (!fallbackInput.trim()) return;
-    setTranscript(fallbackInput);
-    setPhase('processing');
-    handleResult(checkAnswer(fallbackInput));
+  const submitTyped = () => {
+    if (!typed.trim()) return;
+    setTypedResult(heardWord(typed, q.accepted) ? 'correct' : 'wrong');
   };
 
   return (
-    <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-teal-50">
-      {/* Header */}
+    <div className="bg-surface rounded-3xl shadow-xl p-6 sm:p-8 text-center max-w-2xl mx-auto border-2 border-border">
+      {/* Header — same layout as the other tasks */}
       <div className="flex flex-col items-center mb-6">
-        <div className="text-4xl mb-3">📖</div>
-        <h3 className="text-2xl font-bold text-text mb-1">Word Reading</h3>
-        <p className="text-text-muted text-sm font-medium">
-          {speechSupported ? 'Read the word aloud — speak clearly into your mic.' : 'Type the word shown below.'}
+        <div className="text-5xl mb-3" aria-hidden>
+          📖
+        </div>
+        <h3 className="text-2xl font-bold text-text mb-2">Word Reading</h3>
+        <p className="text-text-muted text-base font-medium">
+          {mic.supported ? 'Tap the mic and read the word out loud.' : 'Type the word you see.'}
         </p>
       </div>
 
-      {/* Word Display — big, centered */}
-      <div className="flex flex-col items-center gap-3 mb-8">
-        <div className="bg-gradient-to-br from-teal-50 to-blue-50 border-2 border-teal-200 rounded-3xl px-10 py-8 shadow-inner">
-          <p className="text-5xl font-black text-teal-700 tracking-widest select-none">
-            {q.word}
-          </p>
-        </div>
-        <p className="text-sm text-text-muted font-medium italic">{q.hint}</p>
+      {/* The word */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={q.word}
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+          className="flex flex-col items-center gap-2 mb-6"
+        >
+          <div
+            className={`rounded-3xl border-2 px-8 sm:px-12 py-6 transition-colors ${
+              result === 'correct'
+                ? 'bg-emerald-50 border-emerald-300'
+                : result === 'wrong'
+                  ? 'bg-violet-50 border-violet-200'
+                  : 'bg-blue-50 border-blue-100'
+            }`}
+          >
+            <p className="font-black text-[#1E3A8A] select-none" style={{ fontSize: 'clamp(2.25rem, 6vw, 3.25rem)', letterSpacing: '0.02em' }}>
+              {q.word}
+            </p>
+          </div>
+          <p className="text-sm text-text-muted font-medium">{q.hint}</p>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Answer area */}
+      <div className="flex flex-col items-center gap-3 min-h-[13rem] justify-center">
+        {result === 'correct' && (
+          <div className="flex flex-col items-center gap-1" role="status">
+            <span className="text-4xl" aria-hidden>
+              ✅
+            </span>
+            <p className="text-emerald-700 font-bold text-lg">Well read!</p>
+          </div>
+        )}
+
+        {result === 'wrong' && (
+          <div className="flex flex-col items-center gap-1" role="status">
+            <span className="text-4xl" aria-hidden>
+              💙
+            </span>
+            <p className="text-violet-700 font-bold text-lg">No worries! Next word…</p>
+            {mic.supported && mic.transcript && (
+              <p className="text-xs text-text-muted">{`We heard: "${mic.transcript}"`}</p>
+            )}
+          </div>
+        )}
+
+        {result === 'silent' && (
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm font-semibold text-slate-600">
+              {mic.heardSound ? 'We heard you, but could not catch the word.' : 'We did not hear anything.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={mic.start}
+                className="px-6 py-3 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold transition-all shadow-md cursor-pointer"
+              >
+                Try again
+              </button>
+              <button
+                type="button"
+                onClick={() => goNext(false)}
+                className="px-6 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-text font-bold transition-all cursor-pointer"
+              >
+                Skip word
+              </button>
+            </div>
+          </div>
+        )}
+
+        {result === 'none' && mic.supported && (
+          mic.error ? (
+            <MicErrorBox error={mic.error} onRetry={mic.start} onSkip={() => goNext(false)} />
+          ) : (
+            <>
+              <MicButton status={mic.status} level={mic.level} onStart={mic.start} onStop={mic.stop} reduceMotion={reduceMotion} />
+              <LevelBars level={mic.level} active={mic.status === 'listening'} />
+              <p className="text-sm font-semibold text-slate-600" aria-live="polite">
+                {micStatusText(mic.status, mic.heardSound, mic.supported)}
+              </p>
+              {mic.status === 'listening' && <TimeBar elapsedMs={mic.elapsedMs} maxMs={mic.maxMs} />}
+            </>
+          )
+        )}
+
+        {result === 'none' && !mic.supported && (
+          <div className="flex flex-col items-center gap-3 w-full">
+            <input
+              type="text"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              placeholder="Type the word…"
+              aria-label="Type the word"
+              className="w-full max-w-xs px-4 py-3 border-2 border-border rounded-2xl focus:border-blue-400 focus:outline-none text-lg font-medium text-center"
+              onKeyDown={(e) => e.key === 'Enter' && submitTyped()}
+            />
+            <button
+              type="button"
+              onClick={submitTyped}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-md cursor-pointer"
+            >
+              Check
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Voice UI */}
-      {speechSupported ? (
-        <div className="flex flex-col items-center gap-4">
-          {(phase === 'idle' || phase === 'error') && (
-            <div className="flex flex-col items-center gap-3">
-              {phase === 'error' && errorMsg && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-3 max-w-xs text-center">
-                  <p className="text-red-600 font-semibold text-sm">{errorMsg}</p>
-                </div>
-              )}
-              <button
-                onClick={startListening}
-                className="flex items-center gap-3 bg-teal-500 hover:bg-teal-600 text-white px-8 py-4 rounded-2xl font-bold text-base shadow-md transition-all"
-              >
-                <span className="text-2xl">🎤</span>
-                {phase === 'error' ? 'Try Again' : 'Tap to Read Aloud'}
-              </button>
-              {phase === 'idle' && (
-                <p className="text-xs text-text-muted font-medium">Make sure your browser allows microphone access</p>
-              )}
-            </div>
-          )}
-
-          {phase === 'listening' && (
-            <div className="flex flex-col items-center gap-2">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-teal-500 flex items-center justify-center text-white text-2xl animate-pulse shadow-lg">🎤</div>
-                <div className="absolute inset-0 rounded-full bg-teal-300 opacity-40 animate-ping" />
-              </div>
-              <p className="text-teal-600 font-bold text-sm">Listening — speak now…</p>
-              <p className="text-xs text-text-muted">Say the word clearly into your microphone</p>
-            </div>
-          )}
-
-          {phase === 'processing' && (
-            <div className="text-text-muted font-medium animate-pulse">Checking…</div>
-          )}
-
-          {phase === 'correct' && (
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-4xl">✅</div>
-              <p className="text-green-600 font-bold text-lg">Correct!</p>
-              {transcript && <p className="text-sm text-text-muted italic">You said: &ldquo;{transcript}&rdquo;</p>}
-            </div>
-          )}
-
-          {phase === 'wrong' && (
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-4xl">💙</div>
-              <p className="text-purple-600 font-bold text-lg">No worries!</p>
-              <p className="text-text-muted text-sm">Moving to the next word…</p>
-              {transcript && <p className="text-xs text-text-muted italic mt-1">You said: &ldquo;{transcript}&rdquo;</p>}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-3">
-          <p className="text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2 text-sm font-medium">
-            ⚠️ Voice not supported — type the word instead.
-          </p>
-          <input
-            type="text"
-            value={fallbackInput}
-            onChange={e => setFallbackInput(e.target.value)}
-            placeholder="Type the word above…"
-            className="w-full max-w-xs px-4 py-3 border-2 border-border rounded-2xl focus:border-teal-400 focus:outline-none text-lg font-medium text-center"
-            onKeyDown={e => e.key === 'Enter' && handleFallbackSubmit()}
-          />
-          <button onClick={handleFallbackSubmit}
-            className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-md">
-            Submit
-          </button>
-        </div>
-      )}
-
-      <div className="mt-6 text-xs text-text-muted font-medium">
+      <div className="mt-6 text-sm text-text-muted font-medium">
         Word {currentIdx + 1} of {READING_WORDS.length}
       </div>
     </div>
