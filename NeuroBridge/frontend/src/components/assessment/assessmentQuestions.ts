@@ -113,7 +113,7 @@ export const partAQuestions: AssessmentQuestion[] = [
   {
     id: 4,
     type: 'camera_direction',
-    instruction: 'When following directions, confirm your left vs right:',
+    instruction: 'Left or right? Help Robo find the way.',
     options: [
       { id: 'correct', text: 'Correct', weight: 0 },
       { id: 'wrong', text: 'Wrong', weight: 3 }

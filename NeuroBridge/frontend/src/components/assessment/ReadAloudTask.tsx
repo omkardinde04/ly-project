@@ -1,5 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight, RotateCcw, BookOpen, Timer, CheckCircle2 } from 'lucide-react';
+import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useSpeechCapture, micStatusText } from './useSpeechCapture';
+import { MicButton, LevelBars, TimeBar, MicErrorBox } from './MicControls';
 
 interface ParagraphScenario {
   id: string;
@@ -12,6 +16,8 @@ export interface ReadAloudMetrics {
   transcript: string;
   time_to_start_ms: number;
   total_time_ms: number;
+  words_read?: number;
+  words_total?: number;
 }
 
 interface ReadAloudTaskProps {
@@ -21,280 +27,212 @@ interface ReadAloudTaskProps {
 const PARAGRAPHS: ParagraphScenario[] = [
   {
     id: 'p1',
-    text: "Today I planned to finish my work early, but I kept procrastinating. I tried to stay focused, and finally completed the assignment before evening.",
-    highlights: ["procrastinating", "focused", "assignment"]
+    text: 'Today I planned to finish my work early, but I kept procrastinating. I tried to stay focused, and finally completed the assignment before evening.',
+    highlights: ['procrastinating', 'focused', 'assignment'],
   },
   {
     id: 'p2',
-    text: "The environment looked calm after the rain. Everyone walked carefully to avoid the slippery path. It was a peaceful afternoon.",
-    highlights: ["environment", "slippery", "afternoon"]
+    text: 'The environment looked calm after the rain. Everyone walked carefully to avoid the slippery path. It was a peaceful afternoon.',
+    highlights: ['environment', 'slippery', 'afternoon'],
   },
   {
     id: 'p3',
-    text: "She showed great confidence while speaking. The teacher appreciated her presentation. Everyone listened with attention.",
-    highlights: ["confidence", "presentation", "attention"]
+    text: 'She showed great confidence while speaking. The teacher appreciated her presentation. Everyone listened with attention.',
+    highlights: ['confidence', 'presentation', 'attention'],
   },
   {
     id: 'p4',
-    text: "The celebration started in the evening. Children were excited about the performance. The decorations looked beautiful.",
-    highlights: ["celebration", "performance", "decorations"]
-  }
+    text: 'The celebration started in the evening. Children were excited about the performance. The decorations looked beautiful.',
+    highlights: ['celebration', 'performance', 'decorations'],
+  },
 ];
 
+const MAX_MS = 60000;
+const clean = (w: string) => w.toLowerCase().replace(/[^a-z']/g, '');
+
+/** Similar enough? (speech engines drop endings, mishear a letter, etc.) */
+function sameWord(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.length >= 4 && b.length >= 4 && a.slice(0, 4) === b.slice(0, 4)) return true;
+  return false;
+}
+
+/** How far through the paragraph the reader has got (greedy, forgiving). */
+function wordsReadSoFar(paragraph: string[], spoken: string[]): number {
+  let p = 0;
+  for (const word of spoken) {
+    for (let k = p; k < Math.min(paragraph.length, p + 4); k++) {
+      if (sameWord(paragraph[k], word)) {
+        p = k + 1;
+        break;
+      }
+    }
+  }
+  return p;
+}
+
 export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
-  const [selectedParagraph] = useState<ParagraphScenario>(() => 
-    PARAGRAPHS[Math.floor(Math.random() * PARAGRAPHS.length)]
-  );
-  
-  const [phase, setPhase] = useState<'ready' | 'listening' | 'review' | 'finished'>('ready');
-  const [transcript, setTranscript] = useState('');
-  
-  const recognitionRef = useRef<any>(null);
-  const autoStopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const mountTime = useRef<number>(Date.now());
-  const speakStartTime = useRef<number | null>(null);
-  const transcriptRef = useRef('');
-  const isMounted = useRef(true);
-
+  const { reduceMotion } = useDyslexia();
+  const [paragraph] = useState<ParagraphScenario>(() => PARAGRAPHS[Math.floor(Math.random() * PARAGRAPHS.length)]);
+  const mic = useSpeechCapture({ maxMs: MAX_MS });
+  const [finished, setFinished] = useState(false);
+  const mountedAt = useRef(0);
   useEffect(() => {
-    return () => { isMounted.current = false; };
+    mountedAt.current = Date.now();
   }, []);
 
-  const stopCurrentRecognition = () => {
-    if (autoStopTimeoutRef.current) {
-      clearTimeout(autoStopTimeoutRef.current);
-      autoStopTimeoutRef.current = null;
-    }
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.onresult = null;
-        recognitionRef.current.onend = null;
-        recognitionRef.current.onerror = null;
-        recognitionRef.current.stop();
-      } catch (e) {}
-      recognitionRef.current = null;
-    }
-  };
+  const words = useMemo(() => paragraph.text.split(' '), [paragraph]);
+  const cleanWords = useMemo(() => words.map(clean), [words]);
+  const spoken = useMemo(() => mic.transcript.split(/\s+/).map(clean).filter(Boolean), [mic.transcript]);
+  const readCount = wordsReadSoFar(cleanWords, spoken);
+  const hasResult = mic.status === 'stopped';
+  const pct = Math.round((readCount / words.length) * 100);
 
-  const startListening = () => {
-    stopCurrentRecognition();
-    
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      alert("Speech recognition not supported in this browser.");
-      return;
-    }
+  // Reached the last word: stop listening by itself
+  const { status, stop } = mic;
+  useEffect(() => {
+    if (status !== 'listening' || readCount < words.length) return;
+    const t = window.setTimeout(stop, 1200);
+    return () => window.clearTimeout(t);
+  }, [status, stop, readCount, words.length]);
 
-    setTranscript('');
-    transcriptRef.current = '';
-    speakStartTime.current = null;
-    
-    const recognition = new SR();
-    recognition.continuous = true; 
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event: any) => {
-      if (!speakStartTime.current) {
-        speakStartTime.current = Date.now();
-      }
-      let currentTranscript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        currentTranscript += event.results[i][0].transcript;
-      }
-      transcriptRef.current = currentTranscript;
-      if (isMounted.current) setTranscript(currentTranscript);
-    };
-
-    recognition.onend = () => {
-      if (isMounted.current && phase === 'listening') {
-        if (transcriptRef.current.trim()) {
-          setPhase('review');
-        } else {
-          setPhase('ready');
-        }
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error('Read Aloud error:', event.error);
-      if (isMounted.current) setPhase('ready');
-    };
-
-    recognitionRef.current = recognition;
-    setPhase('listening');
-    
-    try {
-      recognition.start();
-    } catch (e) {
-      setPhase('ready');
-    }
-
-    // Auto stop after 20 seconds
-    autoStopTimeoutRef.current = setTimeout(() => {
-      if (isMounted.current && phase === 'listening') {
-        stopAndReview();
-      }
-    }, 20000);
-  };
-
-  const stopAndReview = () => {
-    stopCurrentRecognition();
-    setPhase('review');
-  };
-
-  const handleContinue = () => {
-    setPhase('finished');
-    const now = Date.now();
+  const finish = (skipped = false) => {
+    setFinished(true);
+    const firstWord = mic.timeToFirstWord();
     const metrics: ReadAloudMetrics = {
-      paragraph_id: selectedParagraph.id,
-      transcript: transcriptRef.current.trim(),
-      time_to_start_ms: speakStartTime.current ? (speakStartTime.current - mountTime.current) : 0,
-      total_time_ms: now - mountTime.current
+      paragraph_id: paragraph.id,
+      transcript: skipped ? 'Skipped' : mic.transcript,
+      time_to_start_ms: firstWord ?? 0,
+      total_time_ms: skipped ? 0 : Date.now() - mountedAt.current,
+      words_read: skipped ? 0 : readCount,
+      words_total: words.length,
     };
-
-    setTimeout(() => {
-      if (isMounted.current) onComplete(metrics);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    return () => stopCurrentRecognition();
-  }, []);
-
-  const renderText = () => {
-    return selectedParagraph.text.split(' ').map((word, i) => {
-      const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
-      const isHighlighted = selectedParagraph.highlights.some(h => h.toLowerCase() === cleanWord);
-      return (
-        <span 
-          key={i} 
-          className={`inline-block px-1.5 py-0.5 mx-0.5 rounded-md transition-colors ${
-            isHighlighted ? 'bg-[#EBF4FF] text-[#1A2340] font-bold border border-[#DCEBFF]' : 'text-[#2A3A5A]'
-          }`}
-        >
-          {word}
-        </span>
-      );
-    });
+    mic.reset();
+    window.setTimeout(() => onComplete(metrics), skipped ? 0 : 800);
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-surface rounded-3xl p-10 border border-border shadow-sm font-sans flex flex-col items-center justify-center min-h-[480px]">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-text mb-2">Read this aloud</h2>
-        <p className="text-[#7A8CAA]">Read the paragraph below out loud.</p>
-      </div>
-
-      <div className="w-full bg-[#FAFCFF] border border-[#DCEBFF] rounded-2xl p-8 mb-10">
-        <div className="text-2xl leading-relaxed text-left" style={{ lineHeight: '1.8' }}>
-          {renderText()}
+    <div className="w-full max-w-3xl mx-auto bg-white rounded-3xl p-5 sm:p-8 border border-blue-100 shadow-sm flex flex-col items-center gap-5">
+      {/* Header */}
+      <div className="w-full flex items-center justify-between gap-3">
+        <div className="text-left">
+          <p className="text-[11px] font-black uppercase tracking-wider text-[#2563EB]">Story time</p>
+          <h2 className="font-black text-[#1A202C]" style={{ fontSize: 'clamp(1.15rem, 2.6vw, 1.5rem)' }}>
+            Read this out loud
+          </h2>
+        </div>
+        <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 text-[#2563EB] flex items-center justify-center" aria-hidden>
+          <BookOpen size={20} />
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-6 w-full min-h-[160px]">
-        <AnimatePresence mode="wait">
-          {phase === 'ready' && (
-            <motion.div
-              key="ready"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col items-center gap-4"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={startListening}
-                className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center shadow-lg shadow-blue-100 group border border-blue-100"
-              >
-                <span className="text-3xl text-blue-400 group-hover:scale-110 transition-transform">🎤</span>
-              </motion.button>
-              <p className="text-sm font-medium text-text-muted">Tap the mic and start speaking</p>
-            </motion.div>
-          )}
-
-          {phase === 'listening' && (
-            <motion.div
-              key="listening"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex flex-col items-center gap-4"
-            >
-              <div className="relative">
-                <motion.div
-                  animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0.2, 0.4] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="absolute inset-0 bg-blue-400 rounded-full"
-                />
-                <div className="relative w-20 h-20 rounded-full bg-blue-400 flex items-center justify-center shadow-xl shadow-blue-200">
-                  <span className="text-3xl text-white">🎤</span>
-                </div>
-              </div>
-              <p className="text-sm font-bold text-blue-400 animate-pulse uppercase tracking-wider">Listening...</p>
-              <div className="italic text-text-muted font-medium h-4 max-w-md truncate overflow-hidden">
-                {transcript || "Keep reading out loud..."}
-              </div>
-              <button onClick={stopAndReview} className="text-xs text-blue-500 font-bold hover:underline">Stop manually</button>
-            </motion.div>
-          )}
-
-          {phase === 'review' && (
-            <motion.div 
-              key="review"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center gap-6 w-full"
-            >
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-sm font-medium text-text-muted">This is what we heard:</p>
-                <div className="px-6 py-4 bg-blue-50 rounded-2xl border border-blue-100 text-[#1A2340] font-medium text-lg max-w-lg italic shadow-inner">
-                  "{transcript || "..."}"
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <button onClick={() => setPhase('ready')} className="text-sm text-text-muted underline">Retry</button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleContinue}
-                  className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-3.5 px-12 rounded-full shadow-lg shadow-blue-100 transition-colors"
+      {/* Paragraph */}
+      <div className="w-full rounded-2xl bg-[#FFFBEB]/60 border border-amber-100 p-5 sm:p-7">
+        <p className="text-left text-[#1E293B]" style={{ fontSize: 'clamp(1.2rem, 2.6vw, 1.6rem)', lineHeight: 2 }}>
+          {words.map((word, i) => {
+            const tricky = paragraph.highlights.includes(cleanWords[i]);
+            const read = i < readCount;
+            const isNext = mic.status === 'listening' && i === readCount;
+            return (
+              <span key={i}>
+                <span
+                  className={`rounded-lg px-1 py-0.5 transition-colors duration-200 ${
+                    read
+                      ? 'bg-emerald-100 text-emerald-900'
+                      : isNext
+                        ? 'bg-blue-100 ring-2 ring-blue-300'
+                        : tricky
+                          ? 'font-bold underline decoration-amber-400 decoration-[3px] underline-offset-4'
+                          : ''
+                  }`}
                 >
-                  Continue
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-
-          {phase === 'finished' && (
-            <motion.div
-              key="finished"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="h-20 flex flex-col items-center justify-center text-center"
-            >
-              <div className="text-2xl font-bold text-blue-400 mb-1">Excellent! ✨</div>
-              <p className="text-text-muted text-sm italic">Saving your progress...</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <div className="mt-8">
-        <button 
-          onClick={() => onComplete({
-            paragraph_id: selectedParagraph.id,
-            transcript: "Skipped",
-            time_to_start_ms: 0,
-            total_time_ms: 0
+                  {word}
+                </span>{' '}
+              </span>
+            );
           })}
-          className="text-xs text-text-muted hover:text-text-muted transition-colors"
-        >
-          Microphone issues? Skip this task
-        </button>
+        </p>
+        <p className="mt-3 text-xs font-semibold text-amber-800 text-left">Tip: the underlined words are tricky. Take your time.</p>
       </div>
+
+      {/* Progress */}
+      {(mic.status === 'listening' || hasResult) && (
+        <div className="w-full max-w-md" aria-live="polite">
+          <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
+            <span>Words read</span>
+            <span className="tabular-nums">{`${readCount} of ${words.length}`}</span>
+          </div>
+          <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-emerald-500"
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: reduceMotion ? 0 : 0.3 }}
+            />
+          </div>
+        </div>
+      )}
+
+      {finished ? (
+        <div className="py-4 text-center" role="status">
+          <p className="text-xl font-black text-emerald-600">Excellent reading! ✨</p>
+        </div>
+      ) : mic.error ? (
+        <MicErrorBox error={mic.error} onRetry={mic.start} onSkip={() => finish(true)} />
+      ) : hasResult ? (
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-wrap justify-center gap-2.5">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold">
+              <CheckCircle2 size={16} /> {`${pct}% read`}
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-sm font-bold">
+              <Timer size={16} /> {`${Math.round(mic.elapsedMs / 1000)}s`}
+            </span>
+          </div>
+          {!mic.transcript && (
+            <p className="text-sm font-medium text-slate-500 text-center max-w-sm">
+              {mic.heardSound
+                ? 'We heard you, but could not catch the words. You can try again or go on.'
+                : 'We did not hear anything. Is the mic on?'}
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={mic.start}
+              className="inline-flex items-center gap-1.5 px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-[#1A202C] text-sm font-bold cursor-pointer"
+            >
+              <RotateCcw size={16} /> Read again
+            </button>
+            <button
+              type="button"
+              onClick={() => finish(false)}
+              className="inline-flex items-center gap-1.5 px-7 py-3 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-extrabold shadow-sm cursor-pointer"
+            >
+              Next <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-3">
+          <MicButton status={mic.status} level={mic.level} onStart={mic.start} onStop={mic.stop} reduceMotion={reduceMotion} />
+          <LevelBars level={mic.level} active={mic.status === 'listening'} />
+          <p className="text-sm font-semibold text-slate-600 text-center" aria-live="polite">
+            {micStatusText(mic.status, mic.heardSound, mic.supported)}
+          </p>
+          {mic.status === 'listening' && <TimeBar elapsedMs={mic.elapsedMs} maxMs={mic.maxMs} />}
+        </div>
+      )}
+
+      {!finished && !mic.error && (
+        <button
+          type="button"
+          onClick={() => finish(true)}
+          className="text-xs font-semibold text-slate-500 hover:text-slate-700 underline cursor-pointer"
+        >
+          My mic isn’t working — skip this question
+        </button>
+      )}
     </div>
   );
 }

@@ -15,6 +15,15 @@ import { ReadAloudTask } from './ReadAloudTask';
 import { ReadingAssessmentQ1 } from './ReadingAssessmentQ1';
 import { ObjectNamingTask } from './ObjectNamingTask';
 import { HandRaisingTask } from './HandRaisingTask';
+import { LeftRightGameTask } from './LeftRightGameTask';
+import imgAnotherEntrance from '../../assets/assessment/locked-room-another-entrance.webp';
+import imgWaitOutside from '../../assets/assessment/locked-room-wait-outside.webp';
+import imgAskNearby from '../../assets/assessment/locked-room-ask-nearby.webp';
+import imgCheckSchedule from '../../assets/assessment/locked-room-check-schedule.webp';
+import imgInformTeacher from '../../assets/assessment/enter-quickly-inform-teacher.webp';
+import imgCallSomeone from '../../assets/assessment/enter-quickly-call-someone.webp';
+import imgTryAnotherRoom from '../../assets/assessment/enter-quickly-try-another-room.webp';
+import imgAdjustPlan from '../../assets/assessment/enter-quickly-adjust-plan.webp';
 
 interface AssessmentTestProps {
   onComplete: (score: number, metrics: AssessmentMetrics) => void;
@@ -96,24 +105,30 @@ const Q7_SCENARIOS = [
       id: 'locked_room',
       scenario: "You reach a room but the door is locked.",
       options: [
-        { id: 'another_entrance', text: 'Look for another entrance' },
-        { id: 'wait_outside', text: 'Wait outside' },
-        { id: 'ask_nearby', text: 'Ask someone nearby' },
-        { id: 'check_schedule', text: 'Check schedule' }
+        { id: 'another_entrance', text: 'Look for another entrance', image: imgAnotherEntrance },
+        { id: 'wait_outside', text: 'Wait outside', image: imgWaitOutside },
+        { id: 'ask_nearby', text: 'Ask someone nearby', image: imgAskNearby },
+        { id: 'check_schedule', text: 'Check schedule', image: imgCheckSchedule }
       ]
     },
     {
       id: 'locked_fast_enter',
       scenario: "You must enter quickly.",
       options: [
-        { id: 'inform_teacher', text: 'Inform teacher' },
-        { id: 'call_someone', text: 'Call someone' },
-        { id: 'try_another', text: 'Try another room' },
-        { id: 'adjust_plan', text: 'Adjust your plan' }
+        { id: 'inform_teacher', text: 'Inform teacher', image: imgInformTeacher },
+        { id: 'call_someone', text: 'Call someone', image: imgCallSomeone },
+        { id: 'try_another', text: 'Try another room', image: imgTryAnotherRoom },
+        { id: 'adjust_plan', text: 'Adjust your plan', image: imgAdjustPlan }
       ]
     }
   ]
 ];
+
+// Q7 shows the comic panels, so it always uses the scenario that has pictures.
+// (The other scenarios stay here in case pictures are added for them later.)
+const Q7_PICTURE_SCENARIOS = Q7_SCENARIOS.filter((scenario) =>
+  scenario.some((step) => step.options.every((option) => 'image' in option && !!option.image)),
+);
 
 interface AssessmentMetrics {
   totalTime: number;
@@ -295,154 +310,6 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
            );
          })}
        </div>
-    </div>
-  );
-}
-
-function CameraDirectionTask({ onComplete }: { onComplete: (isCorrect: boolean) => void }) {
-  const [targetDirection] = useState<'left' | 'right'>(() => Math.random() > 0.5 ? 'left' : 'right');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [phase, setPhase] = useState<'initializing' | 'ready' | 'result'>('initializing');
-  const [resultMessage, setResultMessage] = useState('');
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const prevFrameRef = useRef<Uint8ClampedArray | null>(null);
-  const rafRef = useRef<number | null>(null);
-
-  const streamRef = useRef<MediaStream | null>(null);
-
-  const phaseRef = useRef(phase);
-  useEffect(() => { phaseRef.current = phase; }, [phase]);
-
-  const handsRef = useRef<any>(null);
-  const cameraHardwareRef = useRef<any>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    // Check if Hands is available
-    if (!(window as any).Hands || !(window as any).Camera) {
-      console.error("MediaPipe Hands not loaded.");
-      if (isMounted) {
-        setPhase('result');
-        onComplete(false);
-      }
-      return;
-    }
-
-    const hands = new (window as any).Hands({locateFile: (file: string) => {
-      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-    }});
-
-    handsRef.current = hands;
-
-    hands.setOptions({
-      maxNumHands: 1,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.5
-    });
-
-    hands.onResults((results: any) => {
-      if (!isMounted || phaseRef.current !== 'ready') return;
-      if (results.multiHandedness && results.multiHandedness.length > 0) {
-        // results.multiHandedness[0].label is 'Left' or 'Right'
-        // MediaPipe evaluates the image directly. If a user holds up their physical Right hand,
-        // it appears on the left side of the camera feed, which MediaPipe identifies as a "Left" hand
-        // if it assumes it's looking at another person.
-        // Therefore, if handedness is 'Left', the physical hand raised was 'Right'.
-        // if handedness is 'Right', the physical hand raised was 'Left'.
-        const handednessLabel = results.multiHandedness[0].label; // "Left" or "Right"
-        const detectedPhysicalHand = handednessLabel === 'Left' ? 'right' : 'left';
-
-        // Found a hand!
-        if (cameraHardwareRef.current) {
-          cameraHardwareRef.current.stop(); // Immediately turn off webcam
-        }
-
-        const correct = detectedPhysicalHand === targetDirection;
-        setIsCorrect(correct);
-        setResultMessage(correct ? "Great job!" : "It happens, don't worry!");
-        setPhase('result');
-
-        setTimeout(() => {
-          if (isMounted) onComplete(correct);
-        }, 2500);
-      }
-    });
-
-    if (videoRef.current) {
-      const camera = new (window as any).Camera(videoRef.current, {
-        onFrame: async () => {
-          if (isMounted && handsRef.current && phaseRef.current === 'ready') {
-            await handsRef.current.send({image: videoRef.current});
-          }
-        },
-        width: 640,
-        height: 480
-      });
-      cameraHardwareRef.current = camera;
-      camera.start().then(() => {
-        if (isMounted) setPhase('ready');
-      }).catch((e: any) => {
-        console.error(e);
-        if (isMounted) {
-          setPhase('result');
-          onComplete(false);
-        }
-      });
-    }
-
-    return () => {
-      isMounted = false;
-      if (cameraHardwareRef.current) {
-        cameraHardwareRef.current.stop();
-      }
-      if (handsRef.current) {
-        handsRef.current.close();
-      }
-    };
-  }, [targetDirection]);
-
-  return (
-    <div className="flex flex-col items-center justify-center p-6 w-full h-full text-center bg-slate-50 border-b border-slate-100">
-      <video ref={videoRef} style={{ display: 'none' }} muted playsInline />
-      <canvas ref={canvasRef} width="64" height="48" style={{ display: 'none' }} />
-      
-      {phase === 'initializing' && (
-        <div className="text-blue-500 animate-pulse text-lg font-medium flex flex-col items-center">
-          <span className="text-4xl mb-4">📷</span>
-          Accessing camera and stabilizing...
-        </div>
-      )}
-      
-      {phase === 'ready' && (
-        <div className="flex flex-col items-center justify-center space-y-6">
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 animate-bounce">
-            <span className="text-5xl">👋</span>
-          </div>
-          <h2 className="text-3xl font-bold text-slate-800 flex items-center">
-            Quick! Raise your 
-            <span className="text-blue-600 uppercase font-black tracking-wider text-5xl mx-3 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200">
-              {targetDirection}
-            </span> 
-            hand!
-          </h2>
-          <p className="text-slate-500 text-base mt-4 font-medium">Make a large, fast motion to be detected.</p>
-        </div>
-      )}
-
-      {phase === 'result' && (
-        <div className={`p-8 rounded-2xl ${isCorrect ? 'bg-emerald-100 border border-emerald-200' : 'bg-red-50 border border-red-200'} flex flex-col items-center justify-center space-y-4 shadow-sm transition-all scale-105`}>
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center shadow-inner ${isCorrect ? 'bg-emerald-200' : 'bg-red-100'}`}>
-            <span className="text-5xl">{isCorrect ? '✅' : '❤️'}</span>
-          </div>
-          <h2 className={`text-3xl font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-600'}`}>
-            {resultMessage}
-          </h2>
-          <p className="text-slate-600 font-medium">Proceeding to next question...</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -642,7 +509,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             className="flex-1 min-h-0 flex flex-col bg-white rounded-3xl shadow-xs border border-blue-100/90 overflow-hidden"
           >
             {/* QUESTION TEXT */}
-            {currentQ.type !== 'object_naming' && currentQ.type !== 'hand_raising' && currentQ.type !== 'reading_reread_tracking' && currentQ.type !== 'mission_control' && (
+            {currentQ.type !== 'object_naming' && currentQ.type !== 'hand_raising' && currentQ.type !== 'camera_direction' && currentQ.type !== 'situation_series' && currentQ.type !== 'voice_alphabet' && currentQ.type !== 'read_aloud' && currentQ.type !== 'reading_reread_tracking' && currentQ.type !== 'mission_control' && (
               <div className="flex-none px-6 pt-5 pb-4 border-b border-slate-100 text-left">
                 <p
                   className="font-bold text-[#1A202C]"
@@ -690,6 +557,15 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                   }}
                 />
               </div>
+            ) : currentQ.type === 'camera_direction' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <LeftRightGameTask
+                  key={currentQ.id}
+                  onComplete={(isCorrect) => {
+                    handleAnswer(isCorrect ? 0 : 1);
+                  }}
+                />
+              </div>
             ) : currentQ.type === 'reading_reread_tracking' ? (
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <ReadingRereadTask
@@ -711,7 +587,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             ) : currentQ.type === 'situation_series' ? (
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <SituationSeriesTask
-                  scenarios={Q7_SCENARIOS}
+                  scenarios={Q7_PICTURE_SCENARIOS}
                   title="Imagine this..."
                   onComplete={(data) => {
                     handleAnswer(0);

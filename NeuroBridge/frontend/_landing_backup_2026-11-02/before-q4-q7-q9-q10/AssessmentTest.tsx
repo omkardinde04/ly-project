@@ -1,0 +1,881 @@
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SkipForward, ArrowDown, ArrowRight } from 'lucide-react';
+import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { partAQuestions } from './assessmentQuestions';
+import { speakText } from '../../utils/textToSpeech';
+import { questionIllustrations } from './AssessmentIllustrations';
+import { EyeTrackingMazeTask } from './EyeTrackingMazeTask';
+import { ReadingRereadTask } from './ReadingRereadTask';
+import { MissionControlTask } from './MissionControlTask';
+import { SituationSeriesTask } from './SituationSeriesTask';
+import { MultiplicationRecallTask } from './MultiplicationRecallTask';
+import { VoiceAlphabetTask } from './VoiceAlphabetTask';
+import { ReadAloudTask } from './ReadAloudTask';
+import { ReadingAssessmentQ1 } from './ReadingAssessmentQ1';
+import { ObjectNamingTask } from './ObjectNamingTask';
+import { HandRaisingTask } from './HandRaisingTask';
+
+interface AssessmentTestProps {
+  onComplete: (score: number, metrics: AssessmentMetrics) => void;
+}
+
+const Q7_SCENARIOS = [
+  // Scenario 1 — Forgotten Homework
+  [
+    {
+      id: 'forgotten_homework',
+      scenario: "You reach class and realize you forgot your homework.",
+      options: [
+        { id: 'complete_fast', text: 'Try to complete it quickly' },
+        { id: 'explain', text: 'Explain honestly to the teacher' },
+        { id: 'ask_help', text: 'Ask a friend for help' },
+        { id: 'another_way', text: 'Think of another way to show your work' }
+      ]
+    },
+    {
+      id: 'submission_homework',
+      scenario: "The teacher says work must be submitted now.",
+      options: [
+        { id: 'submit_partial', text: 'Submit partially completed work' },
+        { id: 'request_time', text: 'Request extra time' },
+        { id: 'help_friend_later', text: 'Help friend and submit later' },
+        { id: 'suggest_after', text: 'Suggest showing it after class' }
+      ]
+    }
+  ],
+  // Scenario 2 — Group Task
+  [
+    {
+      id: 'group_task',
+      scenario: "Your group must make a poster, but you don’t have chart paper.",
+      options: [
+        { id: 'notebook_pages', text: 'Use notebook pages' },
+        { id: 'ask_group', text: 'Ask another group' },
+        { id: 'draw_digital', text: 'Draw digitally' },
+        { id: 'combine_sheets', text: 'Combine smaller sheets' }
+      ]
+    },
+    {
+      id: 'group_time_over',
+      scenario: "Time is almost over.",
+      options: [
+        { id: 'finish_fast', text: 'Finish quickly with what you have' },
+        { id: 'simplify', text: 'Simplify the idea' },
+        { id: 'divide_work', text: 'Divide work among members' },
+        { id: 'present_verbal', text: 'Present verbally instead' }
+      ]
+    }
+  ],
+  // Scenario 3 — Broken Pencil
+  [
+    {
+      id: 'broken_pencil',
+      scenario: "Your pencil breaks during writing.",
+      options: [
+        { id: 'borrow', text: 'Borrow from someone' },
+        { id: 'use_pen', text: 'Use pen instead' },
+        { id: 'sharpen', text: 'Sharpen the broken part' },
+        { id: 'write_later', text: 'Write later' }
+      ]
+    },
+    {
+      id: 'pencil_no_extra',
+      scenario: "No one has extra pencil.",
+      options: [
+        { id: 'share_friend', text: 'Share with a friend' },
+        { id: 'leftover_piece', text: 'Use leftover piece' },
+        { id: 'another_tool', text: 'Try another writing tool' },
+        { id: 'note_ideas', text: 'Note ideas and write later' }
+      ]
+    }
+  ],
+  // Scenario 4 — Locked Room
+  [
+    {
+      id: 'locked_room',
+      scenario: "You reach a room but the door is locked.",
+      options: [
+        { id: 'another_entrance', text: 'Look for another entrance' },
+        { id: 'wait_outside', text: 'Wait outside' },
+        { id: 'ask_nearby', text: 'Ask someone nearby' },
+        { id: 'check_schedule', text: 'Check schedule' }
+      ]
+    },
+    {
+      id: 'locked_fast_enter',
+      scenario: "You must enter quickly.",
+      options: [
+        { id: 'inform_teacher', text: 'Inform teacher' },
+        { id: 'call_someone', text: 'Call someone' },
+        { id: 'try_another', text: 'Try another room' },
+        { id: 'adjust_plan', text: 'Adjust your plan' }
+      ]
+    }
+  ]
+];
+
+interface AssessmentMetrics {
+  totalTime: number;
+  averageTimePerQuestion: number;
+  confusionCount: number;
+  backtrackCount: number;
+  audioReplayCount: number;
+  questionMetrics: QuestionMetric[];
+  readingTrackingCount?: number;
+}
+
+interface QuestionMetric {
+  questionId: number;
+  timeTaken: number;
+  selectedOption: number;
+  isCorrect: boolean;
+  optionChanges: number;
+  audioReplays: number;
+}
+
+function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | string[]; onComplete: (trackCount: number) => void }) {
+  const [selectedParagraph] = useState(() => {
+    if (Array.isArray(paragraph)) {
+      return paragraph[Math.floor(Math.random() * paragraph.length)];
+    }
+    return paragraph || '';
+  });
+  const [phase, setPhase] = useState<'idle' | 'listening' | 'done'>('idle');
+  const [words] = useState(selectedParagraph.split(' '));
+  const [hoveredWordIdx, setHoveredWordIdx] = useState<number>(-1);
+  const [wordStatuses, setWordStatuses] = useState<('idle' | 'correct' | 'wrong')[]>(Array(words.length).fill('idle'));
+  const [trackCount, setTrackCount] = useState(0);
+  const [transcript, setTranscript] = useState('');
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recogRef = useRef<any>(null);
+
+  const startListening = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+       alert("Speech recognition not supported in this browser. Please click stop to continue.");
+       setPhase('listening'); // to allow them to stop
+       return;
+    }
+    const rec = new SR();
+    rec.lang = 'en-US';
+    rec.continuous = true;
+    rec.interimResults = true;
+    recogRef.current = rec;
+
+    rec.onresult = (e: any) => {
+      let currentTranscript = '';
+      for (let i = 0; i < e.results.length; ++i) {
+        currentTranscript += e.results[i][0].transcript;
+      }
+      setTranscript(currentTranscript);
+    };
+
+    rec.start();
+    setPhase('listening');
+  };
+
+  const stopListening = () => {
+    if (recogRef.current) {
+      try { recogRef.current.stop(); } catch (e) { /* ignore */ }
+    }
+    setPhase('done');
+    onComplete(trackCount);
+  };
+
+  const handleMouseEnter = (idx: number) => {
+    setHoveredWordIdx(idx);
+    setTrackCount(prev => prev + 1);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredWordIdx(-1);
+  };
+
+  useEffect(() => {
+    const spokenWords = transcript.toLowerCase().split(/\s+/).filter(Boolean);
+    if (spokenWords.length === 0) return;
+
+    setWordStatuses(() => {
+      const newStatuses = Array(words.length).fill('idle');
+      let spokenCursor = 0;
+
+      for (let i = 0; i < words.length; i++) {
+        if (spokenCursor >= spokenWords.length) break;
+
+        const expectedWord = words[i].toLowerCase().replace(/[^a-z0-9]/g, '');
+        const currentSpoken = spokenWords[spokenCursor].replace(/[^a-z0-9]/g, '');
+
+        if (currentSpoken === expectedWord) {
+          newStatuses[i] = 'correct';
+          spokenCursor++;
+        } else {
+          // Check if user skipped a word in the text
+          let isSkipped = false;
+          if (i + 1 < words.length) {
+            const nextExpected = words[i + 1].toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (currentSpoken === nextExpected) {
+              isSkipped = true;
+            }
+          }
+
+          // Check if user inserted a filler word
+          let isFiller = false;
+          if (spokenCursor + 1 < spokenWords.length) {
+            const nextSpoken = spokenWords[spokenCursor + 1].replace(/[^a-z0-9]/g, '');
+            if (nextSpoken === expectedWord) {
+              isFiller = true;
+            }
+          }
+
+          if (isSkipped && !isFiller) {
+            newStatuses[i] = 'wrong';
+            // Do not advance spokenCursor so the next text word can match this spoken word
+          } else if (isFiller && !isSkipped) {
+            spokenCursor++;
+            i--; // Retry matching this same text word with the next spoken word
+          } else {
+            // Complete mismatch or ambiguous
+            newStatuses[i] = 'wrong';
+            spokenCursor++;
+          }
+        }
+      }
+
+      return newStatuses;
+    });
+  }, [transcript, words]);
+
+  useEffect(() => {
+    if (phase === 'listening' && wordStatuses.every(s => s !== 'idle')) {
+      stopListening();
+    }
+  }, [wordStatuses, phase]);
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 w-full h-full">
+       {phase === 'idle' && (
+         <button onClick={startListening} className="mb-6 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 transition-all">
+           🎤 Start Mic & Read
+         </button>
+       )}
+       {phase === 'listening' && (
+         <div className="flex flex-col items-center mb-6">
+           <button onClick={stopListening} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 animate-pulse transition-all">
+             🛑 Stop & Finish
+           </button>
+           <p className="text-sm text-text-muted mt-2 font-medium">Recording... read the paragraph aloud.</p>
+         </div>
+       )}
+       {phase === 'done' && (
+         <div className="mb-6 bg-green-100 text-green-700 px-6 py-3 rounded-full font-bold text-lg flex items-center gap-2">
+           ✅ Completed! You tracked words {trackCount} times. Click Next to proceed.
+         </div>
+       )}
+
+       <div className="text-2xl leading-relaxed max-w-lg text-left p-6 bg-surface rounded-2xl border-2 border-border shadow-inner" style={{ lineHeight: '2.5' }}>
+         {words.map((word, idx) => {
+           let statusClass = 'text-text';
+           if (wordStatuses[idx] === 'correct') statusClass = 'text-green-600 bg-green-100 font-bold';
+           if (wordStatuses[idx] === 'wrong') statusClass = 'text-red-600 bg-red-100 font-bold';
+
+           return (
+             <span 
+               key={idx} 
+               onMouseEnter={() => handleMouseEnter(idx)}
+               onMouseLeave={handleMouseLeave}
+               className={`inline-block px-1 rounded transition-colors duration-200 cursor-default ${
+                 hoveredWordIdx === idx ? 'scale-110 shadow-sm border border-yellow-300 bg-yellow-50' : ''
+               } ${statusClass}`}
+             >
+               {word}{' '}
+             </span>
+           );
+         })}
+       </div>
+    </div>
+  );
+}
+
+function CameraDirectionTask({ onComplete }: { onComplete: (isCorrect: boolean) => void }) {
+  const [targetDirection] = useState<'left' | 'right'>(() => Math.random() > 0.5 ? 'left' : 'right');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [phase, setPhase] = useState<'initializing' | 'ready' | 'result'>('initializing');
+  const [resultMessage, setResultMessage] = useState('');
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const prevFrameRef = useRef<Uint8ClampedArray | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const phaseRef = useRef(phase);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
+
+  const handsRef = useRef<any>(null);
+  const cameraHardwareRef = useRef<any>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Check if Hands is available
+    if (!(window as any).Hands || !(window as any).Camera) {
+      console.error("MediaPipe Hands not loaded.");
+      if (isMounted) {
+        setPhase('result');
+        onComplete(false);
+      }
+      return;
+    }
+
+    const hands = new (window as any).Hands({locateFile: (file: string) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+    }});
+
+    handsRef.current = hands;
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.5
+    });
+
+    hands.onResults((results: any) => {
+      if (!isMounted || phaseRef.current !== 'ready') return;
+      if (results.multiHandedness && results.multiHandedness.length > 0) {
+        // results.multiHandedness[0].label is 'Left' or 'Right'
+        // MediaPipe evaluates the image directly. If a user holds up their physical Right hand,
+        // it appears on the left side of the camera feed, which MediaPipe identifies as a "Left" hand
+        // if it assumes it's looking at another person.
+        // Therefore, if handedness is 'Left', the physical hand raised was 'Right'.
+        // if handedness is 'Right', the physical hand raised was 'Left'.
+        const handednessLabel = results.multiHandedness[0].label; // "Left" or "Right"
+        const detectedPhysicalHand = handednessLabel === 'Left' ? 'right' : 'left';
+
+        // Found a hand!
+        if (cameraHardwareRef.current) {
+          cameraHardwareRef.current.stop(); // Immediately turn off webcam
+        }
+
+        const correct = detectedPhysicalHand === targetDirection;
+        setIsCorrect(correct);
+        setResultMessage(correct ? "Great job!" : "It happens, don't worry!");
+        setPhase('result');
+
+        setTimeout(() => {
+          if (isMounted) onComplete(correct);
+        }, 2500);
+      }
+    });
+
+    if (videoRef.current) {
+      const camera = new (window as any).Camera(videoRef.current, {
+        onFrame: async () => {
+          if (isMounted && handsRef.current && phaseRef.current === 'ready') {
+            await handsRef.current.send({image: videoRef.current});
+          }
+        },
+        width: 640,
+        height: 480
+      });
+      cameraHardwareRef.current = camera;
+      camera.start().then(() => {
+        if (isMounted) setPhase('ready');
+      }).catch((e: any) => {
+        console.error(e);
+        if (isMounted) {
+          setPhase('result');
+          onComplete(false);
+        }
+      });
+    }
+
+    return () => {
+      isMounted = false;
+      if (cameraHardwareRef.current) {
+        cameraHardwareRef.current.stop();
+      }
+      if (handsRef.current) {
+        handsRef.current.close();
+      }
+    };
+  }, [targetDirection]);
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 w-full h-full text-center bg-slate-50 border-b border-slate-100">
+      <video ref={videoRef} style={{ display: 'none' }} muted playsInline />
+      <canvas ref={canvasRef} width="64" height="48" style={{ display: 'none' }} />
+      
+      {phase === 'initializing' && (
+        <div className="text-blue-500 animate-pulse text-lg font-medium flex flex-col items-center">
+          <span className="text-4xl mb-4">📷</span>
+          Accessing camera and stabilizing...
+        </div>
+      )}
+      
+      {phase === 'ready' && (
+        <div className="flex flex-col items-center justify-center space-y-6">
+          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 animate-bounce">
+            <span className="text-5xl">👋</span>
+          </div>
+          <h2 className="text-3xl font-bold text-slate-800 flex items-center">
+            Quick! Raise your 
+            <span className="text-blue-600 uppercase font-black tracking-wider text-5xl mx-3 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200">
+              {targetDirection}
+            </span> 
+            hand!
+          </h2>
+          <p className="text-slate-500 text-base mt-4 font-medium">Make a large, fast motion to be detected.</p>
+        </div>
+      )}
+
+      {phase === 'result' && (
+        <div className={`p-8 rounded-2xl ${isCorrect ? 'bg-emerald-100 border border-emerald-200' : 'bg-red-50 border border-red-200'} flex flex-col items-center justify-center space-y-4 shadow-sm transition-all scale-105`}>
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center shadow-inner ${isCorrect ? 'bg-emerald-200' : 'bg-red-100'}`}>
+            <span className="text-5xl">{isCorrect ? '✅' : '❤️'}</span>
+          </div>
+          <h2 className={`text-3xl font-bold ${isCorrect ? 'text-emerald-700' : 'text-red-600'}`}>
+            {resultMessage}
+          </h2>
+          <p className="text-slate-600 font-medium">Proceeding to next question...</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AssessmentTest({ onComplete }: AssessmentTestProps) {
+  const { language } = useDyslexia();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showBrainGamesIntro, setShowBrainGamesIntro] = useState(false);
+  const [answers, setAnswers] = useState<number[]>(Array(partAQuestions.length).fill(-1));
+  const [startTime] = useState(Date.now());
+  const [optionChanges, setOptionChanges] = useState<number[]>(Array(partAQuestions.length).fill(0));
+  const [audioReplays, setAudioReplays] = useState<number[]>(Array(partAQuestions.length).fill(0));
+  const [backtrackCount, setBacktrackCount] = useState(0);
+  const [trackingMetrics, setTrackingMetrics] = useState({ trackCount: 0 });
+  const [justCompleted, setJustCompleted] = useState(false);
+  const [showObjectNamingOptions, setShowObjectNamingOptions] = useState(false);
+  const previousQuestionRef = useRef(0);
+
+  useEffect(() => {
+    if (partAQuestions[currentQuestion].type === 'object_naming') {
+      setShowObjectNamingOptions(false);
+      const timer = setTimeout(() => setShowObjectNamingOptions(true), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [currentQuestion]);
+
+  const currentQ = partAQuestions[currentQuestion];
+  const IllustrationComponent = questionIllustrations[currentQ.id];
+
+  useEffect(() => {
+    setJustCompleted(false);
+    if (currentQuestion !== previousQuestionRef.current) {
+      if (currentQuestion < previousQuestionRef.current) {
+        setBacktrackCount(prev => prev + 1);
+      }
+      previousQuestionRef.current = currentQuestion;
+    }
+  }, [currentQuestion]);
+
+  const handleAudioPlay = () => {
+    speakText(currentQ.audioInstruction || currentQ.instruction, language);
+    setAudioReplays(prev => {
+      const n = [...prev];
+      n[currentQuestion] = (n[currentQuestion] || 0) + 1;
+      return n;
+    });
+  };
+
+  const handleAnswer = (optionIndex: number) => {
+    const previousAnswer = answers[currentQuestion];
+    const newAnswers = [...answers];
+    newAnswers[currentQuestion] = optionIndex;
+    setAnswers(newAnswers);
+    setJustCompleted(true);
+    if (previousAnswer !== -1 && previousAnswer !== optionIndex) {
+      setOptionChanges(prev => {
+        const n = [...prev];
+        n[currentQuestion] = (n[currentQuestion] || 0) + 1;
+        return n;
+      });
+    }
+  };
+
+  const handleNext = (expectedQuestion = currentQuestion) => {
+    if (expectedQuestion !== currentQuestion) return;
+    if (currentQuestion < partAQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      const endTime = Date.now();
+      const totalTime = (endTime - startTime) / 1000;
+
+      const questionMetrics: QuestionMetric[] = answers.map((answer, index) => ({
+        questionId: partAQuestions[index].id,
+        timeTaken: 10,
+        selectedOption: answer,
+        isCorrect: answer === (partAQuestions[index] as any).correctAnswer,
+        optionChanges: optionChanges[index] || 0,
+        audioReplays: audioReplays[index] || 0,
+      }));
+
+      const confusionCount = optionChanges.reduce((s, c) => s + (c || 0), 0);
+      const totalAudioReplays = audioReplays.reduce((s, r) => s + (r || 0), 0);
+
+      const metrics: AssessmentMetrics = {
+        totalTime,
+        averageTimePerQuestion: totalTime / partAQuestions.length,
+        confusionCount,
+        backtrackCount,
+        audioReplayCount: totalAudioReplays,
+        questionMetrics,
+        readingTrackingCount: trackingMetrics.trackCount,
+      };
+
+      // Score based on frequency weights (higher weight = more difficulty indicators)
+      // Max weight per question = 3; total possible = 15 * 3 = 45
+      const totalPossibleScore = partAQuestions.length * 3;
+      const userWeightTotal = answers.reduce((acc, answer, index) => {
+        const weight = partAQuestions[index].options[answer]?.weight ?? 0;
+        return acc + weight;
+      }, 0);
+      // Invert: lower frequency (lower weight) = higher performance score
+      const score = Math.round(((totalPossibleScore - userWeightTotal) / totalPossibleScore) * 100);
+
+      onComplete(score, metrics);
+    }
+  };
+
+  const handleForceNext = () => {
+    handleNext(currentQuestion);
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) setCurrentQuestion(currentQuestion - 1);
+  };
+
+  const progress = Math.round(((currentQuestion + 1) / partAQuestions.length) * 100);
+  const isAnswered = answers[currentQuestion] !== -1;
+
+  if (currentQuestion === 0 && currentQ.type === 'reading_tracking') {
+    return (
+      <ReadingAssessmentQ1 
+        onComplete={() => {
+          setTrackingMetrics({ trackCount: 0 });
+          handleAnswer(0);
+          setTimeout(() => handleNext(0), 100);
+        }} 
+      />
+    );
+  }
+
+  return (
+    <div
+      className="w-full max-w-4xl mx-auto flex flex-col overflow-hidden relative py-2"
+      style={{ height: '88vh', maxHeight: '860px', minHeight: '520px' }}
+    >
+      <AnimatePresence mode="wait">
+        {showBrainGamesIntro ? (
+          <motion.div
+            key="brain-intro"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="absolute inset-0 z-50 bg-gradient-to-tr from-[#2563EB] to-[#8B5CF6] rounded-3xl flex flex-col items-center justify-center text-white p-10 text-center shadow-2xl"
+          >
+            <motion.div
+              initial={{ y: 20 }}
+              animate={{ y: 1 }}
+              transition={{ repeat: Infinity, duration: 2, repeatType: 'reverse' }}
+              className="text-7xl sm:text-8xl mb-6"
+            >
+              🧠✨
+            </motion.div>
+            <h2 className="text-3xl sm:text-4xl font-black mb-3 tracking-tight">Leveling Up!</h2>
+            <p className="text-sm sm:text-base font-medium opacity-90 max-w-sm">
+              Great progress! Now let's explore some <span className="bg-white/20 px-2 py-0.5 rounded-lg">Brain Tasks</span>...
+            </p>
+            <div className="mt-8 flex gap-2">
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <div className="flex flex-col h-full w-full">
+        {/* TOP BAR: progress & utilities */}
+        <div className="flex-none pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-black text-[#1A202C] tracking-wide uppercase">
+              Question {currentQuestion + 1} of {partAQuestions.length}
+            </span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-black text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 tabular-nums">
+                {progress}%
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#60A5FA]"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            />
+          </div>
+        </div>
+
+        {/* ANIMATED QUESTION CARD */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQuestion}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            className="flex-1 min-h-0 flex flex-col bg-white rounded-3xl shadow-xs border border-blue-100/90 overflow-hidden"
+          >
+            {/* QUESTION TEXT */}
+            {currentQ.type !== 'object_naming' && currentQ.type !== 'hand_raising' && currentQ.type !== 'reading_reread_tracking' && currentQ.type !== 'mission_control' && (
+              <div className="flex-none px-6 pt-5 pb-4 border-b border-slate-100 text-left">
+                <p
+                  className="font-bold text-[#1A202C]"
+                style={{
+                  fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
+                  lineHeight: 1.5,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {currentQ.instruction}
+              </p>
+              {currentQ.example && (
+                <div className="mt-2.5 inline-block bg-blue-50 border border-blue-200 text-[#2563EB] px-3 py-1 rounded-xl text-xs font-bold font-mono tracking-widest">
+                  {currentQ.example}
+                </div>
+              )}
+            </div>
+            )}
+
+            {currentQ.type === 'reading_tracking' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <ReadingTrackingTask
+                  paragraph={currentQ.paragraph || ''}
+                  onComplete={(tCount) => {
+                    setTrackingMetrics({ trackCount: tCount });
+                    handleAnswer(0);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'object_naming' ? (
+              <ObjectNamingTask 
+                question={currentQ} 
+                currentAnswer={answers[currentQuestion]}
+                onComplete={(index) => handleAnswer(index)} 
+              />
+            ) : currentQ.type === 'hand_raising' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <HandRaisingTask
+                  question={currentQ}
+                  onComplete={(isCorrect) => {
+                    handleAnswer(isCorrect ? 0 : 1);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'reading_reread_tracking' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <ReadingRereadTask
+                  question={currentQ}
+                  onComplete={(rereadCount) => {
+                    handleAnswer(0);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'mission_control' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <MissionControlTask
+                  onComplete={(logs) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'situation_series' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <SituationSeriesTask
+                  scenarios={Q7_SCENARIOS}
+                  title="Imagine this..."
+                  onComplete={(data) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'multiplication_recall' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <MultiplicationRecallTask
+                  onComplete={(metrics) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'voice_alphabet' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <VoiceAlphabetTask
+                  onComplete={(metrics) => {
+                    handleAnswer(0);
+                    setTimeout(() => handleNext(currentQuestion), 100);
+                  }}
+                />
+              </div>
+            ) : currentQ.type === 'read_aloud' ? (
+              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+                <ReadAloudTask
+                  onComplete={(metrics) => {
+                    handleAnswer(0);
+                    if (currentQ.id === 10) {
+                      setShowBrainGamesIntro(true);
+                      setTimeout(() => {
+                        setShowBrainGamesIntro(false);
+                        handleNext(currentQuestion);
+                      }, 3000);
+                    } else {
+                      setTimeout(() => handleNext(currentQuestion), 100);
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                {/* ILLUSTRATION CONTAINER */}
+                <div className="flex-1 min-h-0 relative bg-gradient-to-br from-[#F8FAFC] to-blue-50/40 flex items-center justify-center overflow-hidden">
+                  {IllustrationComponent ? (
+                    <div className="w-full h-full p-4 flex items-center justify-center">
+                      <IllustrationComponent question={currentQ} />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-1 text-[#64748B]">
+                      <span className="text-4xl">🎯</span>
+                      <span className="text-xs font-semibold">Visual Context</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* ANSWER OPTIONS — Large Selectable Cards */}
+                <div className="flex-none px-5 pt-3.5 pb-3 border-t border-slate-100 bg-white">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {currentQ.options.map((option, index) => {
+                      const isSelected = answers[currentQuestion] === index;
+                      return (
+                        <motion.button
+                          key={option.id}
+                          type="button"
+                          onClick={() => handleAnswer(index)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all border text-center cursor-pointer ${
+                            isSelected
+                              ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs'
+                              : 'bg-[#F8FAFC] text-[#1A202C] border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
+                          }`}
+                        >
+                          <span>{option.text}</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* NAVIGATION FOOTER */}
+            <div className="flex-none px-5 py-3.5 bg-white flex items-center justify-between gap-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={handlePrevious}
+                disabled={currentQuestion === 0}
+                className={`flex items-center gap-1.5 px-5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer ${
+                  currentQuestion === 0
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'bg-slate-100 text-[#1A202C] hover:bg-slate-200'
+                }`}
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Back</span>
+              </button>
+
+              <p className={`text-xs text-[#64748B] font-medium hidden sm:block ${isAnswered && justCompleted ? 'invisible' : ''}`}>
+                🌟 Take your time · No wrong answers
+              </p>
+
+              <div className="relative flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleForceNext}
+                  title="Skip this question for testing"
+                  className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-full font-medium transition-colors text-sm border border-orange-200 text-orange-600 hover:bg-orange-50 bg-white"
+                >
+                  <SkipForward className="h-4 w-4" aria-hidden="true" />
+                  <span>Force next</span>
+                </button>
+
+                <AnimatePresence>
+                  {isAnswered && justCompleted && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="absolute right-[115%] flex items-center whitespace-nowrap"
+                    >
+                      <div className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm mr-2 font-medium border border-emerald-500">
+                        Ready! Click Next.
+                      </div>
+                      <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-emerald-600 mr-2">
+                        <ArrowRight size={24} />
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <button
+                  type="button"
+                  onClick={() => handleNext()}
+                  disabled={!isAnswered}
+                  className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full font-bold transition-colors text-sm ${
+                    isAnswered
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md ring-2 ring-blue-600 ring-offset-2'
+                      : 'bg-[#e2e8f0] text-[#64748b] cursor-not-allowed'
+                  }`}
+                >
+                  <span>{currentQuestion === partAQuestions.length - 1 ? 'Finish' : 'Next'}</span>
+                  {currentQuestion < partAQuestions.length - 1 && (
+                    <svg 
+                      className="h-4 w-4 ml-1" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor" 
+                      strokeWidth={2.5}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
