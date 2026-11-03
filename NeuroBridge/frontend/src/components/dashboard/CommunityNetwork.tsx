@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_BASE } from '../../config/api';
 
 export type Person = {
   id: string;
@@ -48,7 +49,7 @@ export type NetworkPost = {
   timeAgo: string;
 };
 
-const API = 'http://localhost:4000/api/community';
+const API = `${API_BASE}/api/community`;
 
 function initials(name: string) {
   return name

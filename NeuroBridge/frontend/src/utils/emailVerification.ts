@@ -1,5 +1,6 @@
+import { API_BASE } from '../config/api';
 /** Helpers for the sign-up "check your email" step. */
-export const EMAIL_AUTH_API = 'http://localhost:4000/api/auth/email';
+export const EMAIL_AUTH_API = `${API_BASE}/api/auth/email`;
 const SUBJECT = 'Verify Your NeuroBridge Account';
 export const AUTH_CHANNEL = 'neurobridge-auth';
 

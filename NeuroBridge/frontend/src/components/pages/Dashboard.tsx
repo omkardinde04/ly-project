@@ -28,6 +28,7 @@ import { LanguageSelector } from '../ui/LanguageSelector';
 import { AudioControl } from '../ui/AudioControl';
 import { LinkedInConnect } from '../dashboard/LinkedInConnect';
 import { Brain } from '../dashboard/Brain';
+import { API_BASE } from '../../config/api';
 
 export function Dashboard() {
   const { user, token } = useAuth();
@@ -192,7 +193,7 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
 
   useEffect(() => {
     if (!user?.assessment_completed || !token) return;
-    fetch('http://localhost:4000/api/auth/google/ml/init-adaptive-params', {
+    fetch(`${API_BASE}/api/auth/google/ml/init-adaptive-params`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     }).catch(() => {});
@@ -203,7 +204,7 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
     
     setIsRetaking(true);
     try {
-      const response = await fetch('http://localhost:4000/api/auth/google/assessment/retake', {
+      const response = await fetch(`${API_BASE}/api/auth/google/assessment/retake`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

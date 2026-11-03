@@ -28,6 +28,7 @@ import {
   badgeDefinitions,
   type BadgeDefinition,
 } from './BadgeCollection';
+import { API_BASE } from '../../config/api';
 
 type SkillId = 'sound' | 'focus' | 'memory' | 'speed';
 
@@ -208,7 +209,7 @@ export function ProgressTracking() {
   useEffect(() => {
     if (!token) return;
     const requestVersion = progressRequestVersion.current;
-    fetch('http://localhost:4000/api/progress', {
+    fetch(`${API_BASE}/api/progress`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -404,7 +405,7 @@ export function ProgressTracking() {
     }));
 
     if (token) {
-      fetch('http://localhost:4000/api/progress/games', {
+      fetch(`${API_BASE}/api/progress/games`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

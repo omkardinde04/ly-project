@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { PersonalizedRecommendations } from './PersonalizedRecommendations';
 import type { Recommendations } from './PersonalizedRecommendations';
+import { API_BASE } from '../../config/api';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:4000';
+const BACKEND_URL = API_BASE;
 
 // ─── Skill suggestions that apply to all users ────────────────────────────────
 const UNIVERSAL_SKILLS = [

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { CommunityNetwork } from './CommunityNetwork';
+import { API_BASE } from '../../config/api';
 
 // --- Types ---
 type Category = 'General' | 'Study & Learning' | 'Career' | 'Experiences' | 'Questions';
@@ -97,7 +98,7 @@ export function Community() {
       }
 
       try {
-        const response = await fetch('http://localhost:4000/api/community/posts', {
+        const response = await fetch(`${API_BASE}/api/community/posts`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
@@ -135,7 +136,7 @@ export function Community() {
     const controller = new AbortController();
     const loadSharedPost = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/api/community/posts/${postId}`, {
+        const response = await fetch(`${API_BASE}/api/community/posts/${postId}`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
@@ -167,7 +168,7 @@ export function Community() {
       setIsLoadingComments(true);
       try {
         const response = await fetch(
-          `http://localhost:4000/api/community/posts/${activePost.id}/comments`,
+          `${API_BASE}/api/community/posts/${activePost.id}/comments`,
           { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal }
         );
         const data = await response.json();
@@ -194,7 +195,7 @@ export function Community() {
     setActionError('');
     setActionNotice('');
     try {
-      const response = await fetch('http://localhost:4000/api/community/posts', {
+      const response = await fetch(`${API_BASE}/api/community/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +228,7 @@ export function Community() {
     setActionError('');
     try {
       const response = await fetch(
-        `http://localhost:4000/api/community/posts/${activePost.id}/comments`,
+        `${API_BASE}/api/community/posts/${activePost.id}/comments`,
         {
           method: 'POST',
           headers: {
@@ -259,7 +260,7 @@ export function Community() {
     setActionError('');
     setPendingLikeIds((current) => new Set(current).add(postId));
     try {
-      const response = await fetch(`http://localhost:4000/api/community/posts/${postId}/like`, {
+      const response = await fetch(`${API_BASE}/api/community/posts/${postId}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -24,6 +24,7 @@ import { GoogleLogin } from '../auth/GoogleLogin';
 import { PasswordStrength } from '../auth/PasswordStrength';
 import { CheckEmailPanel } from '../auth/CheckEmailPanel';
 import { meetsPasswordRules } from '../../utils/passwordRules';
+import { API_BASE } from '../../config/api';
 
 interface PendingSignup {
   email: string;
@@ -114,7 +115,7 @@ export function Login() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/email/login', {
+      const response = await fetch(`${API_BASE}/api/auth/email/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -151,7 +152,7 @@ export function Login() {
     setIsLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:4000/api/auth/email/resend-verification', {
+      const response = await fetch(`${API_BASE}/api/auth/email/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email }),
@@ -188,7 +189,7 @@ export function Login() {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/email/register', {
+      const response = await fetch(`${API_BASE}/api/auth/email/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

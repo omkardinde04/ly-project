@@ -5,7 +5,6 @@ import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { partAQuestions } from './assessmentQuestions';
 import { speakText } from '../../utils/textToSpeech';
 import { questionIllustrations } from './AssessmentIllustrations';
-import { EyeTrackingMazeTask } from './EyeTrackingMazeTask';
 import { ReadingRereadTask } from './ReadingRereadTask';
 import { MissionControlTask } from './MissionControlTask';
 import { SituationSeriesTask } from './SituationSeriesTask';

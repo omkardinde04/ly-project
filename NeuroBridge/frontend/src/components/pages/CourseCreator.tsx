@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Video, Upload, CheckCircle, AlertTriangle, Play, Sparkles, Server, Check } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config/api';
 
 export function CourseCreator() {
   const { token } = useAuth();
@@ -29,7 +30,7 @@ export function CourseCreator() {
   const handleCreateCourse = async () => {
     try {
       setIsUploading(true);
-      const res = await fetch('http://localhost:4000/api/creator/create', {
+      const res = await fetch(`${API_BASE}/api/creator/create`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -56,7 +57,7 @@ export function CourseCreator() {
       setIsValidating(true);
       setStep(3); // Move to validating step
       
-      const res = await fetch(`http://localhost:4000/api/creator/${createdCourseId}/lessons`, {
+      const res = await fetch(`${API_BASE}/api/creator/${createdCourseId}/lessons`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

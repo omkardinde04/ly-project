@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { API_BASE } from '../config/api';
 
 export interface User {
   id: number;
@@ -89,9 +90,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return null;
       };
 
-      userData = await tryFetch('http://localhost:4000/api/auth/email/me');
+      userData = await tryFetch(`${API_BASE}/api/auth/email/me`);
       if (!userData) {
-        userData = await tryFetch('http://localhost:4000/api/auth/google/me');
+        userData = await tryFetch(`${API_BASE}/api/auth/google/me`);
       }
 
       if (!userData) {
@@ -104,7 +105,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const tempAssessment = localStorage.getItem('temp_assessment');
       if (tempAssessment && !userData.assessment_completed) {
         const assessmentData = JSON.parse(tempAssessment);
-        const assessmentResponse = await fetch('http://localhost:4000/api/auth/google/assessment/complete', {
+        const assessmentResponse = await fetch(`${API_BASE}/api/auth/google/assessment/complete`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (assessmentResponse.ok) {
           localStorage.removeItem('temp_assessment');
-          const updatedData = await tryFetch('http://localhost:4000/api/auth/email/me');
+          const updatedData = await tryFetch(`${API_BASE}/api/auth/email/me`);
           if (updatedData) userData = updatedData;
         }
       }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { User, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { API_BASE } from '../../config/api';
 
 export function ForgotPassword() {
     const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ export function ForgotPassword() {
         setDevLink('');
 
         try {
-            const response = await fetch('http://localhost:4000/api/auth/email/forgot-password', {
+            const response = await fetch(`${API_BASE}/api/auth/email/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: email.toLowerCase().trim() })

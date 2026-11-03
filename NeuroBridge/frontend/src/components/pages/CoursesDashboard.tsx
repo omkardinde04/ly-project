@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, BookOpen, Star, Clock, Play, Compass, Filter, Users, TrendingUp, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_BASE } from '../../config/api';
 
 const CATEGORIES = ['All', 'Academic', 'Phonology', 'Reading', 'Mathematics', 'Memory', 'Study Skills', 'Communication', 'Career', 'Life Skills'];
 
@@ -22,7 +23,7 @@ export function CoursesDashboard() {
         if (!token) return;
         
         // Fetch enrollments
-        const envRes = await fetch('http://localhost:4000/api/courses/enrollments', {
+        const envRes = await fetch(`${API_BASE}/api/courses/enrollments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const envData = envRes.ok ? await envRes.json() : [];
@@ -30,7 +31,7 @@ export function CoursesDashboard() {
         
         // Fetch courses
         const query = activeCategory !== 'All' ? `?category=${activeCategory}` : '';
-        const courseRes = await fetch(`http://localhost:4000/api/courses${query}`, {
+        const courseRes = await fetch(`${API_BASE}/api/courses${query}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const courseData = courseRes.ok ? await courseRes.json() : [];

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, FastForward, CheckCircle, Volume2, Sparkles, MessageCircleQuestion, HelpCircle, ArrowRight, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { API_BASE } from '../../config/api';
 
 export function CoursePlayer() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ export function CoursePlayer() {
       try {
         setIsLoading(true);
         if (!token) return;
-        const res = await fetch(`http://localhost:4000/api/courses/${id}`, {
+        const res = await fetch(`${API_BASE}/api/courses/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -60,7 +61,7 @@ export function CoursePlayer() {
     
     try {
       const lessonId = courseData.lessons[currentLessonIndex]._id;
-      await fetch(`http://localhost:4000/api/courses/${id}/lessons/${lessonId}/progress`, {
+      await fetch(`${API_BASE}/api/courses/${id}/lessons/${lessonId}/progress`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

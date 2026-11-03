@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react';
 import type { Language } from '../../contexts/DyslexiaContext';
 import type { GameResult } from './ProgressGame';
+import { API_BASE } from '../../config/api';
 
 type SkillId = 'sound' | 'focus' | 'memory' | 'speed';
 type PublicQuestion = { index: number; total: number; prompt: string; options: string[] };
@@ -45,7 +46,7 @@ export function AdaptivePracticeGame({ skillId, skillName, rating, token, langua
     setStarting(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:4000/api/progress/adaptive/start', {
+      const response = await fetch(`${API_BASE}/api/progress/adaptive/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ skill: skillId }),
@@ -66,7 +67,7 @@ export function AdaptivePracticeGame({ skillId, skillName, rating, token, langua
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:4000/api/progress/adaptive/${run.runId}/answer`, {
+      const response = await fetch(`${API_BASE}/api/progress/adaptive/${run.runId}/answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ answer: selected, questionIndex: run.question.index }),

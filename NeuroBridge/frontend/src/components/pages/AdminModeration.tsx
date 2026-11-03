@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Shield, Check, X, AlertTriangle, Eye, Video, Sparkles, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config/api';
 
 export function AdminModeration() {
   const { token } = useAuth();
@@ -15,7 +16,7 @@ export function AdminModeration() {
       try {
         setIsLoading(true);
         if (!token) return;
-        const res = await fetch('http://localhost:4000/api/admin/pending-courses', {
+        const res = await fetch(`${API_BASE}/api/admin/pending-courses`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -33,7 +34,7 @@ export function AdminModeration() {
 
   const handleAction = async (id: string, action: 'approve' | 'reject') => {
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/courses/${id}/${action}`, {
+      const res = await fetch(`${API_BASE}/api/admin/courses/${id}/${action}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

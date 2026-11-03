@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { BookOpen, Sparkles, Play, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../../config/api';
 
 interface CoursesWidgetProps {
   onNavigate?: (tab: string) => void; // Optional if we want to navigate internally within dashboard, but courses will be a full page
@@ -19,7 +20,7 @@ export function CoursesWidget({ onNavigate }: CoursesWidgetProps) {
       try {
         setIsLoading(true);
         if (!token) return;
-        const res = await fetch('http://localhost:4000/api/courses/enrollments', {
+        const res = await fetch(`${API_BASE}/api/courses/enrollments`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {

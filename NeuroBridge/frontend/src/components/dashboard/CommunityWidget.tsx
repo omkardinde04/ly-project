@@ -4,6 +4,7 @@ import { Users, MessageCircle, Calendar, ArrowRight, Radio } from 'lucide-react'
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
+import { API_BASE } from '../../config/api';
 
 interface CommunityWidgetProps {
   onNavigate: (tab: string) => void;
@@ -19,7 +20,7 @@ export function CommunityWidget({ onNavigate }: CommunityWidgetProps) {
 
   useEffect(() => {
     if (!token) return;
-    fetch('http://localhost:4000/api/community/posts', {
+    fetch(`${API_BASE}/api/community/posts`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => (res.ok ? res.json() : null))

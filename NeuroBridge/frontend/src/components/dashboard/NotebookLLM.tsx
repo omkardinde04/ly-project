@@ -21,8 +21,9 @@ import {
   Pause,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { API_BASE } from '../../config/api';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:4000';
+const BACKEND_URL = API_BASE;
 
 type LLMAction = 'summarize' | 'explain' | 'simplify' | 'quiz' | 'video-script';
 

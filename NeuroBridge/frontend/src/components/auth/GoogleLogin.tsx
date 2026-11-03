@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_BASE } from '../../config/api';
 
 interface GoogleLoginProps {
   className?: string;
@@ -10,7 +11,7 @@ export const GoogleLogin: React.FC<GoogleLoginProps> = ({ className = '' }) => {
 
   const handleGoogleLogin = () => {
     // Redirect to Google OAuth endpoint
-    window.location.href = 'http://localhost:4000/api/auth/google/google';
+    window.location.href = `${API_BASE}/api/auth/google/google`;
   };
 
   return (

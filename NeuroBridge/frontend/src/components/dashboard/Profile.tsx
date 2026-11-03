@@ -29,6 +29,7 @@ import {
   Bell,
   Layers,
 } from 'lucide-react';
+import { API_BASE } from '../../config/api';
 
 
 export function Profile() {
@@ -67,7 +68,7 @@ export function Profile() {
     const name = personalInfo.fullName.trim();
     if (!name || !token) return;
     try {
-      const response = await fetch('http://localhost:4000/api/auth/email/me', {
+      const response = await fetch(`${API_BASE}/api/auth/email/me`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

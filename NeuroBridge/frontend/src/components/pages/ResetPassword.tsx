@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { PasswordStrength } from '../auth/PasswordStrength';
 import { meetsPasswordRules } from '../../utils/passwordRules';
+import { API_BASE } from '../../config/api';
 
 export function ResetPassword() {
     const [password, setPassword] = useState('');
@@ -54,7 +55,7 @@ export function ResetPassword() {
         setMessage('');
 
         try {
-            const response = await fetch('http://localhost:4000/api/auth/email/reset-password', {
+            const response = await fetch(`${API_BASE}/api/auth/email/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token, newPassword: password })

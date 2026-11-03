@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Star, Clock, Users, CheckCircle, Shield, Accessibility, BookOpen } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_BASE } from '../../config/api';
 
 export function CourseDetail() {
   const { id } = useParams();
@@ -18,7 +19,7 @@ export function CourseDetail() {
       try {
         setIsLoading(true);
         if (!token) return;
-        const res = await fetch(`http://localhost:4000/api/courses/${id}`, {
+        const res = await fetch(`${API_BASE}/api/courses/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -38,7 +39,7 @@ export function CourseDetail() {
   const handleEnroll = async () => {
     try {
       setIsEnrolling(true);
-      const res = await fetch(`http://localhost:4000/api/courses/${id}/enroll`, {
+      const res = await fetch(`${API_BASE}/api/courses/${id}/enroll`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });

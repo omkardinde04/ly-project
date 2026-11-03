@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Clock3, Trophy } from 'lucide-react';
 import type { Language } from '../../contexts/DyslexiaContext';
+import { API_BASE } from '../../config/api';
 
 type Player = { name: string; rating: number; correct: number | null; index: number; finishedAt?: string };
 type Battle = { status: 'countdown' | 'active' | 'complete'; total: number; waitingForOpponent: boolean; startedAt: string; endsAt: string; question: { index: number; total: number; prompt: string; options: string[] } | null; you: Player; opponent: Player; result: { winnerId: string | null; yourRating: number; opponentRating: number; yourRatingChange: number; opponentRatingChange: number } | null };
@@ -22,7 +23,7 @@ export function BattleGame({ matchId, token, language, userId, onExit, onResult 
   const [secondsLeft, setSecondsLeft] = useState(120);
   const [requestError, setRequestError] = useState<string | null>(null);
 
-  const load = () => fetch(`http://localhost:4000/api/progress/battle/${matchId}`, { headers: { Authorization: `Bearer ${token}` } }).then(response => response.json()).then(data => { setBattle(data); if (data.status === 'active' && started === null) setStarted(Date.now()); }).catch(() => undefined);
+  const load = () => fetch(`${API_BASE}/api/progress/battle/${matchId}`, { headers: { Authorization: `Bearer ${token}` } }).then(response => response.json()).then(data => { setBattle(data); if (data.status === 'active' && started === null) setStarted(Date.now()); }).catch(() => undefined);
   useEffect(() => { load(); const timer = window.setInterval(load, 1000); return () => window.clearInterval(timer); }, [matchId, token]);
   useEffect(() => { if (!battle || battle.status !== 'countdown') return; const timer = window.setInterval(() => { const remaining = Math.max(0, Math.ceil((new Date(battle.startedAt).getTime() - Date.now()) / 1000)); setCountdown(remaining); }, 100); return () => window.clearInterval(timer); }, [battle]);
   useEffect(() => { if (!battle || battle.status !== 'active') return; const timer = window.setInterval(() => setSecondsLeft(Math.max(0, Math.ceil((new Date(battle.endsAt).getTime() - Date.now()) / 1000))), 250); return () => window.clearInterval(timer); }, [battle]);
@@ -34,7 +35,7 @@ export function BattleGame({ matchId, token, language, userId, onExit, onResult 
     setSubmitting(true);
     setRequestError(null);
     try {
-      const response = await fetch(`http://localhost:4000/api/progress/battle/${matchId}/answer`, {
+      const response = await fetch(`${API_BASE}/api/progress/battle/${matchId}/answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ answer: value, questionIndex: battle.question.index }),

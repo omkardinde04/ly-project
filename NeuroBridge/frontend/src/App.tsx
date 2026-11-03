@@ -24,8 +24,6 @@ import { ResetPassword } from './components/pages/ResetPassword';
 import { VerifyEmail } from './components/pages/VerifyEmail';
 import { AuthRedirect } from './components/auth/AuthRedirect';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { ResumeBuilderPage } from './components/pages/ResumeBuilderPage';
-import { CoursesDashboard } from './components/pages/CoursesDashboard';
 import { CourseDetail } from './components/pages/CourseDetail';
 import { CoursePlayer } from './components/pages/CoursePlayer';
 import { CourseCreator } from './components/pages/CourseCreator';

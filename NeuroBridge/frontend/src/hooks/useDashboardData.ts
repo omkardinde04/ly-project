@@ -4,6 +4,7 @@ import { useDyslexia } from '../contexts/DyslexiaContext';
 import type { ResumeData } from '../components/resume-builder/types';
 import { istDayKey, istWeekKeys } from '../utils/istDate';
 import { initialResumeData } from '../components/resume-builder/types';
+import { API_BASE } from '../config/api';
 
 export type SkillId = 'sound' | 'focus' | 'memory' | 'speed';
 
@@ -190,7 +191,7 @@ export function useDashboardData(): DashboardData {
     setError(null);
     try {
       if (token) {
-        const res = await fetch('http://localhost:4000/api/progress', {
+        const res = await fetch(`${API_BASE}/api/progress`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
