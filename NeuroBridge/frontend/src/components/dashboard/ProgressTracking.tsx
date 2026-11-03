@@ -19,6 +19,7 @@ import { istDayKey } from '../../utils/istDate';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProgressGame, type GameResult } from './ProgressGame';
+import { AdaptivePracticeGame } from './AdaptivePracticeGame';
 import { MatchmakingPanel } from './MatchmakingPanel';
 import { BattleGame } from './BattleGame';
 import {
@@ -153,7 +154,7 @@ export function ProgressTracking() {
   const { user, token } = useAuth();
   const t = labels[language] || labels.en;
 
-  const [game, setGame] = useState<{ skillId: SkillId; isMatch: boolean } | null>(null);
+  const [game, setGame] = useState<{ skillId: SkillId; isMatch: boolean; adaptive?: boolean } | null>(null);
   const [battle, setBattle] = useState<{ matchId: string; skillId: SkillId } | null>(null);
   const [matchmaking, setMatchmaking] = useState<SkillId | null>(null);
   const [unlockedBadge, setUnlockedBadge] = useState<BadgeDefinition | null>(null);
@@ -561,6 +562,19 @@ export function ProgressTracking() {
 
   if (game) {
     const skill = skills.find((item) => item.id === game.skillId)!;
+    if (game.adaptive && token) {
+      return (
+        <AdaptivePracticeGame
+          skillId={skill.id}
+          skillName={skill.name}
+          rating={skill.rating}
+          token={token}
+          language={language}
+          onComplete={complete}
+          onExit={() => setGame(null)}
+        />
+      );
+    }
     return (
       <ProgressGame
         skillId={skill.id}
@@ -843,14 +857,25 @@ export function ProgressTracking() {
                     <span className="text-2xl font-black text-[#1A202C]">{skill.rating}</span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setGame({ skillId: skill.id, isMatch: false })}
-                    className="h-10 px-5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Gamepad2 size={15} />
-                    <span>{t.play}</span>
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setGame({ skillId: skill.id, isMatch: false })}
+                      className="h-10 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Gamepad2 size={15} />
+                      <span>{t.play}</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!token}
+                      onClick={() => setGame({ skillId: skill.id, isMatch: false, adaptive: true })}
+                      className="h-10 px-4 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Sparkles size={15} />
+                      <span>Adaptive test</span>
+                    </button>
+                  </div>
                 </div>
               </motion.article>
             );
