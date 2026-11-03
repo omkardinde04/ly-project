@@ -1,24 +1,44 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation, type Translation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
+import { useAuth } from '../../contexts/AuthContext';
+import { SkillRadar, BandDonut } from './ReportCharts';
+import { DARK, LIGHT } from './chartPalette';
+import {
+  BAND_INFO,
+  BAND_ORDER,
+  TARGET,
+  bandCounts,
+  computeSkills,
+  focusAreas,
+  formatDuration,
+  type Band,
+  type QuestionMetricLike,
+} from './reportData';
 import {
   Sparkles,
   ArrowRight,
   RotateCcw,
   CheckCircle2,
   Sliders,
-  BookOpen,
   Volume2,
-  ShieldCheck,
   Brain,
-  Zap,
-  Eye,
-  Activity,
-  Layers,
   Chrome,
   Download,
+  Target,
+  Lightbulb,
+  BarChart3,
+  Timer,
+  Shuffle,
+  Undo2,
+  Type,
+  Contrast,
+  AlignJustify,
+  Loader2,
+  PieChart,
 } from 'lucide-react';
 
 interface AssessmentMetrics {
@@ -27,7 +47,7 @@ interface AssessmentMetrics {
   confusionCount: number;
   backtrackCount: number;
   audioReplayCount: number;
-  questionMetrics: any[];
+  questionMetrics: QuestionMetricLike[];
 }
 
 interface ReportGeneratorProps {
@@ -38,7 +58,8 @@ interface ReportGeneratorProps {
 }
 
 export function ReportGenerator({ score, metrics, onRetake, onContinue }: ReportGeneratorProps) {
-  const { language, setDyslexiaLevel, markTestCompleted } = useDyslexia();
+  const { language, markTestCompleted, cognitiveProfile, isDarkMode, reduceMotion } = useDyslexia();
+  const { user } = useAuth();
   const t = getTranslation(language);
 
   useEffect(() => {
@@ -149,203 +170,370 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
 
   const reportText = `Your dyslexia calibration level is ${getLevelText(level)}. Score: ${score}. Learning style: ${learningStyle.primary}. ${learningStyle.description}`;
 
+  // ── Real per-skill results (Part A answers + Part B tasks) ────────────────
+  const skills = useMemo(() => computeSkills(metrics, cognitiveProfile), [metrics, cognitiveProfile]);
+  const focus = useMemo(() => focusAreas(skills), [skills]);
+  const ranked = useMemo(() => [...skills].sort((a, b) => a.score - b.score), [skills]);
+  const levels = useMemo(() => bandCounts(skills), [skills]);
+  const growCount = skills.filter((s) => s.score < TARGET).length;
+  const palette = isDarkMode ? DARK : LIGHT;
+
+  const LEVEL_HEX: Record<DyslexiaLevel, string> = {
+    none: '#059669',
+    mild: '#2563EB',
+    moderate: '#B45309',
+    severe: '#7C3AED',
+  };
+
+  /** Band colours that read well on both light and dark cards. */
+  const bandStyle = (band: Band) => {
+    const info = BAND_INFO[band];
+    return isDarkMode
+      ? { background: `${info.color}22`, color: info.color, borderColor: `${info.color}55` }
+      : { background: info.soft, color: info.text, borderColor: `${info.color}55` };
+  };
+
+  const [pdfState, setPdfState] = useState<'idle' | 'working' | 'error'>('idle');
+  const handleDownload = async () => {
+    if (pdfState === 'working') return;
+    setPdfState('working');
+    try {
+      const { downloadReportPdf } = await import('./downloadReportPdf');
+      await downloadReportPdf({
+        studentName: user?.name,
+        levelLabel: String(getLevelText(level)),
+        levelColor: LEVEL_HEX[level],
+        score,
+        skills,
+        focus,
+        levels,
+        metrics,
+        recommendations: [
+          recommendations.fontSize,
+          recommendations.contrast,
+          recommendations.audio,
+          recommendations.spacing,
+        ],
+        learningStyle,
+      });
+      setPdfState('idle');
+    } catch (error) {
+      console.error('Report PDF error:', error);
+      setPdfState('error');
+    }
+  };
+
+  const enter = (delay = 0) =>
+    reduceMotion
+      ? {}
+      : { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, delay } };
+
+  const card = 'bg-white rounded-3xl p-5 sm:p-7 border border-blue-100/90 shadow-xs';
+  const cardTitle = (icon: ReactNode, title: string, tone = 'bg-blue-50 text-[#2563EB] border-blue-100') => (
+    <div className="flex items-center gap-2.5 pb-3 mb-4 border-b border-slate-100">
+      <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${tone}`}>{icon}</div>
+      <h2 className="text-base font-extrabold text-[#1A202C]" style={{ fontSize: '1rem' }}>
+        {title}
+      </h2>
+    </div>
+  );
+
+  const downloadButton = (full = false) => (
+    <button
+      type="button"
+      onClick={handleDownload}
+      disabled={pdfState === 'working'}
+      className={`${full ? 'w-full sm:w-auto' : ''} px-5 py-2.5 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/40 focus-visible:ring-offset-2`}
+    >
+      {pdfState === 'working' ? (
+        <Loader2 size={16} className="animate-spin motion-reduce:animate-none" />
+      ) : (
+        <Download size={16} />
+      )}
+      <span>{pdfState === 'working' ? 'Making your PDF…' : 'Download report (PDF)'}</span>
+    </button>
+  );
+
+  const workStats = [
+    { icon: <Timer size={18} />, label: 'Time taken', value: formatDuration(metrics?.totalTime) },
+    { icon: <Shuffle size={18} />, label: 'Answers changed', value: String(metrics?.confusionCount ?? 0) },
+    { icon: <Volume2 size={18} />, label: 'Listened again', value: String(metrics?.audioReplayCount ?? 0) },
+    { icon: <Undo2 size={18} />, label: 'Went back', value: String(metrics?.backtrackCount ?? 0) },
+  ];
+
+  const settingChips = [
+    { icon: <Type size={18} />, label: 'Text size', text: recommendations.fontSize },
+    { icon: <Contrast size={18} />, label: 'Contrast', text: recommendations.contrast },
+    { icon: <Volume2 size={18} />, label: 'Read aloud', text: recommendations.audio },
+    { icon: <AlignJustify size={18} />, label: 'Spacing', text: recommendations.spacing },
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 py-4 px-4 sm:px-6 animate-in fade-in duration-300 text-left">
-      {/* 1. Header & TTS Audio Control */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+    <div className="max-w-5xl mx-auto space-y-6 py-4 px-4 sm:px-6 text-left">
+      {/* 1. Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200/80 text-xs font-black mb-2">
             <Sparkles size={13} />
             <span>Calibration Complete</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1A202C] tracking-tight">
+          <h1
+            className="font-black text-[#1A202C] tracking-tight"
+            style={{ fontSize: 'clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem)', lineHeight: 1.15 }}
+          >
             {t.reportTitle || 'Your Personal Learning Profile'}
           </h1>
-          <p className="text-xs sm:text-sm text-[#64748B] font-medium mt-1">
-            Personalized insights and accessibility tuning tailored to your cognitive strengths.
+          <p className="text-[#64748B] font-medium mt-1" style={{ fontSize: '0.875rem' }}>
+            See what is strong and what to practise next.
           </p>
         </div>
-
-        <div className="shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <AudioControl text={reportText} showControls={false} />
+          {downloadButton()}
         </div>
       </div>
+      {pdfState === 'error' && (
+        <p role="alert" className="text-xs font-semibold text-red-600">
+          Could not make the PDF. Please try again.
+        </p>
+      )}
 
-      {/* 2. Score & Level Overview Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-100/90 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden"
-      >
-        <div className="space-y-2 text-center sm:text-left">
-          <span className="text-xs font-black text-[#64748B] uppercase tracking-wider">
-            Calibrated Dyslexia Level
-          </span>
-          <div>
-            <span
-              className={`inline-block px-5 py-2 rounded-2xl font-black text-lg sm:text-xl border ${getLevelColor(
-                level
-              )}`}
-            >
+      {/* 2. Summary tiles */}
+      <motion.div {...enter(0)} className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className={`${card} !p-5 flex items-center gap-4`}>
+          <div className="w-11 h-11 rounded-2xl bg-purple-50 text-[#7C3AED] border border-purple-100 flex items-center justify-center shrink-0">
+            <Brain size={20} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-black text-[#64748B] uppercase tracking-wider">Your level</p>
+            <span className={`inline-block mt-1 px-3 py-1 rounded-xl font-black text-sm border ${getLevelColor(level)}`}>
               {getLevelText(level)}
             </span>
           </div>
-          <p className="text-xs text-[#64748B] font-medium">
-            Your platform theme and reading anchors have been pre-calibrated.
-          </p>
         </div>
-
-        <div className="bg-[#F8FAFC] p-5 rounded-2xl border border-slate-200/80 text-center shrink-0 min-w-[140px]">
-          <div className="text-4xl sm:text-5xl font-black text-[#2563EB] leading-none mb-1">
-            {score}
+        <div className={`${card} !p-5 flex items-center gap-4`}>
+          <div className="w-11 h-11 rounded-2xl bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center shrink-0">
+            <BarChart3 size={20} />
           </div>
-          <div className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
-            Performance Index
+          <div>
+            <p className="text-[11px] font-black text-[#64748B] uppercase tracking-wider">Performance index</p>
+            <p className="font-black text-[#2563EB] leading-none mt-1" style={{ fontSize: '1.75rem' }}>
+              {score}
+              <span className="text-sm text-[#94A3B8] font-bold"> / 100</span>
+            </p>
           </div>
         </div>
-      </motion.div>
-
-      {/* 3. Cognitive Profile Dimensions */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-100/90 shadow-xs space-y-6"
-      >
-        <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-          <div className="w-8 h-8 rounded-xl bg-purple-50 text-[#8B5CF6] flex items-center justify-center border border-purple-100">
-            <Brain size={16} />
+        <div className={`${card} !p-5 flex items-center gap-4`}>
+          <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
+            <Target size={20} />
           </div>
-          <h2 className="text-base font-extrabold text-[#1A202C]">Cognitive Profile Dimensions</h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            { id: 'phonological', name: 'Phonological Awareness', icon: '🔊', desc: 'Sound processing & phonics' },
-            { id: 'visual', name: 'Visual Attention', icon: '👁️', desc: 'Visual tracking & letter stability' },
-            { id: 'workingMemory', name: 'Working Memory', icon: '🧠', desc: 'Sequential recall & stamina' },
-            { id: 'processingSpeed', name: 'Processing Speed', icon: '⚡', desc: 'Pattern recognition pace' },
-            { id: 'orthographic', name: 'Orthographic Processing', icon: '📝', desc: 'Word shape recognition' },
-            { id: 'executive', name: 'Executive Coordination', icon: '⏱️', desc: 'Task coordination & focus' },
-          ].map((dim, idx) => {
-            const scoreVal = score > 40 ? 70 + (idx % 3) * 8 : 85 + (idx % 2) * 5;
-            const levelStr = scoreVal >= 80 ? 'High' : 'Optimal';
-
-            return (
-              <div
-                key={dim.id}
-                className="bg-[#F8FAFC] rounded-2xl p-4.5 border border-slate-200/80 space-y-3 flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-2xl">{dim.icon}</span>
-                  <div>
-                    <h3 className="font-extrabold text-xs text-[#1A202C]">{dim.name}</h3>
-                    <p className="text-[10px] text-[#64748B] font-medium">{dim.desc}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[11px] font-bold text-[#64748B]">Capacity</span>
-                    <span className="font-black text-[#2563EB]">{levelStr}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-emerald-500"
-                      style={{ width: `${scoreVal}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <div>
+            <p className="text-[11px] font-black text-[#64748B] uppercase tracking-wider">Areas to grow</p>
+            <p className="font-black text-amber-600 leading-none mt-1" style={{ fontSize: '1.75rem' }}>
+              {growCount}
+              <span className="text-sm text-[#94A3B8] font-bold"> of {skills.length}</span>
+            </p>
+          </div>
         </div>
       </motion.div>
 
-      {/* 4. Two-Column Recommendations & Learning Style */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Recommended UI Settings */}
-        <motion.div
-          initial={{ opacity: 0, x: -15 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/90 shadow-xs space-y-4"
-        >
-          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center border border-blue-100">
-              <Sliders size={16} />
-            </div>
-            <h3 className="font-extrabold text-sm text-[#1A202C]">
-              {t.recommendedSettings || 'Recommended Reading Settings'}
-            </h3>
-          </div>
-
-          <div className="space-y-2.5 text-xs text-[#1A202C] font-semibold">
-            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
-              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-              <span>{recommendations.fontSize}</span>
-            </div>
-            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
-              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-              <span>{recommendations.contrast}</span>
-            </div>
-            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
-              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-              <span>{recommendations.audio}</span>
-            </div>
-            <div className="flex items-start gap-2.5 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100">
-              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-              <span>{recommendations.spacing}</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Learning Style & Tips */}
-        <motion.div
-          initial={{ opacity: 0, x: 15 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 sm:p-7 border border-blue-100/90 shadow-xs space-y-4"
-        >
-          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
-            <div className="w-8 h-8 rounded-xl bg-purple-50 text-[#8B5CF6] flex items-center justify-center border border-purple-100">
-              <Sparkles size={16} />
-            </div>
-            <h3 className="font-extrabold text-sm text-[#1A202C]">
-              {t.learningStyle || 'Cognitive Learning Style'}
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            <div className="p-3 bg-purple-50/70 border border-purple-100 rounded-2xl">
-              <span className="font-black text-xs text-[#8B5CF6] block mb-0.5">
-                {learningStyle.primary}
+      {/* 3. Radar + focus areas */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <motion.section {...enter(0.05)} className={`${card} lg:col-span-2`} aria-labelledby="skills-glance">
+          <div id="skills-glance">{cardTitle(<Brain size={16} />, 'Your skills at a glance', 'bg-purple-50 text-[#8B5CF6] border-purple-100')}</div>
+          <SkillRadar skills={skills} palette={palette} />
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] font-bold text-[#64748B]">
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="18" height="6" aria-hidden>
+                <line x1="0" y1="3" x2="18" y2="3" stroke={palette.target} strokeWidth="2" strokeDasharray="4 3" />
+              </svg>
+              Goal ({TARGET})
+            </span>
+            {(Object.keys(BAND_INFO) as Band[]).map((b) => (
+              <span key={b} className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: BAND_INFO[b].color }} aria-hidden />
+                {BAND_INFO[b].label}
               </span>
-              <p className="text-xs text-[#64748B] font-medium leading-relaxed">
-                {learningStyle.description}
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              {learningStyle.tips.map((tip, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 text-xs font-semibold text-[#1A202C]"
-                >
-                  <span className="text-[#8B5CF6] font-black">•</span>
-                  <span>{tip}</span>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
-        </motion.div>
+        </motion.section>
+
+        <motion.section {...enter(0.1)} className={`${card} lg:col-span-3`} aria-labelledby="grow-first">
+          <div id="grow-first">{cardTitle(<Target size={16} />, 'Where to grow first', 'bg-amber-50 text-amber-600 border-amber-100')}</div>
+          {growCount === 0 && (
+            <p className="mb-3 text-sm font-semibold text-emerald-700">No big gaps. Keep practising to stay strong!</p>
+          )}
+          <ol className="space-y-3">
+            {focus.map((s, i) => (
+              <li key={s.id} className="rounded-2xl border p-4" style={bandStyle(s.band)}>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="w-7 h-7 rounded-full text-white text-xs font-black flex items-center justify-center shrink-0"
+                    style={{ background: BAND_INFO[s.band].color }}
+                    aria-hidden
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h3 className="font-extrabold text-[#1A202C]" style={{ fontSize: '0.95rem' }}>
+                        {s.name}
+                      </h3>
+                      <span className="font-black" style={{ fontSize: '1.1rem' }}>
+                        {s.score}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-2 rounded-full bg-white/70 overflow-hidden" aria-hidden>
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: BAND_INFO[s.band].color }}
+                        initial={reduceMotion ? false : { width: 0 }}
+                        animate={{ width: `${Math.max(s.score, 3)}%` }}
+                        transition={{ duration: 0.8, delay: 0.2 + i * 0.1 }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pl-10">
+                  <p className="flex items-start gap-1.5 text-xs font-semibold text-[#1A202C]">
+                    <Lightbulb size={14} className="shrink-0 mt-0.5" style={{ color: BAND_INFO[s.band].color }} />
+                    <span>{s.tip}</span>
+                  </p>
+                  <Link
+                    to={s.practice.to}
+                    className="shrink-0 inline-flex items-center gap-1 text-xs font-extrabold text-[#2563EB] hover:underline"
+                  >
+                    {s.practice.label}
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </motion.section>
       </div>
 
-      {/* ─── 4.5 UNLOCKED CHROME EXTENSION DOWNLOAD BANNER ─── */}
+      {/* 4. All skills ranked */}
+      <motion.section {...enter(0.15)} className={card} aria-labelledby="all-skills">
+        <div id="all-skills">{cardTitle(<BarChart3 size={16} />, 'All skills, lowest first')}</div>
+        <ul className="space-y-3.5">
+          {ranked.map((s, i) => (
+            <li key={s.id} className="grid grid-cols-[minmax(7rem,9rem)_1fr_auto] sm:grid-cols-[10rem_1fr_7.5rem] items-center gap-3">
+              <span className="text-xs sm:text-sm font-bold text-[#1A202C] truncate">{s.name}</span>
+              <div className="relative h-4 rounded-full bg-slate-100" aria-hidden>
+                <motion.div
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{ background: BAND_INFO[s.band].color }}
+                  initial={reduceMotion ? false : { width: 0 }}
+                  animate={{ width: `${Math.max(s.score, 3)}%` }}
+                  transition={{ duration: 0.8, delay: 0.1 + i * 0.06 }}
+                />
+                <span
+                  className="absolute -top-1 -bottom-1 w-0 border-l-2 border-dashed"
+                  style={{ left: `${TARGET}%`, borderColor: palette.target }}
+                />
+              </div>
+              <span className="flex items-center gap-2 justify-end sm:justify-start">
+                <span className="font-black text-sm tabular-nums" style={{ color: BAND_INFO[s.band].color }}>
+                  {s.score}
+                </span>
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full border text-[10px] font-black" style={bandStyle(s.band)}>
+                  {BAND_INFO[s.band].label}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-[11px] font-semibold text-[#64748B] flex items-center gap-1.5">
+          <svg width="14" height="12" aria-hidden>
+            <line x1="7" y1="0" x2="7" y2="12" stroke={palette.target} strokeWidth="2" strokeDasharray="3 2" />
+          </svg>
+          The dashed line is the goal ({TARGET}). Each skill mixes your answers and your task results.
+        </p>
+      </motion.section>
+
+      {/* 5. Answers donut + how you worked */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.section {...enter(0.2)} className={card} aria-labelledby="by-level">
+          <div id="by-level">{cardTitle(<PieChart size={16} />, 'Skills by level', 'bg-emerald-50 text-emerald-600 border-emerald-100')}</div>
+          <div className="flex flex-col sm:flex-row items-center gap-5">
+            <BandDonut counts={levels} palette={palette} />
+            <ul className="space-y-2.5 w-full">
+              {BAND_ORDER.map((band, i) => (
+                <li key={band} className="flex items-center gap-2.5 text-xs font-bold text-[#1A202C]">
+                  <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: BAND_INFO[band].color }} aria-hidden />
+                  <span className="flex-1">{BAND_INFO[band].label}</span>
+                  <span className="tabular-nums text-[#64748B]">{levels[i]}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </motion.section>
+
+        <motion.section
+          {...enter(0.25)}
+          className={card}
+          aria-labelledby="how-worked"
+        >
+          <div id="how-worked">{cardTitle(<Timer size={16} />, 'How you worked')}</div>
+          <div className="grid grid-cols-2 gap-3">
+            {workStats.map((st) => (
+              <div key={st.label} className="rounded-2xl bg-[#F8FAFC] border border-slate-200/80 p-4">
+                <div className="text-[#2563EB] mb-2" aria-hidden>
+                  {st.icon}
+                </div>
+                <p className="font-black text-[#1A202C] leading-none tabular-nums" style={{ fontSize: '1.35rem' }}>
+                  {st.value}
+                </p>
+                <p className="text-[11px] font-bold text-[#64748B] mt-1">{st.label}</p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      </div>
+
+      {/* 6. Settings + learning style (short) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.section {...enter(0.3)} className={card}>
+          {cardTitle(<Sliders size={16} />, t.recommendedSettings || 'Recommended Reading Settings')}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {settingChips.map((c) => (
+              <div key={c.label} className="rounded-2xl bg-[#F8FAFC] border border-slate-200/80 p-3.5 flex gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center shrink-0" aria-hidden>
+                  {c.icon}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-black text-[#64748B] uppercase tracking-wider">{c.label}</p>
+                  <p className="text-xs font-semibold text-[#1A202C] mt-0.5">{c.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.section {...enter(0.35)} className={card}>
+          {cardTitle(<Sparkles size={16} />, t.learningStyle || 'Cognitive Learning Style', 'bg-purple-50 text-[#8B5CF6] border-purple-100')}
+          <p className="inline-block px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-100 font-black text-sm text-[#7C3AED]">
+            {learningStyle.primary}
+          </p>
+          <p className="text-xs text-[#64748B] font-medium mt-2">{learningStyle.description}</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {learningStyle.tips.map((tip) => (
+              <li
+                key={tip}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F8FAFC] border border-slate-200 text-xs font-semibold text-[#1A202C]"
+              >
+                <CheckCircle2 size={13} className="text-emerald-600" />
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </motion.section>
+      </div>
+
+      {/* 7. Chrome extension */}
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.15 }}
+        {...enter(0.4)}
         className="rounded-3xl p-6 sm:p-7 border border-blue-200 bg-gradient-to-br from-blue-50/90 via-indigo-50/40 to-white shadow-xs flex flex-col sm:flex-row items-center justify-between gap-5 text-left"
       >
         <div className="flex items-center gap-4">
@@ -357,9 +545,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
               <CheckCircle2 size={12} />
               <span>Assessment Completed • Extension Unlocked</span>
             </div>
-            <h3 className="text-base sm:text-lg font-black text-[#1A202C]">
-              Download NeuroBridge Chrome Extension
-            </h3>
+            <h3 className="text-base sm:text-lg font-black text-[#1A202C]">Download NeuroBridge Chrome Extension</h3>
             <p className="text-xs text-slate-600 font-medium leading-relaxed max-w-lg mt-0.5">
               Take your calibrated OpenDyslexic font, line-tracking ruler, and multisensory audio reader to any webpage across the internet.
             </p>
@@ -376,8 +562,12 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         </a>
       </motion.div>
 
-      {/* 5. Reassurance & Action CTAs */}
-      <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+      <p className="text-center text-[11px] font-semibold text-[#64748B]">
+        This is a screening to help you learn, not a medical diagnosis. A teacher or specialist can do a full check.
+      </p>
+
+      {/* 8. Actions */}
+      <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
         <button
           type="button"
           onClick={onRetake}
@@ -386,11 +576,11 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           <RotateCcw size={15} />
           <span>{t.retakeTest || 'Retake Assessment'}</span>
         </button>
-
+        {downloadButton(true)}
         <button
           type="button"
           onClick={onContinue}
-          className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-[#1E293B] hover:bg-[#0F172A] text-white font-extrabold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
         >
           <span>{t.goToDashboard || 'Continue to Dashboard'}</span>
           <ArrowRight size={15} />

@@ -3,6 +3,7 @@
 /* Landing page components (explicit so new files are always scanned) */
 @source "../components/landing";
 @source "../components/auth";
+@source "../components/assessment";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
