@@ -273,53 +273,58 @@ function generateVisualQuestions(count: number): VisualQuestion[] {
   });
 }
 
-type VisualPhase = 'answering' | 'correct' | 'wrong' | 'timesup';
+type VisualPhase = 'showing' | 'answering';
 
 function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => void }) {
   const TOTAL_QUESTIONS = 6;
   const TIME_PER_QUESTION = 15;
+  const TARGET_DISPLAY_MS = 1800;
 
   const [questions] = useState<VisualQuestion[]>(() => generateVisualQuestions(TOTAL_QUESTIONS));
   const [currentIdx, setCurrentIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
-  const [phase, setPhase] = useState<VisualPhase>('answering');
+  const [phase, setPhase] = useState<VisualPhase>('showing');
   const [correctCount, setCorrectCount] = useState(0);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeLeftRef = useRef(TIME_PER_QUESTION);
 
   const stopTimer = () => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
   };
 
   const goNext = useCallback((newCorrect: number) => {
-    setTimeout(() => {
-      if (currentIdx < TOTAL_QUESTIONS - 1) {
-        setCurrentIdx(prev => prev + 1);
-        setTimeLeft(TIME_PER_QUESTION);
-        setPhase('answering');
-        setShowSkipConfirm(false);
-      } else {
-        onComplete(Math.round((newCorrect / TOTAL_QUESTIONS) * 100));
-      }
-    }, 1500);
+    if (currentIdx < TOTAL_QUESTIONS - 1) {
+      setCurrentIdx(prev => prev + 1);
+      timeLeftRef.current = TIME_PER_QUESTION;
+      setTimeLeft(TIME_PER_QUESTION);
+      setPhase('showing');
+      setShowSkipConfirm(false);
+    } else {
+      onComplete(Math.round((newCorrect / TOTAL_QUESTIONS) * 100));
+    }
   }, [currentIdx, TOTAL_QUESTIONS, onComplete]);
+
+  useEffect(() => {
+    if (phase !== 'showing') return;
+    const timeout = setTimeout(() => setPhase('answering'), TARGET_DISPLAY_MS);
+    return () => clearTimeout(timeout);
+  }, [currentIdx, phase]);
 
   // Timer tick
   useEffect(() => {
     if (phase !== 'answering') return;
     timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          stopTimer();
-          setPhase('timesup');
-          goNext(correctCount);
-          return 0;
-        }
-        return prev - 1;
-      });
+      const nextTime = Math.max(0, timeLeftRef.current - 1);
+      timeLeftRef.current = nextTime;
+      setTimeLeft(nextTime);
+      if (nextTime === 0) {
+        stopTimer();
+        goNext(correctCount);
+      }
     }, 1000);
     return () => stopTimer();
-  }, [currentIdx, phase]);
+  }, [currentIdx, phase, correctCount, goNext]);
 
   const handleAnswer = (word: string) => {
     if (phase !== 'answering') return;
@@ -327,7 +332,6 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
     const isCorrect = word === questions[currentIdx].answer;
     const newCorrect = isCorrect ? correctCount + 1 : correctCount;
     setCorrectCount(newCorrect);
-    setPhase(isCorrect ? 'correct' : 'wrong');
     goNext(newCorrect);
   };
 
@@ -342,8 +346,9 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
     // Go directly to next question — no 'timesup' phase shown
     if (currentIdx < TOTAL_QUESTIONS - 1) {
       setCurrentIdx(prev => prev + 1);
+      timeLeftRef.current = TIME_PER_QUESTION;
       setTimeLeft(TIME_PER_QUESTION);
-      setPhase('answering');
+      setPhase('showing');
     } else {
       onComplete(Math.round((correctCount / TOTAL_QUESTIONS) * 100));
     }
@@ -367,22 +372,24 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
       <div className="flex flex-col items-center mb-6">
         <div className="text-4xl mb-3">👁️</div>
         <h3 className="text-2xl font-bold text-text mb-1">Visual Attention</h3>
-        <p className="text-text-muted text-sm font-medium">Find the word that exactly matches the target.</p>
+        <p className="text-text-muted text-sm font-medium">Remember the word, then select its match.</p>
       </div>
+
+      {/* Briefly show the target before presenting its options. */}
+      {phase === 'showing' && (
+        <div className="flex flex-col items-center justify-center py-8 gap-4" aria-live="polite">
+          <p className="text-xs uppercase tracking-widest text-text-muted font-bold">Remember this word</p>
+          <div className="inline-flex items-center justify-center px-10 py-5 rounded-3xl bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 shadow-inner">
+            <span className="text-4xl font-black text-blue-700 tracking-widest">{q.target}</span>
+          </div>
+        </div>
+      )}
 
       {/* Phase: Answering */}
       {phase === 'answering' && (
         <>
-          {/* Target Word */}
-          <div className="mb-6">
-            <p className="text-xs uppercase tracking-widest text-text-muted font-bold mb-3">Match this word</p>
-            <div className="inline-flex items-center justify-center px-10 py-5 rounded-3xl bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 shadow-inner">
-              <span className="text-4xl font-black text-blue-700 tracking-widest">{q.target}</span>
-            </div>
-          </div>
-
-          {/* Options */}
-          <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mb-8">
+          <p className="text-xs uppercase tracking-widest text-text-muted font-bold mb-3 mt-8">Which word did you see?</p>
+          <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mb-8 mt-10">
             {q.options.map((word, idx) => (
               <button
                 key={idx}
@@ -426,36 +433,6 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
             </div>
           )}
         </>
-      )}
-
-      {/* Phase: Correct */}
-      {phase === 'correct' && (
-        <div className="flex flex-col items-center justify-center py-8 gap-3">
-          <div className="text-5xl">✅</div>
-          <p className="text-green-600 font-black text-2xl">Correct!</p>
-          <p className="text-text-muted text-sm font-medium">Loading next word…</p>
-        </div>
-      )}
-
-      {/* Phase: Wrong */}
-      {phase === 'wrong' && (
-        <div className="flex flex-col items-center justify-center py-8 gap-3">
-          <div className="text-5xl">💙</div>
-          <p className="text-purple-600 font-black text-2xl">No worries!</p>
-          <p className="text-text-muted text-sm font-medium">
-            The correct answer was: <span className="font-black text-blue-600">"{q.target}"</span>
-          </p>
-          <p className="text-text-muted text-xs mt-1">Loading next word…</p>
-        </div>
-      )}
-
-      {/* Phase: Time's Up */}
-      {phase === 'timesup' && (
-        <div className="flex flex-col items-center justify-center py-8 gap-3">
-          <div className="text-5xl">⏰</div>
-          <p className="text-orange-500 font-black text-2xl">Time's Up!</p>
-          <p className="text-text-muted text-sm font-medium">Moving to the next word…</p>
-        </div>
       )}
     </div>
   );
@@ -638,12 +615,8 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
       {/* Phase: Result */}
       {phase === 'result' && (
         <div className="flex flex-col items-center py-6">
-          <div className="text-5xl mb-3">
-            {selected.filter(e => targetItems.includes(e)).length === SHOW_COUNT ? '🎉' : selected.filter(e => targetItems.includes(e)).length >= Math.ceil(SHOW_COUNT / 2) ? '👍' : '💪'}
-          </div>
-          <p className="text-lg font-bold text-text">
-            {selected.filter(e => targetItems.includes(e)).length} of {SHOW_COUNT} correct
-          </p>
+          <div className="text-5xl mb-3">🎉</div>
+          <p className="text-lg font-bold text-text">Nice work! Keep it up!</p>
           <p className="text-sm text-text-muted mt-1">Loading next round…</p>
         </div>
       )}

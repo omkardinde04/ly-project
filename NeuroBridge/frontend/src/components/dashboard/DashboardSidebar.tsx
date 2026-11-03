@@ -9,7 +9,6 @@ import {
   Bot,
   Users,
   Settings,
-  User as UserIcon,
   BookOpen
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
@@ -100,16 +99,10 @@ export function DashboardSidebar({
       icon: Users,
     },
     {
-      id: 'accessibility',
-      label: t.navSettings || 'Accessibility',
-      tooltipDescription: 'Sensory & Visual Preferences',
+      id: 'settings',
+      label: t.navSettings || 'Settings',
+      tooltipDescription: 'Profile & accessibility preferences',
       icon: Settings,
-    },
-    {
-      id: 'profile',
-      label: t.profile || 'My Profile',
-      tooltipDescription: 'Account & Learning Profile',
-      icon: UserIcon,
     },
   ];
 
@@ -196,7 +189,7 @@ export function DashboardSidebar({
         <SidebarUserCard
           user={user}
           isCollapsed={isCollapsed}
-          onNavigateProfile={() => onNavigate('profile')}
+          onNavigateProfile={() => onNavigate('settings')}
           onLogout={handleLogout}
         />
       </motion.aside>
@@ -250,7 +243,7 @@ export function DashboardSidebar({
               user={user}
               isCollapsed={false}
               onNavigateProfile={() => {
-                onNavigate('profile');
+                onNavigate('settings');
                 onCloseMobile();
               }}
               onLogout={handleLogout}

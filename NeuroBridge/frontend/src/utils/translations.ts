@@ -251,7 +251,7 @@ const translations: Record<Language, Translation> = {
     navLearning: 'Learning',
     navQuizzes: 'Tests & Quizzes',
     navProgress: 'Progress',
-    navSettings: 'Accessibility',
+    navSettings: 'Settings',
     
     // Accessibility
     accPreferences: 'Accessibility Preferences',
@@ -364,7 +364,7 @@ const translations: Record<Language, Translation> = {
     navLearning: 'सीखना',
     navQuizzes: 'प्रश्नोत्तरी',
     navProgress: 'प्रगति',
-    navSettings: 'पहुंच',
+    navSettings: 'सेटिंग्स',
     
     // Accessibility
     accPreferences: 'पहुंच प्राथमिकताएं',
@@ -477,7 +477,7 @@ const translations: Record<Language, Translation> = {
     navLearning: 'शिक्षण',
     navQuizzes: 'प्रश्नमंजुषा',
     navProgress: 'प्रगती',
-    navSettings: 'प्रवेशयोग्यता',
+    navSettings: 'सेटिंग्ज',
     
     // Accessibility
     accPreferences: 'प्रवेशयोग्यता प्राधान्ये',

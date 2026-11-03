@@ -161,7 +161,7 @@ export function AccessibilityQuickActions({ onNavigate }: AccessibilityQuickActi
         className="w-full py-3.5 px-4 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs sm:text-sm transition-all border border-purple-200/80 flex items-center justify-center gap-2 group"
       >
         <Settings size={16} />
-        <span>Open All Visual & Reading Preferences</span>
+        <span>Open Settings</span>
         <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
       </button>
     </motion.div>

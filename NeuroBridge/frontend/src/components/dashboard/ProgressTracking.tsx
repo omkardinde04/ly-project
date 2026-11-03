@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Brain,
-  Check,
   Eye,
   Flame,
   Gamepad2,
@@ -16,7 +15,7 @@ import {
   ArrowRight,
   TrendingUp,
 } from 'lucide-react';
-import { istDayKey, istWeekKeys } from '../../utils/istDate';
+import { istDayKey } from '../../utils/istDate';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProgressGame, type GameResult } from './ProgressGame';
@@ -60,12 +59,12 @@ export type ArenaState = {
   opponent: { name: string; rating: number } | null;
 };
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const today = () => istDayKey();
 
 const labels = {
   en: {
     arena: 'Your Reading Arena',
+    ratings: 'Your current ratings',
     daily: 'DAILY CHALLENGE',
     play: 'Play',
     playNow: 'Play now',
@@ -80,7 +79,7 @@ const labels = {
     find: 'Find Opponent',
     you: 'You',
     accepted: 'accepted',
-    activity: 'Weekly Activity',
+    activity: 'Activity in the past year',
     challenges: 'challenges completed',
     rating: 'rating this week',
     achievements: 'Recent Achievements',
@@ -93,6 +92,7 @@ const labels = {
   },
   hi: {
     arena: 'आपका रीडिंग एरिना',
+    ratings: 'आपकी वर्तमान रेटिंग',
     daily: 'दैनिक चुनौती',
     play: 'खेलें',
     playNow: 'अभी खेलें',
@@ -107,7 +107,7 @@ const labels = {
     find: 'प्रतिद्वंद्वी खोजें',
     you: 'आप',
     accepted: 'स्वीकृत',
-    activity: 'साप्ताहिक गतिविधि',
+    activity: 'पिछले वर्ष की गतिविधि',
     challenges: 'चुनौतियां पूरी',
     rating: 'इस सप्ताह रेटिंग',
     achievements: 'हाल की उपलब्धियां',
@@ -120,6 +120,7 @@ const labels = {
   },
   mr: {
     arena: 'तुमचे रीडिंग एरिना',
+    ratings: 'तुमचे सध्याचे गुण',
     daily: 'दैनिक आव्हान',
     play: 'खेळा',
     playNow: 'आता खेळा',
@@ -134,7 +135,7 @@ const labels = {
     find: 'प्रतिस्पर्धी शोधा',
     you: 'तुम्ही',
     accepted: 'स्वीकारले',
-    activity: 'साप्ताहिक उपक्रम',
+    activity: 'मागील वर्षातील उपक्रम',
     challenges: 'आव्हाने पूर्ण',
     rating: 'या आठवड्यातील गुण',
     achievements: 'अलीकडील यश',
@@ -157,6 +158,8 @@ export function ProgressTracking() {
   const [matchmaking, setMatchmaking] = useState<SkillId | null>(null);
   const [unlockedBadge, setUnlockedBadge] = useState<BadgeDefinition | null>(null);
   const [showBadges, setShowBadges] = useState(false);
+  const [ratingSaveError, setRatingSaveError] = useState<string | null>(null);
+  const progressRequestVersion = useRef(0);
 
   const storageKey = `neurobridge-learning-arena-v1:${user?.email || 'guest'}`;
 
@@ -203,12 +206,13 @@ export function ProgressTracking() {
 
   useEffect(() => {
     if (!token) return;
+    const requestVersion = progressRequestVersion.current;
     fetch('http://localhost:4000/api/progress', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (!data) return;
+        if (!data || requestVersion !== progressRequestVersion.current) return;
         setState((current) => ({
           ...current,
           ratings: {
@@ -331,14 +335,50 @@ export function ProgressTracking() {
   const daily = skills[Number(today().slice(8, 10)) % skills.length];
   const dailyDone = state.days.includes(today()) || state.dailyChallenges.includes(today());
 
-  // Mon–Sun of the current IST week, aligned with the day labels
-  const weekKeys = istWeekKeys();
-  const weekActivity = weekKeys.map((key) => state.days.includes(key));
-  const todayIndex = weekKeys.indexOf(today());
+  const activityWeeks = useMemo(() => {
+    const todayKey = today();
+    const todayDate = new Date(`${todayKey}T00:00:00Z`);
+    const earliestDate = new Date(todayDate);
+    earliestDate.setUTCDate(earliestDate.getUTCDate() - 364);
+    const weekEnd = new Date(todayDate);
+    weekEnd.setUTCDate(weekEnd.getUTCDate() + 6 - weekEnd.getUTCDay());
+    const calendarStart = new Date(weekEnd);
+    calendarStart.setUTCDate(calendarStart.getUTCDate() - 370);
+    const activeDays = new Set(state.days);
+
+    return Array.from({ length: 53 }, (_, weekIndex) => {
+      const days = Array.from({ length: 7 }, (_, dayIndex) => {
+        const date = new Date(calendarStart);
+        date.setUTCDate(calendarStart.getUTCDate() + weekIndex * 7 + dayIndex);
+        const key = date.toISOString().slice(0, 10);
+        return {
+          key,
+          isInRange: key >= earliestDate.toISOString().slice(0, 10) && key <= todayKey,
+          isActive: activeDays.has(key),
+        };
+      });
+      const firstOfMonth = days.find((day) => day.key.slice(8, 10) === '01');
+      const monthDate = new Date(`${(firstOfMonth?.key || days[0].key)}T00:00:00Z`);
+
+      return {
+        days,
+        monthLabel:
+          weekIndex === 0 || firstOfMonth
+            ? new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' }).format(monthDate)
+            : '',
+      };
+    });
+  }, [state.days]);
+
+  const activeDaysThisYear = activityWeeks
+    .flatMap((week) => week.days)
+    .filter((day) => day.isInRange && day.isActive).length;
 
   const complete = (result: GameResult) => {
     const date = today();
     const previousAchievements = state.achievements;
+    progressRequestVersion.current += 1;
+    setRatingSaveError(null);
     setState((value) => ({
       ...value,
       ratings: {
@@ -378,16 +418,25 @@ export function ProgressTracking() {
           dailyKey: date,
         }),
       })
-        .then((response) => response.json())
+        .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Could not save your rating.');
+          return data;
+        })
         .then((data) => {
           const savedSkill = data.progress?.skills?.[result.skillId];
-          if (savedSkill) {
-            setState((value) => ({
-              ...value,
-              ratings: { ...value.ratings, [result.skillId]: savedSkill.rating },
-              skillStats: { ...value.skillStats, [result.skillId]: savedSkill },
-            }));
-          }
+          if (!savedSkill) throw new Error('The saved rating was missing from the response.');
+          setState((value) => ({
+            ...value,
+            ratings: { ...value.ratings, [result.skillId]: savedSkill.rating },
+            skillStats: { ...value.skillStats, [result.skillId]: savedSkill },
+            plays: data.progress.completedChallenges ?? value.plays,
+            streak: data.progress.streak ?? value.streak,
+            lastPlayed: data.progress.lastPlayedDay ?? value.lastPlayed,
+            days: data.progress.activityDays ?? value.days,
+            dailyChallenges: data.progress.dailyChallenges ?? value.dailyChallenges,
+            achievements: data.progress.achievements ?? value.achievements,
+          }));
           const newlyUnlocked = (data.progress?.achievements || []).find(
             (id: string) => !previousAchievements.includes(id)
           );
@@ -397,7 +446,10 @@ export function ProgressTracking() {
             );
           }
         })
-        .catch(() => undefined);
+        .catch((error: unknown) => {
+          console.error('Could not save progress rating:', error);
+          setRatingSaveError('Your result could not be saved. Check your connection and try again later.');
+        });
     }
   };
 
@@ -445,7 +497,10 @@ export function ProgressTracking() {
             {progress.current} / {progress.target}
           </p>
           <button
-            onClick={() => setUnlockedBadge(null)}
+            onClick={() => {
+              setUnlockedBadge(null);
+              setGame(null);
+            }}
             className="relative mt-8 rounded-2xl bg-[#d4a941] hover:bg-[#e4b84e] px-8 py-3 text-sm font-black text-white shadow-lg transition-all cursor-pointer"
           >
             Continue
@@ -468,6 +523,7 @@ export function ProgressTracking() {
         userId={String(user?.id)}
         onExit={() => setBattle(null)}
         onResult={(result) => {
+          const date = today();
           setState((value) => ({
             ...value,
             ratings: {
@@ -475,6 +531,9 @@ export function ProgressTracking() {
               [battle.skillId]: Math.max(0, value.ratings[battle.skillId] + result.delta),
             },
             plays: value.plays + 1,
+            streak: value.lastPlayed === date ? value.streak : value.streak + 1,
+            lastPlayed: date,
+            days: value.days.includes(date) ? value.days : [...value.days, date],
             weeklyGain: value.weeklyGain + result.delta,
           }));
         }}
@@ -510,6 +569,7 @@ export function ProgressTracking() {
         rating={skill.rating}
         language={language}
         isMatch={game.isMatch}
+        saveError={ratingSaveError}
         onComplete={complete}
         onExit={() => setGame(null)}
       />
@@ -544,6 +604,24 @@ export function ProgressTracking() {
           <p className="text-xs sm:text-sm text-[#64748B] font-medium leading-relaxed">
             Practice key skills, build your streak, and track your reading progress.
           </p>
+          <div className="pt-2">
+            <p className="mb-1.5 text-[10px] font-black uppercase tracking-wider text-[#64748B]">
+              {t.ratings}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <div
+                  key={skill.id}
+                  className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 ${skill.bgClass} ${skill.borderClass}`}
+                >
+                  <span className={`text-[10px] font-extrabold uppercase tracking-wide ${skill.textClass}`}>
+                    {skill.name}
+                  </span>
+                  <span className="text-base font-black text-[#1A202C]">{skill.rating}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
@@ -793,39 +871,73 @@ export function ProgressTracking() {
               </div>
               <div>
                 <h3 className="text-lg font-extrabold text-[#1A202C]">{t.activity}</h3>
-                <p className="text-xs text-[#64748B] font-medium">Weekly practice consistency</p>
+                <p className="text-xs text-[#64748B] font-medium">Your daily practice at a glance</p>
               </div>
             </div>
 
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-0.5 rounded-full">
-              Active Week
-            </span>
+            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-3">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-[#64748B]">
+                <Flame size={14} className="text-[#E86F51]" aria-hidden="true" />
+                {state.streak} day streak
+              </span>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full whitespace-nowrap">
+                {activeDaysThisYear} active days
+              </span>
+            </div>
           </div>
 
-          <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-4 my-2 flex items-center justify-between">
-            {DAYS.map((day, i) => {
-              const isActive = weekActivity[i];
-              return (
-                <div key={day} className="flex flex-col items-center gap-1.5 flex-1">
-                  <span
-                    className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold transition-colors ${
-                      isActive
-                        ? 'bg-[#2563EB] text-white shadow-xs'
-                        : 'bg-slate-200/70 text-slate-400'
-                    } ${i === todayIndex ? 'ring-2 ring-blue-300 ring-offset-2' : ''}`}
-                  >
-                    {isActive ? <Check size={14} strokeWidth={2.5} /> : '·'}
-                  </span>
-                  <span
-                    className={`text-[11px] font-bold ${
-                      i === todayIndex ? 'text-[#2563EB]' : 'text-[#64748B]'
-                    }`}
-                  >
-                    {day}
-                  </span>
+          <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-4 my-2">
+            <div className="overflow-x-auto pb-2">
+              <div className="min-w-[760px]">
+                <div className="relative h-5 ml-7 mb-1">
+                  {activityWeeks.map((week, weekIndex) => week.monthLabel && (
+                    <span
+                      key={`${week.monthLabel}-${weekIndex}`}
+                      className="absolute top-0 text-[10px] font-medium text-[#64748B]"
+                      style={{ left: `${weekIndex * 13}px` }}
+                    >
+                      {week.monthLabel}
+                    </span>
+                  ))}
                 </div>
-              );
-            })}
+                <div className="flex gap-[3px]">
+                  <div className="grid grid-rows-7 gap-[3px] w-6 shrink-0 text-[9px] leading-[10px] text-[#64748B]">
+                    <span />
+                    <span>Mon</span>
+                    <span />
+                    <span>Wed</span>
+                    <span />
+                    <span>Fri</span>
+                    <span />
+                  </div>
+                  {activityWeeks.map((week, weekIndex) => (
+                    <div key={weekIndex} className="flex flex-col gap-[3px]">
+                      {week.days.map((day) => (
+                        <span
+                          key={day.key}
+                          role="img"
+                          aria-label={`${day.key}: ${day.isInRange && day.isActive ? 'activity recorded' : day.isInRange ? 'no activity' : 'outside the past year'}`}
+                          title={`${day.key}: ${day.isInRange && day.isActive ? 'Activity recorded' : day.isInRange ? 'No activity' : 'Outside the past year'}`}
+                          className={`w-[10px] h-[10px] rounded-[2px] ${
+                            !day.isInRange
+                              ? 'bg-transparent'
+                              : day.isActive
+                              ? 'bg-emerald-500 hover:bg-emerald-600'
+                              : 'bg-slate-200 hover:bg-slate-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-end gap-2 text-[10px] font-medium text-[#64748B]">
+              <span>No activity</span>
+              <span className="w-3 h-3 rounded-sm bg-slate-200" aria-hidden="true" />
+              <span className="w-3 h-3 rounded-sm bg-emerald-500" aria-hidden="true" />
+              <span>Active</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 mt-3">

@@ -22,12 +22,11 @@ import { ProgressTracking } from '../dashboard/ProgressTracking';
 import { Opportunities } from '../dashboard/Opportunities';
 import { NotebookLLM } from '../dashboard/NotebookLLM';
 import { Community } from '../dashboard/Community';
-import { Profile } from '../dashboard/Profile';
+import { Settings } from '../dashboard/Settings';
 import { CoursesDashboard } from '../pages/CoursesDashboard';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { AudioControl } from '../ui/AudioControl';
-import { AccessibilitySettings } from '../dashboard/AccessibilitySettings';
 import { LinkedInConnect } from '../dashboard/LinkedInConnect';
 import { Brain } from '../dashboard/Brain';
 import { ResumeBuilder } from '../resume-builder/ResumeBuilder';
@@ -63,7 +62,9 @@ export function Dashboard() {
   // Auto-navigate to linkedin tab if returning from OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('linkedin_connected') || params.get('linkedin_error')) {
+    if (params.get('communityPost')) {
+      setActiveTab('community');
+    } else if (params.get('linkedin_connected') || params.get('linkedin_error')) {
       setActiveTab('linkedin');
     }
   }, []);
@@ -128,10 +129,10 @@ export function Dashboard() {
         return <NotebookLLM />;
       case 'community':
         return <Community />;
+      case 'settings':
       case 'accessibility':
-        return <AccessibilitySettings />;
       case 'profile':
-        return <Profile />;
+        return <Settings />;
       default:
         return <HomeDashboard onNavigate={setActiveTab} />;
     }
@@ -171,9 +172,6 @@ export function Dashboard() {
               <Menu size={20} aria-hidden="true" />
             </button>
 
-            <div className="hidden sm:block text-xs font-bold text-[#64748B] uppercase tracking-wider">
-              NeuroBridge SaaS · Student Workspace
-            </div>
           </div>
 
           <div className="flex items-center gap-3 ml-auto">

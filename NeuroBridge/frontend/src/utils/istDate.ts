@@ -2,8 +2,16 @@
 const IST = 'Asia/Kolkata';
 
 /** YYYY-MM-DD for the given moment in IST */
-export const istDayKey = (d: Date | string | number = new Date()): string =>
-  new Date(d).toLocaleDateString('en-CA', { timeZone: IST });
+export const istDayKey = (d: Date | string | number = new Date()): string => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: IST,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(d));
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find(item => item.type === type)!.value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
+};
 
 /** The 7 YYYY-MM-DD keys (Mon..Sun) of the current IST week */
 export const istWeekKeys = (): string[] => {
