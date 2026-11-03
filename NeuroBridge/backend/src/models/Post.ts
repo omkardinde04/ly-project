@@ -6,6 +6,7 @@ export interface IPost extends Document {
   content: string;
   category: string;
   likes: number;
+  likedBy: string[];
   createdAt: Date;
 }
 
@@ -15,6 +16,7 @@ const PostSchema = new Schema<IPost>({
   content: { type: String, required: true, maxlength: 10000 },
   category: { type: String, required: true },
   likes: { type: Number, default: 0 },
+  likedBy: { type: [String], default: [] },
 }, { timestamps: true });
 
 export default mongoose.model<IPost>('Post', PostSchema);

@@ -7,7 +7,16 @@ import Battle, { IBattle } from '../models/Battle';
 
 export const progressRouter = Router();
 const skills: LearningSkill[] = ['sound', 'focus', 'memory', 'speed'];
-const dayKey = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+const dayKey = () => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find(item => item.type === type)!.value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
+};
 const userId = (req: any) => String(req.user.userId);
 
 function validSkill(value: unknown): value is LearningSkill { return typeof value === 'string' && skills.includes(value as LearningSkill); }
@@ -17,6 +26,12 @@ function updateStreak(progress: any, today: string) {
   const previous = new Date(`${progress.lastPlayedDay}T00:00:00Z`).getTime();
   const current = new Date(`${today}T00:00:00Z`).getTime();
   return current - previous === 86400000 ? progress.streak + 1 : 1;
+}
+function recordActivity(progress: any, today: string) {
+  progress.completedChallenges += 1;
+  progress.streak = updateStreak(progress, today);
+  progress.lastPlayedDay = today;
+  if (!progress.activityDays.includes(today)) progress.activityDays.push(today);
 }
 function achievements(progress: any) {
   const unlocked = new Set<string>(progress.achievements || []);
@@ -84,17 +99,17 @@ function publicBattle(battle: IBattle, currentUser: string) {
   return {
     matchId: battle.matchId, skill: battle.skill, status: battle.status, startedAt: battle.startedAt, endsAt: new Date(battle.startedAt.getTime() + 120000),
     question: battle.status === 'active' && player.index < battle.questions.length ? { index: player.index, total: battle.questions.length, prompt: battle.questions[player.index].prompt, options: battle.questions[player.index].options } : null,
-    you: { name: player.displayName, rating: player.rating, correct: player.correct, index: player.index, finishedAt: player.finishedAt },
-    opponent: { name: opponent.displayName, rating: opponent.rating, correct: opponent.correct, index: opponent.index, finishedAt: opponent.finishedAt },
+    you: { name: player.displayName, rating: player.rating, correct: battle.status === 'complete' ? player.correct : null, index: player.index, finishedAt: player.finishedAt },
+    opponent: { name: opponent.displayName, rating: opponent.rating, correct: battle.status === 'complete' ? opponent.correct : null, index: opponent.index, finishedAt: opponent.finishedAt },
     result: battle.status === 'complete' ? { winnerId: battle.players.find(item => item.ratingChange === 25)?.userId || null, yourRating: player.rating, opponentRating: opponent.rating, yourRatingChange: player.ratingChange || 0, opponentRatingChange: opponent.ratingChange || 0 } : null,
   };
 }
 
 async function completeBattle(battle: IBattle) {
+  if (battle.status === 'complete') return battle;
   const timeExpired = Date.now() >= battle.startedAt.getTime() + 120000;
   const bothFinished = battle.players.every(player => player.index >= battle.questions.length);
-  if (battle.status === 'complete' || (!timeExpired && !bothFinished)) return;
-  battle.status = 'complete'; battle.completedAt = new Date();
+  if (!timeExpired && !bothFinished) return battle;
   const [first, second] = battle.players;
   if (first.correct !== second.correct) {
     const winner = first.correct > second.correct ? first : second;
@@ -105,13 +120,26 @@ async function completeBattle(battle: IBattle) {
     first.ratingChange = 0;
     second.ratingChange = 0;
   }
-  for (const player of battle.players) {
+  const completedBattle = await Battle.findOneAndUpdate(
+    { _id: battle._id, status: battle.status },
+    { $set: { status: 'complete', completedAt: new Date(), players: battle.players } },
+    { new: true },
+  );
+  if (!completedBattle) return (await Battle.findById(battle._id)) || battle;
+
+  const activityDay = dayKey();
+  for (const player of completedBattle.players) {
     const progress: any = await LearningProgress.findOneAndUpdate({ userId: player.userId }, { $setOnInsert: { userId: player.userId } }, { new: true, upsert: true, setDefaultsOnInsert: true });
-    progress.skills[battle.skill as LearningSkill].rating = Math.max(0, progress.skills[battle.skill as LearningSkill].rating + (player.ratingChange || 0));
-    player.rating = progress.skills[battle.skill as LearningSkill].rating;
+    const skillStats = progress.skills[completedBattle.skill as LearningSkill];
+    const ratingChange = player.ratingChange === 25 ? 25 : player.ratingChange === 0 ? 0 : -Math.min(25, skillStats.rating);
+    skillStats.rating = Math.max(0, skillStats.rating + ratingChange);
+    player.ratingChange = ratingChange;
+    player.rating = skillStats.rating;
+    recordActivity(progress, activityDay);
     await progress.save();
   }
-  await battle.save();
+  await completedBattle.save();
+  return completedBattle;
 }
 
 progressRouter.get('/', AuthService.authenticateToken, async (req: any, res: Response) => {
@@ -140,10 +168,11 @@ progressRouter.get('/', AuthService.authenticateToken, async (req: any, res: Res
 
 progressRouter.post('/games', AuthService.authenticateToken, async (req: any, res: Response) => {
   try {
-    const { skill, correct, total, seconds, difficulty = 1, dailyKey } = req.body;
+    const { skill, correct, total, seconds, difficulty = 1, dailyKey, mode } = req.body;
     if (!validSkill(skill) || !Number.isInteger(correct) || !Number.isInteger(total) || total <= 0 || correct < 0 || correct > total || !Number.isFinite(seconds) || seconds <= 0) return res.status(400).json({ error: 'Invalid game result' });
     const accuracy = Math.round((correct / total) * 100);
-    const delta = Math.round((accuracy / 100 - 0.6) * 35);
+    const multiplier = mode === 'match' ? 35 : 10;
+    const delta = Math.round((accuracy / 100 - 0.6) * multiplier);
     const today = dayKey();
     const progress: any = await LearningProgress.findOneAndUpdate({ userId: userId(req) }, { $setOnInsert: { userId: userId(req) } }, { new: true, upsert: true, setDefaultsOnInsert: true });
     const stats = progress.skills[skill];
@@ -155,10 +184,7 @@ progressRouter.post('/games', AuthService.authenticateToken, async (req: any, re
     stats.totalSeconds += seconds;
     stats.difficulty = accuracy >= 80 ? Math.min(4, difficulty + 1) : accuracy < 50 ? Math.max(1, difficulty - 1) : difficulty;
     stats.lastPlayed = new Date();
-    progress.completedChallenges += 1;
-    progress.streak = updateStreak(progress, today);
-    progress.lastPlayedDay = today;
-    if (!progress.activityDays.includes(today)) progress.activityDays.push(today);
+    recordActivity(progress, today);
     if (wasDaily) progress.dailyChallenges.push(today);
     progress.recentActivity.unshift({ skill, score: correct, accuracy, seconds, delta, createdAt: new Date() });
     progress.recentActivity = progress.recentActivity.slice(0, 20);
@@ -173,21 +199,38 @@ progressRouter.post('/daily/complete', AuthService.authenticateToken, async (req
 });
 
 progressRouter.post('/matchmaking/queue', AuthService.authenticateToken, async (req: any, res: Response) => {
+  let rating: number | undefined;
   try {
-    const { skill, rating, mode = 'friendly', displayName = 'Student' } = req.body;
-    if (!validSkill(skill) || !Number.isFinite(rating)) return res.status(400).json({ error: 'Skill and rating are required' });
+    const { skill, mode = 'friendly', displayName = 'Student' } = req.body;
+    if (!validSkill(skill)) return res.status(400).json({ error: 'A valid skill is required' });
     const currentUser = userId(req);
+    const progress: any = await LearningProgress.findOneAndUpdate(
+      { userId: currentUser },
+      { $setOnInsert: { userId: currentUser } },
+      { new: true, upsert: true, setDefaultsOnInsert: true },
+    );
+    const currentRating = progress.skills[skill].rating;
+    rating = currentRating;
     await Matchmaking.deleteMany({ expiresAt: { $lt: new Date() } });
     const currentEntry = await Matchmaking.findOneAndUpdate(
       { userId: currentUser, skill, mode },
       { displayName: String(displayName).slice(0, 40), rating, status: 'waiting', $unset: { matchId: 1, opponentId: 1, opponentRating: 1 }, expiresAt: new Date(Date.now() + 120000) },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
-    const opponent = await Matchmaking.findOneAndUpdate(
-      { skill, mode, status: 'waiting', userId: { $ne: currentUser }, rating: { $gte: rating - 75, $lte: rating + 75 } },
+    const candidateFilter = { skill, mode, status: 'waiting', userId: { $ne: currentUser } };
+    const [lowerCandidate, upperCandidate] = await Promise.all([
+      Matchmaking.findOne({ ...candidateFilter, rating: { $gte: currentRating - 75, $lte: currentRating } }).sort({ rating: -1 }),
+      Matchmaking.findOne({ ...candidateFilter, rating: { $gt: currentRating, $lte: currentRating + 75 } }).sort({ rating: 1 }),
+    ]);
+    const candidate = !lowerCandidate ? upperCandidate
+      : !upperCandidate ? lowerCandidate
+      : currentRating - lowerCandidate.rating <= upperCandidate.rating - currentRating ? lowerCandidate
+      : upperCandidate;
+    const opponent = candidate ? await Matchmaking.findOneAndUpdate(
+      { _id: candidate._id, status: 'waiting' },
       { status: 'invited', invitedBy: currentUser, invitationId: currentEntry._id.toString(), matchedAt: new Date() },
-      { new: true, sort: { rating: 1 } }
-    );
+      { new: true }
+    ) : null;
     if (opponent) {
       await Matchmaking.findByIdAndUpdate(currentEntry._id, { status: 'pending_acceptance', invitationId: opponent._id.toString(), opponentId: opponent.userId, opponentRating: opponent.rating });
       return res.json({ status: 'pending_acceptance', queueId: currentEntry._id.toString(), opponent: { name: opponent.displayName || 'Student', rating: opponent.rating } });
@@ -197,10 +240,10 @@ progressRouter.post('/matchmaking/queue', AuthService.authenticateToken, async (
     if (error?.code === 11000) {
       const existing = await Matchmaking.findOneAndUpdate(
         { userId: userId(req), skill: req.body.skill, mode: req.body.mode || 'friendly' },
-        { status: 'waiting', rating: req.body.rating, displayName: String(req.body.displayName || 'Student').slice(0, 40), expiresAt: new Date(Date.now() + 120000) },
+        { status: 'waiting', rating: rating ?? 0, displayName: String(req.body.displayName || 'Student').slice(0, 40), expiresAt: new Date(Date.now() + 120000) },
         { new: true }
       );
-      if (existing) return res.json({ status: 'waiting', queueId: String(existing._id), message: 'Waiting for a student near your level' });
+      if (existing && rating !== undefined) return res.json({ status: 'waiting', queueId: String(existing._id), message: 'Waiting for a student near your level' });
     }
     console.error('Matchmaking queue error:', error); res.status(500).json({ error: 'Could not join matchmaking queue' });
   }
@@ -233,8 +276,8 @@ progressRouter.get('/battle/:matchId', AuthService.authenticateToken, async (req
   const battle = await Battle.findOne({ matchId: req.params.matchId });
   if (!battle || !battle.players.some(player => player.userId === userId(req))) return res.status(404).json({ error: 'Battle not found' });
   if (battle.status === 'countdown' && Date.now() >= battle.startedAt.getTime()) { battle.status = 'active'; await battle.save(); }
-  await completeBattle(battle);
-  res.json(publicBattle(battle, userId(req)));
+  const updatedBattle = await completeBattle(battle);
+  res.json(publicBattle(updatedBattle, userId(req)));
 });
 
 progressRouter.post('/battle/:matchId/answer', AuthService.authenticateToken, async (req: any, res: Response) => {
@@ -246,9 +289,9 @@ progressRouter.post('/battle/:matchId/answer', AuthService.authenticateToken, as
   if (battle.status !== 'active' || !question || !Number.isInteger(req.body.answer)) return res.status(400).json({ error: 'The battle is not accepting that answer' });
   if (req.body.answer === question.answer) player.correct += 1;
   player.index += 1;
-  await completeBattle(battle);
   await battle.save();
-  res.json(publicBattle(battle, userId(req)));
+  const updatedBattle = await completeBattle(battle);
+  res.json(publicBattle(updatedBattle, userId(req)));
 });
 
 progressRouter.post('/matchmaking/:queueId/decline', AuthService.authenticateToken, async (req: any, res: Response) => {

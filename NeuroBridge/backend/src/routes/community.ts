@@ -13,17 +13,30 @@ function publicUser(user: any) {
   return { id: String(user._id), name: user.name, email: user.email, profilePicture: user.profile_picture, classification: user.classification };
 }
 
-function publicPost(post: any, author: any) {
-  return { id: String(post._id), authorId: post.authorId, authorName: author?.name || 'Community member', authorInitials: initials(author?.name || 'Community member'), timeAgo: 'Just now', title: post.title, content: post.content, category: post.category, likes: post.likes || 0, comments: [] };
+function publicPost(post: any, author: any, userId: string, commentCount = 0) {
+  return { id: String(post._id), authorId: post.authorId, authorName: author?.name || 'Community member', authorInitials: initials(author?.name || 'Community member'), timeAgo: 'Just now', title: post.title, content: post.content, category: post.category, likes: post.likes || 0, likedByMe: (post.likedBy || []).includes(userId), commentCount, comments: [] };
 }
 
 function initials(name: string) { return name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase(); }
 
-communityRouter.get('/posts', AuthService.authenticateToken, async (_req: any, res: Response) => {
+communityRouter.get('/posts', AuthService.authenticateToken, async (req: any, res: Response) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 }).limit(100);
-    const authors = await User.find({ _id: { $in: posts.map(post => post.authorId) } });
-    res.json({ posts: posts.map(post => publicPost(post, authors.find(author => String(author._id) === post.authorId))) });
+    const [authors, comments] = await Promise.all([
+      User.find({ _id: { $in: posts.map(post => post.authorId) } }),
+      Comment.find({ postId: { $in: posts.map(post => String(post._id)) } }).select('postId'),
+    ]);
+    const commentCounts = new Map<string, number>();
+    comments.forEach(comment => {
+      commentCounts.set(comment.postId, (commentCounts.get(comment.postId) || 0) + 1);
+    });
+    const userId = currentUser(req);
+    res.json({ posts: posts.map(post => publicPost(
+      post,
+      authors.find(author => String(author._id) === post.authorId),
+      userId,
+      commentCounts.get(String(post._id)) || 0
+    )) });
   } catch (error) { console.error('Community posts error:', error); res.status(500).json({ error: 'Could not load community posts' }); }
 });
 
@@ -33,15 +46,54 @@ communityRouter.post('/posts', AuthService.authenticateToken, async (req: any, r
     if (!title || !content || title.length > 160 || content.length > 10000) return res.status(400).json({ error: 'Post title and content are required' });
     const post = await Post.create({ authorId: currentUser(req), title, content, category });
     const author = await User.findById(currentUser(req));
-    res.status(201).json({ post: publicPost(post, author) });
+    res.status(201).json({ post: publicPost(post, author, currentUser(req)) });
   } catch (error) { console.error('Community create post error:', error); res.status(500).json({ error: 'Could not create post' }); }
+});
+
+communityRouter.get('/posts/:postId', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ error: 'Discussion not found' });
+    const [author, commentCount] = await Promise.all([
+      User.findById(post.authorId),
+      Comment.countDocuments({ postId: String(post._id) }),
+    ]);
+    res.json({ post: publicPost(post, author, currentUser(req), commentCount) });
+  } catch (error) { console.error('Community post error:', error); res.status(500).json({ error: 'Could not load discussion' }); }
+});
+
+communityRouter.post('/posts/:postId/like', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const userId = currentUser(req);
+    const action = req.body?.action;
+    if (action !== 'like' && action !== 'unlike') {
+      return res.status(400).json({ error: 'Action must be like or unlike' });
+    }
+
+    const post = await Post.findOneAndUpdate(
+      {
+        _id: req.params.postId,
+        likedBy: action === 'like' ? { $ne: userId } : userId,
+      },
+      action === 'like'
+        ? { $addToSet: { likedBy: userId }, $inc: { likes: 1 } }
+        : { $pull: { likedBy: userId }, $inc: { likes: -1 } },
+      { new: true }
+    ) || await Post.findById(req.params.postId);
+
+    if (!post) return res.status(404).json({ error: 'Discussion not found' });
+    res.json({ likes: Math.max(0, post.likes || 0), likedByMe: (post.likedBy || []).includes(userId) });
+  } catch (error) { console.error('Community like error:', error); res.status(500).json({ error: 'Could not update like' }); }
 });
 
 communityRouter.get('/posts/:postId/comments', AuthService.authenticateToken, async (req: any, res: Response) => {
   try {
     const comments = await Comment.find({ postId: String(req.params.postId) }).sort({ createdAt: 1 });
     const authors = await User.find({ _id: { $in: comments.map(comment => comment.authorId) } });
-    res.json({ comments: comments.map(comment => ({ id: String(comment._id), authorName: authors.find(author => String(author._id) === comment.authorId)?.name || 'Community member', content: comment.content, timeAgo: 'Recently' })) });
+    res.json({ comments: comments.map(comment => {
+      const authorName = authors.find(author => String(author._id) === comment.authorId)?.name || 'Community member';
+      return { id: String(comment._id), authorName, authorInitials: initials(authorName), content: comment.content, timeAgo: 'Recently' };
+    }) });
   } catch (error) { console.error('Community comments error:', error); res.status(500).json({ error: 'Could not load comments' }); }
 });
 
@@ -53,7 +105,8 @@ communityRouter.post('/posts/:postId/comments', AuthService.authenticateToken, a
     if (!post) return res.status(404).json({ error: 'Post not found' });
     const comment = await Comment.create({ postId: String(post._id), authorId: currentUser(req), content });
     const author = await User.findById(currentUser(req));
-    res.status(201).json({ comment: { id: String(comment._id), authorName: author?.name || 'Community member', content, timeAgo: 'Just now' } });
+    const authorName = author?.name || 'Community member';
+    res.status(201).json({ comment: { id: String(comment._id), authorName, authorInitials: initials(authorName), content, timeAgo: 'Just now' } });
   } catch (error) { console.error('Community create comment error:', error); res.status(500).json({ error: 'Could not add comment' }); }
 });
 
