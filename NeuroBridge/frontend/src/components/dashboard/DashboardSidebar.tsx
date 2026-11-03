@@ -10,7 +10,8 @@ import {
   Users,
   Settings,
   User as UserIcon,
-  BookOpen
+  BookOpen,
+  MapPin
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -98,6 +99,12 @@ export function DashboardSidebar({
       label: t.community || 'Community',
       tooltipDescription: 'Peer Study Community',
       icon: Users,
+    },
+        {
+      id: 'nearby',
+      label: 'Nearby Care',
+      tooltipDescription: 'Hospitals, psychiatrists & support near you',
+      icon: MapPin,
     },
     {
       id: 'accessibility',

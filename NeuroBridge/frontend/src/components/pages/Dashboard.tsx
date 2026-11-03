@@ -22,6 +22,7 @@ import { ProgressTracking } from '../dashboard/ProgressTracking';
 import { Opportunities } from '../dashboard/Opportunities';
 import { NotebookLLM } from '../dashboard/NotebookLLM';
 import { Community } from '../dashboard/Community';
+import { NearbyCare } from '../dashboard/NearbyCare';
 import { Profile } from '../dashboard/Profile';
 import { CoursesDashboard } from '../pages/CoursesDashboard';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
@@ -128,6 +129,8 @@ export function Dashboard() {
         return <NotebookLLM />;
       case 'community':
         return <Community />;
+      case 'nearby':
+        return <NearbyCare />;
       case 'accessibility':
         return <AccessibilitySettings />;
       case 'profile':
