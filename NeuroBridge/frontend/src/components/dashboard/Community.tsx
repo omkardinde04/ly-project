@@ -49,6 +49,15 @@ const CATEGORIES: Category[] = [
   'Questions',
 ];
 
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export function Community() {
   const { user, token } = useAuth();
   const sharedPostId = useRef(new URLSearchParams(window.location.search).get('communityPost'));
