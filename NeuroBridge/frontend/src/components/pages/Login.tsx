@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,6 +21,17 @@ import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
 import { GoogleLogin } from '../auth/GoogleLogin';
+import { PasswordStrength } from '../auth/PasswordStrength';
+import { CheckEmailPanel } from '../auth/CheckEmailPanel';
+import { meetsPasswordRules } from '../../utils/passwordRules';
+
+interface PendingSignup {
+  email: string;
+  pendingId?: string;
+  emailSent: boolean;
+  devVerifyLink?: string;
+  emailError?: string;
+}
 
 export function Login() {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -41,6 +52,30 @@ export function Login() {
     password: '',
     confirmPassword: '',
   });
+  // Set after a manual sign-up: shows the "check your email" step
+  const [pendingSignup, setPendingSignup] = useState<PendingSignup | null>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+
+  const isRegister = activeTab === 'register';
+  const passwordOk = meetsPasswordRules(formData.password);
+  const passwordsMatch = formData.confirmPassword.length > 0 && formData.password === formData.confirmPassword;
+  const canRegister =
+    formData.name.trim().length > 0 && formData.email.trim().length > 0 && passwordOk && passwordsMatch;
+
+  const goToLoginWithEmail = useCallback((email: string, message: string) => {
+    setPendingSignup(null);
+    setActiveTab('login');
+    setError('');
+    setSuccess(message);
+    setFormData({ name: '', email, password: '', confirmPassword: '' });
+    requestAnimationFrame(() => passwordInputRef.current?.focus());
+  }, []);
+
+  // Once the email is verified, show the tick briefly, then the log-in form
+  const handleVerified = useCallback(() => {
+    const email = pendingSignup?.email ?? '';
+    window.setTimeout(() => goToLoginWithEmail(email, 'Email verified! Type your password to log in.'), 1800);
+  }, [pendingSignup, goToLoginWithEmail]);
 
   // Check for URL parameters (Google OAuth errors or tokens)
   useEffect(() => {
@@ -146,8 +181,8 @@ export function Login() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (!meetsPasswordRules(formData.password)) {
+      setError('Your password needs at least 6 characters, 1 number and 1 special character.');
       setIsLoading(false);
       return;
     }
@@ -165,21 +200,16 @@ export function Login() {
 
       const data = await response.json();
 
-      if (data.success) {
-        setFormData({ ...formData, password: '', confirmPassword: '' });
-
-        if (data.devVerifyLink) {
-          setSuccess(
-            `Account created! (Email not configured) Click to verify: ${data.devVerifyLink}`
-          );
-        } else {
-          setSuccess(data.message || 'Account created! Check your email to verify your account.');
-        }
-
-        setTimeout(() => {
-          setActiveTab('login');
-          setSuccess('');
-        }, 5000);
+      if (data.success || (data.needsVerification && data.pendingId)) {
+        // Never keep the password around once the account exists
+        setFormData((prev) => ({ ...prev, password: '', confirmPassword: '' }));
+        setPendingSignup({
+          email: data.user?.email || formData.email.trim().toLowerCase(),
+          pendingId: data.pendingId,
+          emailSent: data.emailSent !== false,
+          devVerifyLink: data.devVerifyLink,
+          emailError: data.emailError,
+        });
       } else {
         setError(data.error || 'Registration failed. Please check your details.');
       }
@@ -275,6 +305,22 @@ export function Login() {
           transition={{ duration: 0.5 }}
           className="lg:col-span-7 bg-white rounded-3xl sm:rounded-[36px] p-6 sm:p-9 border border-blue-100/90 shadow-xs relative"
         >
+          {pendingSignup ? (
+            <CheckEmailPanel
+              email={pendingSignup.email}
+              pendingId={pendingSignup.pendingId}
+              emailSent={pendingSignup.emailSent}
+              devVerifyLink={pendingSignup.devVerifyLink}
+              emailError={pendingSignup.emailError}
+              onVerified={handleVerified}
+              onBack={() => {
+                setPendingSignup(null);
+                setActiveTab('register');
+              }}
+              onGoToLogin={() => goToLoginWithEmail(pendingSignup.email, '')}
+            />
+          ) : (
+          <>
           {/* Top Pill Tab Switcher */}
           <div className="flex bg-[#F8FAFC] border border-slate-200 p-1 rounded-2xl mb-7">
             <button
@@ -415,6 +461,7 @@ export function Login() {
                   type="email"
                   name="email"
                   required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="name@example.com"
@@ -444,12 +491,16 @@ export function Login() {
                   <Lock size={16} />
                 </div>
                 <input
+                  ref={passwordInputRef}
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   required
+                  autoComplete={isRegister ? 'new-password' : 'current-password'}
+                  aria-describedby={isRegister ? 'password-rules' : undefined}
+                  aria-invalid={isRegister && formData.password.length > 0 && !passwordOk ? true : undefined}
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder={activeTab === 'login' ? '••••••••' : 'At least 6 characters'}
+                  placeholder={activeTab === 'login' ? '••••••••' : '6+ characters, a number and a symbol'}
                   className="w-full pl-10 pr-10 py-2.5 bg-[#F8FAFC] border border-slate-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 focus:bg-white rounded-2xl text-xs sm:text-sm font-medium text-[#1A202C] placeholder-[#94A3B8] outline-none transition-all"
                 />
                 <button
@@ -461,6 +512,7 @@ export function Login() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {isRegister && <PasswordStrength id="password-rules" password={formData.password} />}
             </div>
 
             {/* Confirm Password (Sign Up only) */}
@@ -477,6 +529,9 @@ export function Login() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     name="confirmPassword"
                     required
+                    autoComplete="new-password"
+                    aria-describedby="confirm-password-status"
+                    aria-invalid={formData.confirmPassword.length > 0 && !passwordsMatch ? true : undefined}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="Re-enter password"
@@ -491,13 +546,20 @@ export function Login() {
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                <p
+                  id="confirm-password-status"
+                  aria-live="polite"
+                  className={`mt-1.5 text-xs font-semibold min-h-[1rem] ${passwordsMatch ? 'text-emerald-700' : 'text-red-600'}`}
+                >
+                  {formData.confirmPassword.length > 0 && (passwordsMatch ? '✓ Passwords match' : 'Passwords do not match')}
+                </p>
               </div>
             )}
 
             {/* Submit Primary Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || (isRegister && !canRegister)}
               className="w-full py-3 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs sm:text-sm transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 mt-2"
             >
               {isLoading ? (
@@ -561,6 +623,8 @@ export function Login() {
               )}
             </p>
           </div>
+          </>
+          )}
         </motion.div>
       </div>
     </div>

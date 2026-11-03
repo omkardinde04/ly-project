@@ -88,13 +88,13 @@ const SIDE_X = 0.5 - CHARACTER_COLUMN / 2; // 0.27
 // content: standing on the left he faces right ('right' render), standing on
 // the right he faces left ('left' render).
 const STORY: Omit<LandingChapter, 'x'>[] = [
-  { id: 'hero-section', label: 'Welcome to NeuroBridge', side: 'left', pose: 'right', tint: 'blue', lift: 0, scale: 1 },
-  { id: 'games-section', label: 'Platform Capabilities', side: 'right', pose: 'left', tint: 'blue', lift: -4, scale: 1.01 },
-  { id: 'courses-section', label: 'Intelligent Study Companion', side: 'left', pose: 'right', tint: 'purple', lift: -2, scale: 1.015 },
-  { id: 'assessment-section', label: 'Accessibility First', side: 'right', pose: 'left', tint: 'emerald', lift: 2, scale: 1 },
-  { id: 'extension-section', label: 'Google Chrome Extension', side: 'left', pose: 'right', tint: 'amber', lift: -4, scale: 1.01 },
-  { id: 'how-it-works-section', label: 'Three Simple Steps', side: 'right', pose: 'left', tint: 'blue', lift: -2, scale: 1.01 },
-  { id: 'community-section', label: 'Inclusive Peer Circles', side: 'left', pose: 'right', tint: 'emerald', lift: 0, scale: 1 },
+  { id: 'hero-section', label: 'Welcome', side: 'left', pose: 'right', tint: 'blue', lift: 0, scale: 1 },
+  { id: 'games-section', label: 'What you can do', side: 'right', pose: 'left', tint: 'blue', lift: -4, scale: 1.01 },
+  { id: 'courses-section', label: 'Meet JARVIS', side: 'left', pose: 'right', tint: 'purple', lift: -2, scale: 1.015 },
+  { id: 'assessment-section', label: 'Read your way', side: 'right', pose: 'left', tint: 'emerald', lift: 2, scale: 1 },
+  { id: 'extension-section', label: 'Chrome helper', side: 'left', pose: 'right', tint: 'amber', lift: -4, scale: 1.01 },
+  { id: 'how-it-works-section', label: '3 easy steps', side: 'right', pose: 'left', tint: 'blue', lift: -2, scale: 1.01 },
+  { id: 'community-section', label: 'Community', side: 'left', pose: 'right', tint: 'emerald', lift: 0, scale: 1 },
 ];
 
 export const CHAPTERS: LandingChapter[] = STORY.map((c) => ({

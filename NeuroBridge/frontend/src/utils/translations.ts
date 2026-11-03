@@ -1,5 +1,6 @@
 import type { Language } from '../contexts/DyslexiaContext';
 import { globalHindiDictionary, globalMarathiDictionary } from './dictionaries';
+import { siteHindi, siteMarathi } from './siteTranslations';
 
 export interface Translation {
   // Navbar
@@ -564,5 +565,10 @@ const dashboardMarathiAdditional: Record<string, string> = {
 };
 
 export function getDashboardTextTranslations(language: Language): Record<string, string> {
-  return language === 'hi' ? { ...dashboardHindi, ...dashboardHindiAdditional, ...globalHindiDictionary } : language === 'mr' ? { ...dashboardMarathi, ...dashboardMarathiAdditional, ...globalMarathiDictionary } : {};
+  // siteHindi / siteMarathi (landing page, navbar, footer, Fun mode) win over older entries
+  return language === 'hi'
+    ? { ...dashboardHindi, ...dashboardHindiAdditional, ...globalHindiDictionary, ...siteHindi }
+    : language === 'mr'
+      ? { ...dashboardMarathi, ...dashboardMarathiAdditional, ...globalMarathiDictionary, ...siteMarathi }
+      : {};
 }

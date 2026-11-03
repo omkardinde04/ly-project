@@ -13,9 +13,9 @@ import { useCharacterWalk } from './useCharacterWalk';
  * chapter index + scroll position — it knows nothing about the content.
  */
 export function PersistentCharacter({ activeIndex }: { activeIndex: number }) {
-  const { isDarkMode, reduceMotion, isDyslexiaMode } = useDyslexia();
+  const { isDarkMode, reduceMotion } = useDyslexia();
   const chapter = CHAPTERS[activeIndex] ?? CHAPTERS[0];
-  const calm = reduceMotion || isDyslexiaMode;
+  const calm = reduceMotion;
   const tint = TINT_COLORS[chapter.tint][isDarkMode ? 'dark' : 'light'];
   const stageRef = useRef<HTMLDivElement>(null);
   const walk = useCharacterWalk(stageRef, !calm);

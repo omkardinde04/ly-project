@@ -32,7 +32,7 @@ import {
 export default function Index() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isDarkMode, reduceMotion, isDyslexiaMode } = useDyslexia();
+  const { isDarkMode, reduceMotion } = useDyslexia();
   const activeIndex = useActiveChapter(CHAPTER_IDS);
 
   // Thin page progress bar (motion value only — no React re-renders on scroll)
@@ -59,7 +59,7 @@ export default function Index() {
   const mouseY = useMotionValue(0);
   const spotlight = useMotionTemplate`radial-gradient(500px circle at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.06), transparent 40%)`;
   function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
-    if (reduceMotion || isDyslexiaMode) return;
+    if (reduceMotion) return;
     const { left, top } = currentTarget.getBoundingClientRect();
     mouseX.set(clientX - left);
     mouseY.set(clientY - top);
@@ -67,7 +67,7 @@ export default function Index() {
 
   return (
     <div className={`w-full relative -mt-[4.5rem] transition-colors duration-500 ${isDarkMode ? 'bg-[#0B1120]' : 'bg-white'}`}>
-      {!reduceMotion && !isDyslexiaMode && (
+      {!reduceMotion && (
         <motion.div
           aria-hidden
           style={{ scaleX: smoothProgress, transformOrigin: '0%' }}
@@ -133,7 +133,7 @@ export default function Index() {
                   : 'bg-gradient-to-br from-[#1E3A8A] via-[#1E293B] to-[#0F172A] border-blue-900 shadow-xl'
               }`}
             >
-              {!reduceMotion && !isDyslexiaMode && (
+              {!reduceMotion && (
                 <motion.div
                   aria-hidden
                   className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -152,12 +152,11 @@ export default function Index() {
                 className="relative font-black tracking-tight max-w-2xl mx-auto"
                 style={{ color: '#FFFFFF', fontSize: 'clamp(1.875rem, 1.3rem + 1.6vw, 3rem)', lineHeight: 1.15 }}
               >
-                Your way of learning starts right here.
+                Your learning starts here.
               </h2>
 
               <p className="relative text-sm sm:text-base text-blue-100 font-medium leading-relaxed max-w-xl mx-auto">
-                Take the 5-minute diagnostic assessment test, download our personalized Chrome extension, play
-                cognitive brain games, and learn with visual courses designed for your brain.
+                Take a 5-minute test, get the Chrome helper, play games and learn your way.
               </p>
 
               <div className="relative flex flex-wrap items-center justify-center gap-4 pt-2">
@@ -166,7 +165,7 @@ export default function Index() {
                   onClick={() => navigate('/assessment')}
                   className="px-8 py-3.5 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-sm shadow-md shadow-blue-500/25 border border-blue-400/20 transition-all flex items-center gap-2 cursor-pointer group/btn hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1E293B]"
                 >
-                  <span>Take Assessment Test</span>
+                  <span>Take the test</span>
                   <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                 </button>
                 <button
@@ -174,7 +173,7 @@ export default function Index() {
                   onClick={() => navigate('/learn')}
                   className="px-7 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-extrabold text-sm transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1E293B]"
                 >
-                  Play Games & Courses
+                  Play games
                 </button>
               </div>
             </motion.div>

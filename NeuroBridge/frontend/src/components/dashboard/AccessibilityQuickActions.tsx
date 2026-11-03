@@ -93,12 +93,12 @@ export function AccessibilityQuickActions({ onNavigate }: AccessibilityQuickActi
             </div>
           </div>
 
-          {/* Dyslexia Mode Toggle */}
+          {/* Fun Mode Toggle */}
           <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-100 flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-[#1A202C]">Dyslexia Font</div>
+              <div className="text-xs font-bold text-[#1A202C]">Fun Mode</div>
               <div className="text-[11px] text-[#64748B] font-semibold">
-                {isDyslexiaMode ? 'Lexend On' : 'Standard'}
+                {isDyslexiaMode ? 'Your font on' : 'Standard'}
               </div>
             </div>
             <button

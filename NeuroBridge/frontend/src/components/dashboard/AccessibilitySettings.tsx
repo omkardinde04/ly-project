@@ -190,11 +190,11 @@ export function AccessibilitySettings() {
           </div>
         </div>
 
-        {/* Master Dyslexia Mode Fast Toggle */}
+        {/* Master Fun Mode Fast Toggle */}
         <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200/90 shrink-0">
           <div className="text-left">
-            <div className="text-xs font-bold text-[#1A202C]">Dyslexia Mode</div>
-            <div className="text-[11px] text-[#64748B]">OpenDyslexic font</div>
+            <div className="text-xs font-bold text-[#1A202C]">Fun Mode</div>
+            <div className="text-[11px] text-[#64748B]">Your font &amp; spacing</div>
           </div>
           <button
             type="button"
@@ -202,7 +202,7 @@ export function AccessibilitySettings() {
             className={`w-12 h-6.5 rounded-full transition-colors relative shrink-0 cursor-pointer ${
               isDyslexiaMode ? 'bg-[#2563EB]' : 'bg-slate-300'
             }`}
-            aria-label="Toggle Dyslexia Mode"
+            aria-label="Toggle Fun mode"
           >
             <div
               className={`w-4.5 h-4.5 rounded-full bg-white absolute top-1 transition-transform shadow-xs ${

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { FUN_DEFAULTS, type FunFontId } from '../utils/funFonts';
 
 export type Language = 'en' | 'hi' | 'mr';
 export type DyslexiaLevel = 'none' | 'mild' | 'moderate' | 'severe';
@@ -36,6 +37,11 @@ interface DyslexiaSettings {
   cognitiveProfile: CognitiveProfile | null;
   partACompleted: boolean;
   partBCompleted: boolean;
+  /* Fun mode (isDyslexiaMode = Fun mode on) */
+  funFont: FunFontId;
+  funLineHeight: number;
+  funWeight: number;
+  funLetterSpacing: number;
 }
 
 interface DyslexiaContextType extends DyslexiaSettings {
@@ -55,6 +61,13 @@ interface DyslexiaContextType extends DyslexiaSettings {
   markTestCompleted: (score: number) => void;
   completeCognitiveTasks: (profile: CognitiveProfile) => void;
   resetTest: () => void;
+  setFunFont: (font: FunFontId) => void;
+  setFunLineHeight: (value: number) => void;
+  setFunWeight: (value: number) => void;
+  setFunLetterSpacing: (value: number) => void;
+  /** Turn Fun mode on without toggling (used when a Fun-mode control is changed). */
+  enableFunMode: () => void;
+  resetFunSettings: () => void;
 }
 
 const defaultSettings: DyslexiaSettings = {
@@ -75,6 +88,7 @@ const defaultSettings: DyslexiaSettings = {
   cognitiveProfile: null,
   partACompleted: false,
   partBCompleted: false,
+  ...FUN_DEFAULTS,
 };
 
 const DyslexiaContext = createContext<DyslexiaContextType | undefined>(undefined);
@@ -108,8 +122,15 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     }
   }, [settings.isDarkMode]);
 
+  // Fun mode. Switching it OFF puts every Fun-mode choice back to the default
+  // (font, line spacing, weight, letter spacing and text size), so the site
+  // looks exactly as it did before.
   const toggleDyslexiaMode = () => {
-    setSettings(prev => ({ ...prev, isDyslexiaMode: !prev.isDyslexiaMode }));
+    setSettings(prev =>
+      prev.isDyslexiaMode
+        ? { ...prev, isDyslexiaMode: false, ...FUN_DEFAULTS, textSize: 100 }
+        : { ...prev, isDyslexiaMode: true }
+    );
   };
 
   const toggleDarkMode = () => {
@@ -190,6 +211,13 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const setFunFont = (font: FunFontId) => setSettings((prev) => ({ ...prev, funFont: font }));
+  const setFunLineHeight = (value: number) => setSettings((prev) => ({ ...prev, funLineHeight: value }));
+  const setFunWeight = (value: number) => setSettings((prev) => ({ ...prev, funWeight: value }));
+  const setFunLetterSpacing = (value: number) => setSettings((prev) => ({ ...prev, funLetterSpacing: value }));
+  const enableFunMode = () => setSettings((prev) => (prev.isDyslexiaMode ? prev : { ...prev, isDyslexiaMode: true }));
+  const resetFunSettings = () => setSettings((prev) => ({ ...prev, ...FUN_DEFAULTS, textSize: 100 }));
+
   const resetTest = () => {
     setSettings(prev => ({ 
       ...prev, 
@@ -235,6 +263,12 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       markTestCompleted,
       completeCognitiveTasks,
       resetTest,
+      setFunFont,
+      setFunLineHeight,
+      setFunWeight,
+      setFunLetterSpacing,
+      enableFunMode,
+      resetFunSettings,
     }}>
       {children}
     </DyslexiaContext.Provider>

@@ -167,10 +167,10 @@ function CheckList({ items }: { items: string[] }) {
 const PHRASES = ['for your goals.', 'for your brain.', 'for your future.', 'for every learner.', 'for you.'];
 
 const HERO_STATS = [
-  { value: '12,000+', label: 'Students Empowered', color: 'text-[#2563EB] dark:text-blue-400' },
-  { value: '100%', label: 'Dyslexia Calibrated', color: 'text-emerald-600 dark:text-emerald-400' },
-  { value: '94%', label: 'Confidence Boost', color: 'text-[#7C3AED] dark:text-purple-400' },
-  { value: 'Chrome Ready', label: 'Post-Test Extension', color: 'text-amber-600 dark:text-amber-400' },
+  { value: '12,000+', label: 'Students helped', color: 'text-[#2563EB] dark:text-blue-400' },
+  { value: '100%', label: 'Made for dyslexia', color: 'text-emerald-600 dark:text-emerald-400' },
+  { value: '94%', label: 'Feel more confident', color: 'text-[#7C3AED] dark:text-purple-400' },
+  { value: 'Chrome', label: 'Free reading helper', color: 'text-amber-600 dark:text-amber-400' },
 ];
 
 export function HeroChapter() {
@@ -202,7 +202,7 @@ export function HeroChapter() {
           }`}
         >
           <Sparkles size={14} className={t.isDarkMode ? 'text-amber-400' : 'text-blue-600'} />
-          <span>Empowering Neurodivergent Learners · Dyslexia-Friendly</span>
+          <span>Made for dyslexic learners</span>
         </motion.div>
 
         <motion.h1
@@ -235,8 +235,7 @@ export function HeroChapter() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className={`text-base sm:text-lg leading-relaxed max-w-xl ${t.body}`}
         >
-          Play cognitive brain games, learn with sensory courses, chat with friends, take diagnostic
-          assessments, and download our personalized Chrome extension to read any website with confidence.
+          Play brain games, take easy lessons and read any website with confidence.
         </motion.p>
 
         <motion.div
@@ -246,7 +245,7 @@ export function HeroChapter() {
           className="flex flex-wrap items-center gap-3 sm:gap-4"
         >
           <button type="button" data-jarvis-id="hero-get-started" onClick={() => navigate('/assessment')} className={primaryBtn}>
-            <span>Take Assessment Test</span>
+            <span>Take the test</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </button>
           <button
@@ -255,7 +254,7 @@ export function HeroChapter() {
             onClick={() => navigate('/learn')}
             className={secondaryBtn(t.isDarkMode)}
           >
-            <span>Play Games & Courses</span>
+            <span>Play games</span>
             <Gamepad2 size={16} className="text-[#2563EB]" />
           </button>
         </motion.div>
@@ -266,7 +265,7 @@ export function HeroChapter() {
             type="button"
             onClick={toggleDyslexiaMode}
             aria-pressed={isDyslexiaMode}
-            title="Click to toggle sensory & dyslexia accommodations"
+            title="Turn Fun mode on or off"
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer hover:scale-105 active:scale-95 ${focusRing} ${
               isDyslexiaMode
                 ? 'bg-blue-50 text-[#2563EB] border-blue-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700'
@@ -276,9 +275,9 @@ export function HeroChapter() {
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${isDyslexiaMode ? 'bg-[#2563EB] dark:bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-            <span>{isDyslexiaMode ? '✨ Dyslexia Mode Active' : 'Dyslexia Mode: OFF'}</span>
+            <span>{isDyslexiaMode ? '✨ Fun mode is on' : 'Fun mode: off'}</span>
           </button>
-          <span className={`text-xs ${t.muted}`}>OpenDyslexic typography + comfortable 1.8x line-height.</span>
+          <span className={`text-xs ${t.muted}`}>Easier font and more space between lines.</span>
         </div>
       </div>
 
@@ -293,7 +292,7 @@ export function HeroChapter() {
         <motion.div
           className="relative"
           style={{ transformOrigin: '50% 100%' }}
-          {...(reduceMotion || isDyslexiaMode ? {} : DROP_IN)}
+          {...(reduceMotion ? {} : DROP_IN)}
         >
           <CharacterFigure
             pose="front"
@@ -308,7 +307,7 @@ export function HeroChapter() {
         {HERO_STATS.map((s, i) => (
           <motion.div
             key={s.label}
-            {...(reduceMotion || isDyslexiaMode ? {} : popIn(0.5 + i * 0.08))}
+            {...(reduceMotion ? {} : popIn(0.5 + i * 0.08))}
             className={`flex flex-col-reverse justify-end p-4 rounded-2xl border ${t.isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200/80 shadow-2xs'}`}>
             <dt className={`text-xs mt-0.5 ${t.muted}`}>{s.label}</dt>
             <dd className={`text-lg sm:text-xl font-black leading-tight ${s.color}`}>{s.value}</dd>
@@ -326,39 +325,39 @@ export function HeroChapter() {
 const PILLARS = [
   {
     title: 'Play',
-    subtitle: 'Cognitive Brain Games',
-    desc: 'Play memory games, sound lab challenges, and phonics sprints that strengthen reading confidence and cognitive speed.',
+    subtitle: 'Brain games',
+    desc: 'Fun games for memory, sounds and reading.',
     icon: Gamepad2,
     color: 'text-[#2563EB]',
     bg: 'bg-blue-50 dark:bg-blue-950/60 border-blue-200/80 dark:border-blue-900/60',
-    badge: 'Brain Games',
+    badge: 'Games',
   },
   {
     title: 'Learn',
-    subtitle: 'Dyslexia Courses',
-    desc: 'Visual, self-paced courses with bite-sized lessons, multisensory audio guides, and zero cognitive overload.',
+    subtitle: 'Easy lessons',
+    desc: 'Short lessons with pictures and sound.',
     icon: BookOpen,
     color: 'text-[#7C3AED]',
     bg: 'bg-purple-50 dark:bg-purple-950/60 border-purple-200/80 dark:border-purple-900/60',
-    badge: 'Sensory Courses',
+    badge: 'Lessons',
   },
   {
     title: 'Assess',
-    subtitle: 'Diagnostic Assessment',
-    desc: 'Take an engaging 5-minute assessment test to identify your reading patterns and calibrate your personal sensory profile.',
+    subtitle: 'Quick test',
+    desc: 'A 5-minute test finds what helps you read.',
     icon: UserCheck,
     color: 'text-emerald-700 dark:text-emerald-400',
     bg: 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/80 dark:border-emerald-900/60',
-    badge: 'Sensory Test',
+    badge: 'Test',
   },
   {
     title: 'Extend',
-    subtitle: 'Chrome Extension',
-    desc: 'Download immediately after completing your test to apply your customized font, tracking ruler, and speech to any website.',
+    subtitle: 'Chrome helper',
+    desc: 'Use your reading settings on any website.',
     icon: Chrome,
     color: 'text-amber-700 dark:text-amber-400',
     bg: 'bg-amber-50 dark:bg-amber-950/60 border-amber-200/80 dark:border-amber-900/60',
-    badge: 'Post-Test Download',
+    badge: 'After the test',
   },
 ];
 
@@ -371,13 +370,12 @@ export function PlatformChapter() {
   return (
     <Chapter id="games-section" label="Core Capabilities">
       <div className="space-y-4">
-        <Eyebrow icon={<Layers size={14} />}>Platform Capabilities</Eyebrow>
+        <Eyebrow icon={<Layers size={14} />}>What you can do</Eyebrow>
         <h2 className="font-black tracking-tight" style={H2_STYLE}>
-          One platform for your complete learning journey.
+          Everything you need in one place.
         </h2>
         <p className={`text-base sm:text-lg leading-relaxed max-w-2xl ${t.body}`}>
-          From interactive brain games to downloading our Chrome extension after your test, every tool inside
-          NeuroBridge adapts to how your mind processes information best.
+          Every tool fits the way you learn.
         </p>
       </div>
 
@@ -426,7 +424,7 @@ export function PlatformChapter() {
               +14% this week
             </span>
           </div>
-          <div className={`text-sm mt-1 ${t.body}`}>Sound Lab & Memory Vault milestones reached</div>
+          <div className={`text-sm mt-1 ${t.body}`}>Sound Lab and memory goals done</div>
           <div className={`mt-4 h-2.5 w-full rounded-full overflow-hidden p-0.5 border ${t.isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
             <div className="h-full w-4/5 rounded-full bg-gradient-to-r from-[#2563EB] via-[#7C3AED] to-emerald-500" />
           </div>
@@ -438,7 +436,7 @@ export function PlatformChapter() {
         <div className={`rounded-xl border p-4 ${t.isDarkMode ? 'bg-slate-800/70 border-slate-700' : 'bg-white border-blue-100'}`}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-semibold text-[#2563EB] dark:text-blue-400 flex items-center gap-1.5">
-              <Volume2 size={13} /> Phonics Audio Sprint
+              <Volume2 size={13} /> Sound practice
             </span>
             <span className={`text-[10px] ${t.muted}`}>Lesson 4 · Active</span>
           </div>
@@ -465,33 +463,33 @@ export function PlatformChapter() {
 
 const JARVIS_CONVERSATIONS = [
   {
-    topic: 'Reading Simplifier',
-    user: 'Can you summarize this dense chapter on neural plasticity into easy bullet points?',
-    intro: 'Here are the 3 key ideas broken down into simple words:',
+    topic: 'Make it short',
+    user: 'Can you make this chapter short and easy?',
+    intro: 'Here are the 3 main ideas:',
     bullets: [
-      'The brain builds stronger pathways whenever you practice a skill.',
-      'Visual diagrams and audio narration make recall 2x faster.',
-      'Short 15-minute practice sessions prevent reading exhaustion.',
+      'Practice makes your brain stronger.',
+      'Pictures and sound help you remember.',
+      'Short 15-minute sessions work best.',
     ],
   },
   {
-    topic: 'Chrome Extension',
-    user: 'How do I download and use the Chrome extension after taking my assessment test?',
-    intro: 'Here is how your personalized Chrome extension works:',
+    topic: 'Chrome helper',
+    user: 'How do I get the Chrome helper?',
+    intro: 'It is easy:',
     bullets: [
-      'Immediately download the extension once you finish your 5-minute assessment test.',
-      'Automatically applies your calibrated OpenDyslexic font and line ruler to any webpage.',
-      'Listen to articles and study materials read aloud with natural text-to-speech.',
+      'Finish the 5-minute test.',
+      'Download the Chrome helper.',
+      'Your font and ruler now work on every website.',
     ],
   },
   {
-    topic: 'Study Sprint',
-    user: 'I get overwhelmed reading long text blocks. What strategy should I use?',
-    intro: 'Try this proven multisensory study approach:',
+    topic: 'Study tip',
+    user: 'Long text is hard for me. What can I do?',
+    intro: 'Try this:',
     bullets: [
-      'Turn on the line-tracking ruler to focus on one sentence at a time.',
-      'Listen to the paragraph read aloud once before reading along.',
-      'Take a 2-minute visual rest between learning milestones.',
+      'Use the ruler to read one line at a time.',
+      'Listen first, then read along.',
+      'Take a 2-minute break.',
     ],
   },
 ];
@@ -513,7 +511,7 @@ function JarvisChat() {
             <div className={`flex items-center gap-2 text-sm font-bold ${t.title}`}>
               JARVIS AI Study Guide <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
-            <span className={`text-xs ${t.muted}`}>Multisensory Reading Companion</span>
+            <span className={`text-xs ${t.muted}`}>Your reading helper</span>
           </div>
         </div>
         <div role="tablist" aria-label="Example conversations" className="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl">
@@ -576,23 +574,22 @@ export function JarvisChapter() {
     <Chapter id="courses-section" label="Intelligent Study Companion">
       <div className="grid grid-cols-1 @3xl:grid-cols-[1fr_1.05fr] gap-8 items-center">
         <div className="space-y-5">
-          <Eyebrow icon={<Bot size={15} />} tone="purple">Intelligent Study Companion</Eyebrow>
+          <Eyebrow icon={<Bot size={15} />} tone="purple">Study helper</Eyebrow>
           <h2 className="font-black tracking-tight" style={H2_STYLE}>
-            Meet JARVIS, your personal AI learning assistant.
+            Meet JARVIS, your study helper.
           </h2>
           <p className={`text-base leading-relaxed ${t.body}`}>
-            Get instant support simplifying dense readings, turning long text blocks into clear visual bullets, and
-            explaining difficult concepts through speech or text.
+            JARVIS reads text aloud and makes long text short.
           </p>
           <CheckList
             items={[
-              'One-tap paragraph simplification and summary cards',
-              'Multisensory text-to-speech voice narration in English, Hindi & Marathi',
-              'Contextual study guides, flashcards, and course sprint summaries',
+              'Makes long text short',
+              'Reads aloud in English, Hindi and Marathi',
+              'Makes flashcards and study notes',
             ]}
           />
           <button type="button" onClick={() => navigate('/learn')} className={primaryBtn}>
-            <span>Explore Learning Arena</span>
+            <span>Try it now</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
@@ -621,13 +618,12 @@ export function AccessibilityChapter() {
   return (
     <Chapter id="assessment-section" label="Accessibility First">
       <div className="space-y-4">
-        <Eyebrow icon={<Eye size={15} />} tone="emerald">Accessibility First</Eyebrow>
+        <Eyebrow icon={<Eye size={15} />} tone="emerald">Read your way</Eyebrow>
         <h2 className="font-black tracking-tight" style={H2_STYLE}>
-          Built around the way you learn and perceive.
+          Built around the way you read.
         </h2>
         <p className={`text-base leading-relaxed max-w-2xl ${t.body}`}>
-          NeuroBridge replaces rigid clinical tools with a warm, empowering workspace. Personalize font weight, letter
-          spacing, line height, and color contrast to eliminate reading strain.
+          Change the font, spacing and colours until reading feels easy.
         </p>
       </div>
 
@@ -635,7 +631,7 @@ export function AccessibilityChapter() {
       <div className={`rounded-3xl border p-5 sm:p-6 space-y-4 ${t.inset}`}>
         <div className={`flex flex-wrap items-center justify-between gap-3 pb-3 border-b ${t.divider}`}>
           <span className="text-xs font-semibold uppercase tracking-wider text-[#2563EB] dark:text-blue-400">
-            Live Sensory Calibration
+            Try it yourself
           </span>
           <div className="flex gap-2">
             <button
@@ -657,29 +653,28 @@ export function AccessibilityChapter() {
           </div>
         </div>
 
-        <div className={`p-5 rounded-2xl border ${t.card}`}>
+        {/* Keeps its own font so the on/off comparison stays visible in Fun mode */}
+        <div data-font-preview className={`p-5 rounded-2xl border ${t.card}`}>
           <h3
             className="font-bold"
             style={{ fontSize: '1.05rem', fontFamily: demoFont, letterSpacing: dyslexiaFont ? '0.04em' : 'normal' }}
           >
-            Letters that stay anchored on the page.
+            Letters that stay still on the page.
           </h3>
           <p
             className={`text-sm mt-2 transition-all ${t.body}`}
             style={{ fontFamily: demoFont, lineHeight: wideLines ? 1.8 : 1.4, letterSpacing: dyslexiaFont ? '0.04em' : 'normal' }}
           >
-            Heavy-bottom letterforms give gravity to characters like <strong>b</strong>, <strong>d</strong>,{' '}
-            <strong>p</strong>, and <strong>q</strong>. This stops visual crowding and flipping, allowing you to read with
-            confidence and ease.
+            Heavier letters make b, d, p and q easier to tell apart. They stop flipping.
           </p>
         </div>
 
         <div className="grid grid-cols-1 @md:grid-cols-3 gap-2.5 text-xs font-medium">
           <div className={`p-3 rounded-xl border flex items-center gap-2 ${t.card} ${t.strong}`}>
-            <Type size={16} className="text-[#2563EB] shrink-0" /> Weighted Baselines
+            <Type size={16} className="text-[#2563EB] shrink-0" /> Heavier letters
           </div>
           <div className={`p-3 rounded-xl border flex items-center gap-2 ${t.card} ${t.strong}`}>
-            <Volume2 size={16} className="text-emerald-600 shrink-0" /> Text-to-Speech Engine
+            <Volume2 size={16} className="text-emerald-600 shrink-0" /> Read aloud
           </div>
           <div className={`p-3 rounded-xl border flex items-center justify-center whitespace-nowrap font-mono font-bold tracking-[0.12em] text-[#2563EB] dark:text-blue-400 ${t.card}`}>
             b · d · p · q · m · w
@@ -688,7 +683,7 @@ export function AccessibilityChapter() {
       </div>
 
       <button type="button" onClick={() => navigate('/assessment')} className={secondaryBtn(t.isDarkMode)}>
-        <span>Take Diagnostic Assessment</span>
+        <span>Take the test</span>
         <ArrowRight size={16} className="text-[#2563EB]" />
       </button>
     </Chapter>
@@ -706,14 +701,12 @@ export function ExtensionChapter() {
   return (
     <Chapter id="extension-section" label="Google Chrome Extension">
       <div className="space-y-4">
-        <Eyebrow icon={<Chrome size={15} />}>Google Chrome Extension</Eyebrow>
+        <Eyebrow icon={<Chrome size={15} />}>Chrome helper</Eyebrow>
         <h2 className="font-black tracking-tight" style={H2_STYLE}>
-          Take your reading superpowers everywhere on the web.
+          Easy reading on every website.
         </h2>
         <p className={`text-base leading-relaxed max-w-2xl ${t.body}`}>
-          Download our official Chrome extension immediately after taking your 5-minute assessment test. The extension
-          injects your calibrated OpenDyslexic font, line-tracking ruler, and voice narration directly into Wikipedia,
-          news articles, PDFs, and classroom study portals.
+          After your test, get our free Chrome helper. It adds your font, ruler and voice to any website.
         </p>
       </div>
 
@@ -738,34 +731,33 @@ export function ExtensionChapter() {
         </div>
         <div className={`p-5 sm:p-6 space-y-3 text-sm leading-relaxed ${t.strong}`}>
           <div>
-            "Neuroplasticity reveals that learning is not fixed. When dyslexic readers use multisensory line-tracking
-            guides and audio narration, visual comprehension increases by over 40%."
+            Learning is not fixed. With the right tools, reading gets easier.
           </div>
           <div className="p-2.5 rounded-lg bg-amber-100/70 dark:bg-amber-950/50 border-y-2 border-amber-400 dark:border-amber-500 text-amber-950 dark:text-amber-200 font-medium">
-            → Active sentence tracked by your NeuroBridge Chrome ruler
+            → The ruler shows the line you are reading
           </div>
           <div className={`text-xs ${t.muted}`}>
-            "Short sprints and line rulers eliminate visual crowding across Wikipedia and study websites."
+            Works on Wikipedia, news and school websites.
           </div>
           <div className={`flex flex-wrap items-center justify-between gap-2 pt-2 text-xs border-t ${t.divider} ${t.muted}`}>
             <span className="flex items-center gap-1.5">
-              <Download size={13} /> Instant 1-click download post-assessment
+              <Download size={13} /> Download after your test
             </span>
-            <span className="text-[#2563EB] dark:text-blue-400 font-semibold">100% Free for Students</span>
+            <span className="text-[#2563EB] dark:text-blue-400 font-semibold">Free for students</span>
           </div>
         </div>
       </div>
 
       <CheckList
         items={[
-          '1-Click download unlocked automatically upon test completion',
-          'Follows your mouse with a smooth line-tracking ruler',
-          'Converts any web paragraph into natural audio narration',
+          'Unlocks when you finish the test',
+          'The ruler follows your mouse',
+          'Reads any page out loud',
         ]}
       />
 
       <button type="button" onClick={() => navigate('/assessment')} className={primaryBtn}>
-        <span>Take Test to Unlock Extension</span>
+        <span>Take the test to get it</span>
         <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
       </button>
     </Chapter>
@@ -779,27 +771,27 @@ export function ExtensionChapter() {
 const STEPS = [
   {
     number: '01',
-    title: 'Take the Assessment Test',
-    desc: 'Take an engaging, judgment-free 5-minute diagnostic assessment to identify your reading strengths and sensory preferences.',
+    title: 'Take the test',
+    desc: 'A short, friendly test finds what helps you read.',
     icon: UserCheck,
     color: 'text-[#2563EB] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800',
-    tag: '5-Min Assessment',
+    tag: '5 minutes',
   },
   {
     number: '02',
-    title: 'Play Games & Learn Courses',
-    desc: 'Train your brain with cognitive games in the Sound Lab, level up your memory, and study visual, dyslexia-calibrated courses.',
+    title: 'Play and learn',
+    desc: 'Play brain games and take easy lessons.',
     icon: Gamepad2,
     color: 'text-[#7C3AED] dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-800',
-    tag: 'Games & Courses',
+    tag: 'Games and lessons',
   },
   {
     number: '03',
-    title: 'Download Chrome Extension',
-    desc: 'Immediately download our Chrome extension after your test to bring your customized font, ruler, and speech to any webpage.',
+    title: 'Get the Chrome helper',
+    desc: 'Use your reading settings on any website.',
     icon: Chrome,
     color: 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800',
-    tag: 'Unlocks Post-Test',
+    tag: 'After the test',
   },
 ];
 
@@ -810,13 +802,12 @@ export function HowItWorksChapter() {
   return (
     <Chapter id="how-it-works-section" label="How NeuroBridge Works">
       <div className="space-y-4">
-        <Eyebrow icon={<Check size={14} />}>Three Simple Steps</Eyebrow>
+        <Eyebrow icon={<Check size={14} />}>3 easy steps</Eyebrow>
         <h2 className="font-black tracking-tight" style={H2_STYLE}>
-          How NeuroBridge works for you.
+          How it works.
         </h2>
         <p className={`text-base sm:text-lg leading-relaxed max-w-2xl ${t.body}`}>
-          No complex setup or overwhelming quizzes. NeuroBridge meets you where you are and tunes the learning
-          experience to your cognitive strengths.
+          No hard setup. Just three simple steps.
         </p>
       </div>
 
@@ -863,26 +854,26 @@ export function HowItWorksChapter() {
 const COMMUNITY_CARDS = [
   {
     icon: MessageSquare,
-    title: 'Multisensory Phonics Hacks',
-    desc: 'How I use rhythmic clapping and audio narration to master tricky syllable breakdowns.',
+    title: 'Fun ways to learn sounds',
+    desc: 'Clapping and listening help me break words into parts.',
     author: 'Aarav M. · 12th Grade Student',
-    tag: 'Phonics Strategy',
+    tag: 'Sound tip',
     color: 'text-[#2563EB] bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900',
   },
   {
     icon: BookOpen,
-    title: 'Reading Without Exhaustion',
-    desc: 'Setting my line spacing to 1.8x and using 15-minute intervals transformed my exams.',
+    title: 'Reading without getting tired',
+    desc: 'More space between lines and 15-minute breaks helped me in exams.',
     author: 'Priya K. · College Freshman',
-    tag: 'Study Habit',
+    tag: 'Study tip',
     color: 'text-[#7C3AED] bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-900',
   },
   {
     icon: Lightbulb,
-    title: 'Studying in Friend Chat Circles',
-    desc: 'Our study group uses peer audio chat and shared brain game sprints to master dense chapters together.',
+    title: 'Studying with friends',
+    desc: 'Our group uses voice chat and games to learn together.',
     author: 'Rohan D. · 11th Grade Student',
-    tag: 'Friend Chat & Games',
+    tag: 'Friends and games',
     color: 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-900',
   },
 ];
@@ -894,13 +885,12 @@ export function CommunityChapter() {
   return (
     <Chapter id="community-section" label="Community Support Preview">
       <div className="space-y-4">
-        <Eyebrow icon={<Users size={14} />}>Inclusive Peer Circles</Eyebrow>
+        <Eyebrow icon={<Users size={14} />}>Community</Eyebrow>
         <h2 className="font-black tracking-tight" style={H2_STYLE}>
-          You don't have to learn alone.
+          You are not alone.
         </h2>
         <p className={`text-base sm:text-lg leading-relaxed max-w-2xl ${t.body}`}>
-          Connect with fellow students, exchange proven dyslexia study strategies, and grow alongside a supportive
-          neuro-inclusive community.
+          Meet other learners. Share tips. Study together.
         </p>
       </div>
 
@@ -938,7 +928,7 @@ export function CommunityChapter() {
       </div>
 
       <button type="button" onClick={() => navigate('/community')} className={primaryBtn}>
-        <span>Join the Community</span>
+        <span>Join the community</span>
         <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
       </button>
     </Chapter>

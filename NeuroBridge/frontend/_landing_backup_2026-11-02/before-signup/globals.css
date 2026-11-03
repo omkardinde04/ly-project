@@ -1,0 +1,3250 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+/* Landing page components (explicit so new files are always scanned) */
+@source "../components/landing";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DESIGN TOKEN SYSTEM
+   All values live as CSS variables so toggling .dyslexia-mode on <body>
+   is the ONLY thing needed to switch the entire site instantly.
+───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Typography (Lexend provides superior optical legibility & dyslexia clarity) ── */
+  --font-body:        'Lexend', 'Nunito', Arial, sans-serif;
+  --font-heading:     'Lexend', 'Nunito', Arial, sans-serif;
+
+  --text-xs:     0.75rem;
+  --text-sm:     0.875rem;
+  --text-base:   1rem;         /* 16px */
+  --text-lg:     1.125rem;
+  --text-xl:     1.25rem;
+  --text-2xl:    1.5rem;
+  --text-3xl:    1.875rem;
+  --text-4xl:    2.25rem;
+
+  --line-height-body:    1.65;
+  --line-height-heading: 1.25;
+  --letter-spacing-body: 0.015em;
+  --word-spacing-body:   normal;
+  --paragraph-spacing:   0.75rem;
+  --max-prose-width:     800px;
+  --accessibility-line-height:    var(--line-height-body);
+  --accessibility-letter-spacing: var(--letter-spacing-body);
+  --accessibility-content-width:   100%;
+
+  /* ── Colors (High-Contrast, Zero Faintness) ── */
+  --color-bg:          #FFFFFF;
+  --color-surface:     #FFFFFF;
+  --color-surface-2:   #F8FAFC;
+  --color-text:        #0F172A;
+  --color-text-muted:  #334155;
+  --color-accent:      #DBEAFE;
+  --color-accent-soft: #EFF6FF;
+  --color-primary:     #2563EB;
+  --color-coral:       #EF4444;
+  --color-coral-soft:  #FEE2E2;
+  --color-border:      #CBD5E1;
+
+  /* ── Spacing & sizing ── */
+  --btn-height:      40px;
+  --btn-padding:     0.5rem 1rem;
+  --btn-font-size:   0.875rem;
+  --card-gap:        1rem;
+  --section-gap:     2rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DYSLEXIA-FRIENDLY MODE — all token overrides in one place
+───────────────────────────────────────────────────────────────────────────── */
+
+body.dyslexia-mode {
+  /* ── Font switch ── */
+  --font-body:    'Lexend', 'Nunito', Arial, sans-serif;
+  --font-heading: 'Lexend', 'Nunito', Arial, sans-serif;
+
+  /* ── Size increase ~15% (less aggressive) ── */
+  --text-xs:     0.85rem;
+  --text-sm:     1rem;
+  --text-base:   1.1rem;     
+  --text-lg:     1.25rem;
+  --text-xl:     1.4rem;
+  --text-2xl:    1.6rem;
+  --text-3xl:    2rem;
+  --text-4xl:    2.4rem;
+
+  /* ── Spacing (cleaner) ── */
+  --line-height-body:    1.65;
+  --line-height-heading: 1.4;
+  --letter-spacing-body: 0.025em;
+  --word-spacing-body:   0.05em;
+  --paragraph-spacing:   1.25rem;
+  --max-prose-width:     640px;
+
+  /* ── Colors ── */
+  /* Keep the exact same colors in Dyslexia Mode (no overrides here) */
+
+  /* ── Larger buttons — easier to tap / click ── */
+  --btn-height:      48px;
+  --btn-padding:     0.75rem 1.25rem;
+  --btn-font-size:   1rem;
+  --card-gap:        1.25rem;
+  --section-gap:     2.5rem;
+}
+
+body.dark-mode {
+  /* One dark palette for the whole site — matches the landing page */
+  --color-bg:          #0B1120; /* page */
+  --color-surface:     #0F172A; /* cards / panels (slate-900) */
+  --color-surface-2:   #111B2E; /* raised / inset areas */
+  --color-text:        #F1F5F9; /* body text */
+  --color-text-muted:  #94A3B8; /* secondary text */
+  --color-accent:      #1E293B;
+  --color-accent-soft: #111B2E;
+  --color-primary:     #60A5FA; /* links / accents */
+  --color-border:      #1E293B; /* slate-800 */
+  --color-coral-soft:  rgba(239, 68, 68, 0.15);
+}
+
+/* Native scrollbars, form controls and date pickers follow the theme */
+html.dark { color-scheme: dark; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BASE STYLES — use token variables throughout
+───────────────────────────────────────────────────────────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+}
+@layer base {
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--accessibility-line-height);
+    letter-spacing: var(--accessibility-letter-spacing);
+    word-spacing: var(--word-spacing-body);
+    -webkit-font-smoothing: antialiased;
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease,
+      font-size 0.35s ease,
+      line-height 0.35s ease,
+      letter-spacing 0.35s ease;
+  }
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: var(--line-height-heading);
+  color: var(--color-text);
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+p {
+  margin-bottom: var(--paragraph-spacing);
+  font-size: var(--text-base);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILITY CLASSES — driven by tokens
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Surface cards */
+.nb-surface {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+}
+
+.nb-surface-2 {
+  background-color: var(--color-surface-2);
+}
+
+/* Prose text block */
+.nb-prose {
+  max-width: var(--max-prose-width);
+  line-height: var(--line-height-body);
+  font-size: var(--text-base);
+}
+
+/* Standard buttons */
+.nb-btn {
+  height: var(--btn-height);
+  padding: var(--btn-padding);
+  font-size: var(--btn-font-size);
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.nb-btn-primary {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+  border: 2px solid transparent;
+}
+
+@keyframes nb-radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes nb-radar-pulse {
+  0%, 100% { opacity: 0.42; transform: scale(0.94); }
+  50% { opacity: 0.8; transform: scale(1.04); }
+}
+
+.nb-matchmaking-screen {
+  background: #151515;
+  color: #f4f4f4;
+  background-image: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.nb-radar-ring {
+  position: absolute;
+  border: 1px solid rgba(255,255,255,0.38);
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255,255,255,0.2), rgba(255,255,255,0.04) 65%, transparent 66%);
+  box-shadow: inset 0 0 22px rgba(255,255,255,0.2), 0 0 18px rgba(255,255,255,0.08);
+  animation: nb-radar-pulse 2.8s ease-in-out infinite;
+}
+
+.nb-radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 285deg, rgba(255,255,255,0.8) 360deg);
+  animation: nb-radar-sweep 2.4s linear infinite;
+}
+
+.nb-earned-badge {
+  border: 1px solid #f1d38a;
+  background: linear-gradient(135deg, #fff9e7, #f5d988);
+  box-shadow: 0 5px 0 #d4a941, 0 8px 16px rgba(190, 145, 35, 0.18);
+}
+
+.nb-locked-badge {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+@keyframes nb-badge-reveal {
+  0% { opacity: 0; transform: scale(0.55) rotate(-8deg); }
+  70% { opacity: 1; transform: scale(1.08) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes nb-badge-shimmer {
+  from { transform: translateX(-140%) rotate(18deg); }
+  to { transform: translateX(260%) rotate(18deg); }
+}
+
+.nb-badge-unlock {
+  animation: nb-badge-reveal 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+}
+
+.nb-badge-shimmer {
+  position: absolute;
+  inset: -30% auto -30% -25%;
+  width: 18%;
+  background: rgba(255,255,255,0.7);
+  filter: blur(8px);
+  animation: nb-badge-shimmer 1.6s ease-in-out 0.45s both;
+}
+
+@keyframes nb-badge-rays {
+  from { transform: rotate(0deg) scale(0.8); opacity: 0; }
+  35% { opacity: 0.8; }
+  to { transform: rotate(180deg) scale(1.4); opacity: 0; }
+}
+
+@keyframes nb-badge-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.2) translateY(10px); }
+  45%, 70% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes nb-badge-icon-glow {
+  0%, 100% { transform: scale(0.82) rotate(-12deg); box-shadow: 0 0 20px rgba(241,211,138,0.5); }
+  55% { transform: scale(1.08) rotate(4deg); box-shadow: 0 0 70px rgba(255,218,92,1), 0 0 120px rgba(255,183,0,0.5); }
+}
+
+.nb-badge-celebration-rays {
+  position: absolute;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 9999px;
+  background: repeating-conic-gradient(from 0deg, rgba(255,220,105,0.38) 0deg 4deg, transparent 4deg 18deg);
+  animation: nb-badge-rays 2.8s ease-out both;
+}
+
+.nb-badge-celebration-icon {
+  animation: nb-badge-icon-glow 1.6s cubic-bezier(0.2, 0.8, 0.3, 1.2) 0.2s both;
+}
+
+.nb-badge-sparkle {
+  position: absolute;
+  color: #ffe47e;
+  font-size: 2rem;
+  animation: nb-badge-sparkle 1.8s ease-in-out both;
+}
+
+.nb-btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.nb-btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+}
+
+/* Card gap system */
+.nb-grid-cards {
+  display: grid;
+  gap: var(--card-gap);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FUN MODE — the reader's own font, line spacing, weight and letter spacing.
+   Values are CSS variables set on <html> by App.tsx, so every slider change
+   applies to the whole site instantly. Elements marked [data-font-preview]
+   (the font samples in the Fun-mode menu, the landing-page demo) keep their
+   own font so the samples stay accurate.
+───────────────────────────────────────────────────────────────────────────── */
+body.fun-mode {
+  font-family: var(--fun-font) !important;
+  line-height: var(--fun-line-height) !important;
+}
+body.fun-mode *:not([data-font-preview]):not([data-font-preview] *) {
+  font-family: var(--fun-font) !important;
+  letter-spacing: var(--fun-letter-spacing) !important;
+}
+/* Font samples show each font as-is (normal spacing); inline styles on the
+   live preview still win because this rule is not !important. */
+body.fun-mode [data-font-preview],
+body.fun-mode [data-font-preview] * {
+  letter-spacing: normal;
+}
+/* Body text follows the line-spacing and weight sliders; headings and
+   buttons keep their own emphasis. */
+body.fun-mode :is(p, li, dd, dt, blockquote, label, td, th, textarea, input, select):not([data-font-preview]):not([data-font-preview] *) {
+  line-height: var(--fun-line-height) !important;
+  font-weight: var(--fun-weight) !important;
+}
+body.fun-mode :is(p, li, dd, dt) :is(span, a, em):not(.font-bold):not(.font-black):not(.font-semibold):not(.font-extrabold) {
+  font-weight: inherit !important;
+}
+/* ─────────────────────────────────────────────────────────────────────────────
+   DYSLEXIA MODE — LAYOUT ADJUSTMENTS
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Reduce multi-column density */
+body.dyslexia-mode .dx-reduce-cols {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+body.dyslexia-mode .dx-single-col {
+  grid-template-columns: 1fr !important;
+}
+
+/* Increase padding on cards */
+body.dyslexia-mode .nb-surface {
+  padding: 1.5rem !important;
+}
+
+/* Larger spacing between sections */
+body.dyslexia-mode .nb-section {
+  margin-bottom: var(--section-gap);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SITE-WIDE DARK MODE
+   Most pages use fixed light Tailwind classes (bg-white, text-[#1A202C], …).
+   When <body class="dark-mode"> is set, these rules map every light colour
+   family to the same dark palette the landing page uses, so dark mode looks
+   the same on every page. Generated list — edit the palette via the tokens
+   above rather than individual rules.
+───────────────────────────────────────────────────────────────────────────── */
+
+body.dark-mode {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .bg-\[\#F8FAFC\],
+body.dark-mode .bg-\[\#f8fafc\],
+body.dark-mode .bg-\[\#F8FAFC\]\/30,
+body.dark-mode .bg-\[\#f8fafc\]\/30,
+body.dark-mode .bg-\[\#F8FAFC\]\/40,
+body.dark-mode .bg-\[\#f8fafc\]\/40,
+body.dark-mode .bg-\[\#F8FAFC\]\/50,
+body.dark-mode .bg-\[\#f8fafc\]\/50,
+body.dark-mode .bg-\[\#F8FAFC\]\/60,
+body.dark-mode .bg-\[\#f8fafc\]\/60,
+body.dark-mode .bg-\[\#F8FAFC\]\/70,
+body.dark-mode .bg-\[\#f8fafc\]\/70,
+body.dark-mode .bg-\[\#F8FAFC\]\/80,
+body.dark-mode .bg-\[\#f8fafc\]\/80,
+body.dark-mode .bg-\[\#F8FAFC\]\/85,
+body.dark-mode .bg-\[\#f8fafc\]\/85,
+body.dark-mode .bg-\[\#F8FAFC\]\/90,
+body.dark-mode .bg-\[\#f8fafc\]\/90,
+body.dark-mode .bg-\[\#F8FAFC\]\/95,
+body.dark-mode .bg-\[\#f8fafc\]\/95,
+body.dark-mode .bg-\[\#F1F5F9\],
+body.dark-mode .bg-\[\#f1f5f9\],
+body.dark-mode .bg-\[\#F1F5F9\]\/30,
+body.dark-mode .bg-\[\#f1f5f9\]\/30,
+body.dark-mode .bg-\[\#F1F5F9\]\/40,
+body.dark-mode .bg-\[\#f1f5f9\]\/40,
+body.dark-mode .bg-\[\#F1F5F9\]\/50,
+body.dark-mode .bg-\[\#f1f5f9\]\/50,
+body.dark-mode .bg-\[\#F1F5F9\]\/60,
+body.dark-mode .bg-\[\#f1f5f9\]\/60,
+body.dark-mode .bg-\[\#F1F5F9\]\/70,
+body.dark-mode .bg-\[\#f1f5f9\]\/70,
+body.dark-mode .bg-\[\#F1F5F9\]\/80,
+body.dark-mode .bg-\[\#f1f5f9\]\/80,
+body.dark-mode .bg-\[\#F1F5F9\]\/85,
+body.dark-mode .bg-\[\#f1f5f9\]\/85,
+body.dark-mode .bg-\[\#F1F5F9\]\/90,
+body.dark-mode .bg-\[\#f1f5f9\]\/90,
+body.dark-mode .bg-\[\#F1F5F9\]\/95,
+body.dark-mode .bg-\[\#f1f5f9\]\/95,
+body.dark-mode .bg-\[\#F0F7FA\],
+body.dark-mode .bg-\[\#f0f7fa\],
+body.dark-mode .bg-\[\#F0F7FA\]\/30,
+body.dark-mode .bg-\[\#f0f7fa\]\/30,
+body.dark-mode .bg-\[\#F0F7FA\]\/40,
+body.dark-mode .bg-\[\#f0f7fa\]\/40,
+body.dark-mode .bg-\[\#F0F7FA\]\/50,
+body.dark-mode .bg-\[\#f0f7fa\]\/50,
+body.dark-mode .bg-\[\#F0F7FA\]\/60,
+body.dark-mode .bg-\[\#f0f7fa\]\/60,
+body.dark-mode .bg-\[\#F0F7FA\]\/70,
+body.dark-mode .bg-\[\#f0f7fa\]\/70,
+body.dark-mode .bg-\[\#F0F7FA\]\/80,
+body.dark-mode .bg-\[\#f0f7fa\]\/80,
+body.dark-mode .bg-\[\#F0F7FA\]\/85,
+body.dark-mode .bg-\[\#f0f7fa\]\/85,
+body.dark-mode .bg-\[\#F0F7FA\]\/90,
+body.dark-mode .bg-\[\#f0f7fa\]\/90,
+body.dark-mode .bg-\[\#F0F7FA\]\/95,
+body.dark-mode .bg-\[\#f0f7fa\]\/95,
+body.dark-mode .bg-\[\#F4F9FD\],
+body.dark-mode .bg-\[\#f4f9fd\],
+body.dark-mode .bg-\[\#F4F9FD\]\/30,
+body.dark-mode .bg-\[\#f4f9fd\]\/30,
+body.dark-mode .bg-\[\#F4F9FD\]\/40,
+body.dark-mode .bg-\[\#f4f9fd\]\/40,
+body.dark-mode .bg-\[\#F4F9FD\]\/50,
+body.dark-mode .bg-\[\#f4f9fd\]\/50,
+body.dark-mode .bg-\[\#F4F9FD\]\/60,
+body.dark-mode .bg-\[\#f4f9fd\]\/60,
+body.dark-mode .bg-\[\#F4F9FD\]\/70,
+body.dark-mode .bg-\[\#f4f9fd\]\/70,
+body.dark-mode .bg-\[\#F4F9FD\]\/80,
+body.dark-mode .bg-\[\#f4f9fd\]\/80,
+body.dark-mode .bg-\[\#F4F9FD\]\/85,
+body.dark-mode .bg-\[\#f4f9fd\]\/85,
+body.dark-mode .bg-\[\#F4F9FD\]\/90,
+body.dark-mode .bg-\[\#f4f9fd\]\/90,
+body.dark-mode .bg-\[\#F4F9FD\]\/95,
+body.dark-mode .bg-\[\#f4f9fd\]\/95,
+body.dark-mode .bg-\[\#F8FBFF\],
+body.dark-mode .bg-\[\#f8fbff\],
+body.dark-mode .bg-\[\#F8FBFF\]\/30,
+body.dark-mode .bg-\[\#f8fbff\]\/30,
+body.dark-mode .bg-\[\#F8FBFF\]\/40,
+body.dark-mode .bg-\[\#f8fbff\]\/40,
+body.dark-mode .bg-\[\#F8FBFF\]\/50,
+body.dark-mode .bg-\[\#f8fbff\]\/50,
+body.dark-mode .bg-\[\#F8FBFF\]\/60,
+body.dark-mode .bg-\[\#f8fbff\]\/60,
+body.dark-mode .bg-\[\#F8FBFF\]\/70,
+body.dark-mode .bg-\[\#f8fbff\]\/70,
+body.dark-mode .bg-\[\#F8FBFF\]\/80,
+body.dark-mode .bg-\[\#f8fbff\]\/80,
+body.dark-mode .bg-\[\#F8FBFF\]\/85,
+body.dark-mode .bg-\[\#f8fbff\]\/85,
+body.dark-mode .bg-\[\#F8FBFF\]\/90,
+body.dark-mode .bg-\[\#f8fbff\]\/90,
+body.dark-mode .bg-\[\#F8FBFF\]\/95,
+body.dark-mode .bg-\[\#f8fbff\]\/95,
+body.dark-mode .bg-\[\#FAFCFF\],
+body.dark-mode .bg-\[\#fafcff\],
+body.dark-mode .bg-\[\#FAFCFF\]\/30,
+body.dark-mode .bg-\[\#fafcff\]\/30,
+body.dark-mode .bg-\[\#FAFCFF\]\/40,
+body.dark-mode .bg-\[\#fafcff\]\/40,
+body.dark-mode .bg-\[\#FAFCFF\]\/50,
+body.dark-mode .bg-\[\#fafcff\]\/50,
+body.dark-mode .bg-\[\#FAFCFF\]\/60,
+body.dark-mode .bg-\[\#fafcff\]\/60,
+body.dark-mode .bg-\[\#FAFCFF\]\/70,
+body.dark-mode .bg-\[\#fafcff\]\/70,
+body.dark-mode .bg-\[\#FAFCFF\]\/80,
+body.dark-mode .bg-\[\#fafcff\]\/80,
+body.dark-mode .bg-\[\#FAFCFF\]\/85,
+body.dark-mode .bg-\[\#fafcff\]\/85,
+body.dark-mode .bg-\[\#FAFCFF\]\/90,
+body.dark-mode .bg-\[\#fafcff\]\/90,
+body.dark-mode .bg-\[\#FAFCFF\]\/95,
+body.dark-mode .bg-\[\#fafcff\]\/95,
+body.dark-mode .bg-\[\#FAFAFA\],
+body.dark-mode .bg-\[\#fafafa\],
+body.dark-mode .bg-\[\#FAFAFA\]\/30,
+body.dark-mode .bg-\[\#fafafa\]\/30,
+body.dark-mode .bg-\[\#FAFAFA\]\/40,
+body.dark-mode .bg-\[\#fafafa\]\/40,
+body.dark-mode .bg-\[\#FAFAFA\]\/50,
+body.dark-mode .bg-\[\#fafafa\]\/50,
+body.dark-mode .bg-\[\#FAFAFA\]\/60,
+body.dark-mode .bg-\[\#fafafa\]\/60,
+body.dark-mode .bg-\[\#FAFAFA\]\/70,
+body.dark-mode .bg-\[\#fafafa\]\/70,
+body.dark-mode .bg-\[\#FAFAFA\]\/80,
+body.dark-mode .bg-\[\#fafafa\]\/80,
+body.dark-mode .bg-\[\#FAFAFA\]\/85,
+body.dark-mode .bg-\[\#fafafa\]\/85,
+body.dark-mode .bg-\[\#FAFAFA\]\/90,
+body.dark-mode .bg-\[\#fafafa\]\/90,
+body.dark-mode .bg-\[\#FAFAFA\]\/95,
+body.dark-mode .bg-\[\#fafafa\]\/95,
+body.dark-mode .bg-\[\#F5F9FF\],
+body.dark-mode .bg-\[\#f5f9ff\],
+body.dark-mode .bg-\[\#F5F9FF\]\/30,
+body.dark-mode .bg-\[\#f5f9ff\]\/30,
+body.dark-mode .bg-\[\#F5F9FF\]\/40,
+body.dark-mode .bg-\[\#f5f9ff\]\/40,
+body.dark-mode .bg-\[\#F5F9FF\]\/50,
+body.dark-mode .bg-\[\#f5f9ff\]\/50,
+body.dark-mode .bg-\[\#F5F9FF\]\/60,
+body.dark-mode .bg-\[\#f5f9ff\]\/60,
+body.dark-mode .bg-\[\#F5F9FF\]\/70,
+body.dark-mode .bg-\[\#f5f9ff\]\/70,
+body.dark-mode .bg-\[\#F5F9FF\]\/80,
+body.dark-mode .bg-\[\#f5f9ff\]\/80,
+body.dark-mode .bg-\[\#F5F9FF\]\/85,
+body.dark-mode .bg-\[\#f5f9ff\]\/85,
+body.dark-mode .bg-\[\#F5F9FF\]\/90,
+body.dark-mode .bg-\[\#f5f9ff\]\/90,
+body.dark-mode .bg-\[\#F5F9FF\]\/95,
+body.dark-mode .bg-\[\#f5f9ff\]\/95,
+body.dark-mode .bg-gray-50,
+body.dark-mode .bg-gray-50\/30,
+body.dark-mode .bg-gray-50\/40,
+body.dark-mode .bg-gray-50\/50,
+body.dark-mode .bg-gray-50\/60,
+body.dark-mode .bg-gray-50\/70,
+body.dark-mode .bg-gray-50\/80,
+body.dark-mode .bg-gray-50\/85,
+body.dark-mode .bg-gray-50\/90,
+body.dark-mode .bg-gray-50\/95,
+body.dark-mode .bg-slate-50,
+body.dark-mode .bg-slate-50\/30,
+body.dark-mode .bg-slate-50\/40,
+body.dark-mode .bg-slate-50\/50,
+body.dark-mode .bg-slate-50\/60,
+body.dark-mode .bg-slate-50\/70,
+body.dark-mode .bg-slate-50\/80,
+body.dark-mode .bg-slate-50\/85,
+body.dark-mode .bg-slate-50\/90,
+body.dark-mode .bg-slate-50\/95,
+body.dark-mode .bg-zinc-50,
+body.dark-mode .bg-zinc-50\/30,
+body.dark-mode .bg-zinc-50\/40,
+body.dark-mode .bg-zinc-50\/50,
+body.dark-mode .bg-zinc-50\/60,
+body.dark-mode .bg-zinc-50\/70,
+body.dark-mode .bg-zinc-50\/80,
+body.dark-mode .bg-zinc-50\/85,
+body.dark-mode .bg-zinc-50\/90,
+body.dark-mode .bg-zinc-50\/95,
+body.dark-mode .bg-neutral-50,
+body.dark-mode .bg-neutral-50\/30,
+body.dark-mode .bg-neutral-50\/40,
+body.dark-mode .bg-neutral-50\/50,
+body.dark-mode .bg-neutral-50\/60,
+body.dark-mode .bg-neutral-50\/70,
+body.dark-mode .bg-neutral-50\/80,
+body.dark-mode .bg-neutral-50\/85,
+body.dark-mode .bg-neutral-50\/90,
+body.dark-mode .bg-neutral-50\/95 {
+  background-color: var(--color-bg) !important;
+}
+
+body.dark-mode .bg-white,
+body.dark-mode .bg-white\/45,
+body.dark-mode .bg-white\/50,
+body.dark-mode .bg-white\/60,
+body.dark-mode .bg-white\/70,
+body.dark-mode .bg-white\/80,
+body.dark-mode .bg-white\/85,
+body.dark-mode .bg-white\/90,
+body.dark-mode .bg-white\/95 {
+  background-color: var(--color-surface) !important;
+}
+
+body.dark-mode .bg-white {
+  background-color: var(--color-surface) !important;
+}
+
+body.dark-mode .bg-slate-100,
+body.dark-mode .bg-slate-100\/30,
+body.dark-mode .bg-slate-100\/40,
+body.dark-mode .bg-slate-100\/50,
+body.dark-mode .bg-slate-100\/60,
+body.dark-mode .bg-slate-100\/70,
+body.dark-mode .bg-slate-100\/80,
+body.dark-mode .bg-slate-100\/85,
+body.dark-mode .bg-slate-100\/90,
+body.dark-mode .bg-slate-100\/95,
+body.dark-mode .bg-gray-100,
+body.dark-mode .bg-gray-100\/30,
+body.dark-mode .bg-gray-100\/40,
+body.dark-mode .bg-gray-100\/50,
+body.dark-mode .bg-gray-100\/60,
+body.dark-mode .bg-gray-100\/70,
+body.dark-mode .bg-gray-100\/80,
+body.dark-mode .bg-gray-100\/85,
+body.dark-mode .bg-gray-100\/90,
+body.dark-mode .bg-gray-100\/95,
+body.dark-mode .bg-\[\#e2e8f0\],
+body.dark-mode .bg-\[\#E2E8F0\],
+body.dark-mode .bg-\[\#e2e8f0\]\/30,
+body.dark-mode .bg-\[\#E2E8F0\]\/30,
+body.dark-mode .bg-\[\#e2e8f0\]\/40,
+body.dark-mode .bg-\[\#E2E8F0\]\/40,
+body.dark-mode .bg-\[\#e2e8f0\]\/50,
+body.dark-mode .bg-\[\#E2E8F0\]\/50,
+body.dark-mode .bg-\[\#e2e8f0\]\/60,
+body.dark-mode .bg-\[\#E2E8F0\]\/60,
+body.dark-mode .bg-\[\#e2e8f0\]\/70,
+body.dark-mode .bg-\[\#E2E8F0\]\/70,
+body.dark-mode .bg-\[\#e2e8f0\]\/80,
+body.dark-mode .bg-\[\#E2E8F0\]\/80,
+body.dark-mode .bg-\[\#e2e8f0\]\/85,
+body.dark-mode .bg-\[\#E2E8F0\]\/85,
+body.dark-mode .bg-\[\#e2e8f0\]\/90,
+body.dark-mode .bg-\[\#E2E8F0\]\/90,
+body.dark-mode .bg-\[\#e2e8f0\]\/95,
+body.dark-mode .bg-\[\#E2E8F0\]\/95 {
+  background-color: #1E293B !important;
+}
+
+body.dark-mode .bg-slate-200,
+body.dark-mode .bg-slate-200\/30,
+body.dark-mode .bg-slate-200\/40,
+body.dark-mode .bg-slate-200\/50,
+body.dark-mode .bg-slate-200\/60,
+body.dark-mode .bg-slate-200\/70,
+body.dark-mode .bg-slate-200\/80,
+body.dark-mode .bg-slate-200\/85,
+body.dark-mode .bg-slate-200\/90,
+body.dark-mode .bg-slate-200\/95,
+body.dark-mode .bg-gray-200,
+body.dark-mode .bg-gray-200\/30,
+body.dark-mode .bg-gray-200\/40,
+body.dark-mode .bg-gray-200\/50,
+body.dark-mode .bg-gray-200\/60,
+body.dark-mode .bg-gray-200\/70,
+body.dark-mode .bg-gray-200\/80,
+body.dark-mode .bg-gray-200\/85,
+body.dark-mode .bg-gray-200\/90,
+body.dark-mode .bg-gray-200\/95 {
+  background-color: #273449 !important;
+}
+
+body.dark-mode .bg-slate-300,
+body.dark-mode .bg-slate-300\/30,
+body.dark-mode .bg-slate-300\/40,
+body.dark-mode .bg-slate-300\/50,
+body.dark-mode .bg-slate-300\/60,
+body.dark-mode .bg-slate-300\/70,
+body.dark-mode .bg-slate-300\/80,
+body.dark-mode .bg-slate-300\/85,
+body.dark-mode .bg-slate-300\/90,
+body.dark-mode .bg-slate-300\/95,
+body.dark-mode .bg-gray-300,
+body.dark-mode .bg-gray-300\/30,
+body.dark-mode .bg-gray-300\/40,
+body.dark-mode .bg-gray-300\/50,
+body.dark-mode .bg-gray-300\/60,
+body.dark-mode .bg-gray-300\/70,
+body.dark-mode .bg-gray-300\/80,
+body.dark-mode .bg-gray-300\/85,
+body.dark-mode .bg-gray-300\/90,
+body.dark-mode .bg-gray-300\/95 {
+  background-color: #334155 !important;
+}
+
+body.dark-mode .bg-blue-50,
+body.dark-mode .bg-blue-50\/10,
+body.dark-mode .bg-blue-50\/15,
+body.dark-mode .bg-blue-50\/20,
+body.dark-mode .bg-blue-50\/25,
+body.dark-mode .bg-blue-50\/30,
+body.dark-mode .bg-blue-50\/35,
+body.dark-mode .bg-blue-50\/40,
+body.dark-mode .bg-blue-50\/50,
+body.dark-mode .bg-blue-50\/60,
+body.dark-mode .bg-blue-50\/70,
+body.dark-mode .bg-blue-50\/80,
+body.dark-mode .bg-blue-50\/85,
+body.dark-mode .bg-blue-50\/90,
+body.dark-mode .bg-blue-50\/95,
+body.dark-mode .bg-blue-100,
+body.dark-mode .bg-blue-100\/10,
+body.dark-mode .bg-blue-100\/15,
+body.dark-mode .bg-blue-100\/20,
+body.dark-mode .bg-blue-100\/25,
+body.dark-mode .bg-blue-100\/30,
+body.dark-mode .bg-blue-100\/35,
+body.dark-mode .bg-blue-100\/40,
+body.dark-mode .bg-blue-100\/50,
+body.dark-mode .bg-blue-100\/60,
+body.dark-mode .bg-blue-100\/70,
+body.dark-mode .bg-blue-100\/80,
+body.dark-mode .bg-blue-100\/85,
+body.dark-mode .bg-blue-100\/90,
+body.dark-mode .bg-blue-100\/95,
+body.dark-mode .bg-sky-50,
+body.dark-mode .bg-sky-50\/10,
+body.dark-mode .bg-sky-50\/15,
+body.dark-mode .bg-sky-50\/20,
+body.dark-mode .bg-sky-50\/25,
+body.dark-mode .bg-sky-50\/30,
+body.dark-mode .bg-sky-50\/35,
+body.dark-mode .bg-sky-50\/40,
+body.dark-mode .bg-sky-50\/50,
+body.dark-mode .bg-sky-50\/60,
+body.dark-mode .bg-sky-50\/70,
+body.dark-mode .bg-sky-50\/80,
+body.dark-mode .bg-sky-50\/85,
+body.dark-mode .bg-sky-50\/90,
+body.dark-mode .bg-sky-50\/95,
+body.dark-mode .bg-sky-100,
+body.dark-mode .bg-sky-100\/10,
+body.dark-mode .bg-sky-100\/15,
+body.dark-mode .bg-sky-100\/20,
+body.dark-mode .bg-sky-100\/25,
+body.dark-mode .bg-sky-100\/30,
+body.dark-mode .bg-sky-100\/35,
+body.dark-mode .bg-sky-100\/40,
+body.dark-mode .bg-sky-100\/50,
+body.dark-mode .bg-sky-100\/60,
+body.dark-mode .bg-sky-100\/70,
+body.dark-mode .bg-sky-100\/80,
+body.dark-mode .bg-sky-100\/85,
+body.dark-mode .bg-sky-100\/90,
+body.dark-mode .bg-sky-100\/95,
+body.dark-mode .bg-indigo-50,
+body.dark-mode .bg-indigo-50\/10,
+body.dark-mode .bg-indigo-50\/15,
+body.dark-mode .bg-indigo-50\/20,
+body.dark-mode .bg-indigo-50\/25,
+body.dark-mode .bg-indigo-50\/30,
+body.dark-mode .bg-indigo-50\/35,
+body.dark-mode .bg-indigo-50\/40,
+body.dark-mode .bg-indigo-50\/50,
+body.dark-mode .bg-indigo-50\/60,
+body.dark-mode .bg-indigo-50\/70,
+body.dark-mode .bg-indigo-50\/80,
+body.dark-mode .bg-indigo-50\/85,
+body.dark-mode .bg-indigo-50\/90,
+body.dark-mode .bg-indigo-50\/95,
+body.dark-mode .bg-indigo-100,
+body.dark-mode .bg-indigo-100\/10,
+body.dark-mode .bg-indigo-100\/15,
+body.dark-mode .bg-indigo-100\/20,
+body.dark-mode .bg-indigo-100\/25,
+body.dark-mode .bg-indigo-100\/30,
+body.dark-mode .bg-indigo-100\/35,
+body.dark-mode .bg-indigo-100\/40,
+body.dark-mode .bg-indigo-100\/50,
+body.dark-mode .bg-indigo-100\/60,
+body.dark-mode .bg-indigo-100\/70,
+body.dark-mode .bg-indigo-100\/80,
+body.dark-mode .bg-indigo-100\/85,
+body.dark-mode .bg-indigo-100\/90,
+body.dark-mode .bg-indigo-100\/95,
+body.dark-mode .bg-cyan-50,
+body.dark-mode .bg-cyan-50\/10,
+body.dark-mode .bg-cyan-50\/15,
+body.dark-mode .bg-cyan-50\/20,
+body.dark-mode .bg-cyan-50\/25,
+body.dark-mode .bg-cyan-50\/30,
+body.dark-mode .bg-cyan-50\/35,
+body.dark-mode .bg-cyan-50\/40,
+body.dark-mode .bg-cyan-50\/50,
+body.dark-mode .bg-cyan-50\/60,
+body.dark-mode .bg-cyan-50\/70,
+body.dark-mode .bg-cyan-50\/80,
+body.dark-mode .bg-cyan-50\/85,
+body.dark-mode .bg-cyan-50\/90,
+body.dark-mode .bg-cyan-50\/95,
+body.dark-mode .bg-cyan-100,
+body.dark-mode .bg-cyan-100\/10,
+body.dark-mode .bg-cyan-100\/15,
+body.dark-mode .bg-cyan-100\/20,
+body.dark-mode .bg-cyan-100\/25,
+body.dark-mode .bg-cyan-100\/30,
+body.dark-mode .bg-cyan-100\/35,
+body.dark-mode .bg-cyan-100\/40,
+body.dark-mode .bg-cyan-100\/50,
+body.dark-mode .bg-cyan-100\/60,
+body.dark-mode .bg-cyan-100\/70,
+body.dark-mode .bg-cyan-100\/80,
+body.dark-mode .bg-cyan-100\/85,
+body.dark-mode .bg-cyan-100\/90,
+body.dark-mode .bg-cyan-100\/95,
+body.dark-mode .bg-\[\#eef2ff\],
+body.dark-mode .bg-\[\#EEF2FF\],
+body.dark-mode .bg-\[\#DBEAF5\],
+body.dark-mode .bg-\[\#dbeaf5\],
+body.dark-mode .bg-\[\#DBEAFE\],
+body.dark-mode .bg-\[\#dbeafe\],
+body.dark-mode .bg-\[\#EFF6FF\],
+body.dark-mode .bg-\[\#eff6ff\] {
+  background-color: rgba(59, 130, 246, 0.14) !important;
+}
+
+body.dark-mode .bg-purple-50,
+body.dark-mode .bg-purple-50\/10,
+body.dark-mode .bg-purple-50\/15,
+body.dark-mode .bg-purple-50\/20,
+body.dark-mode .bg-purple-50\/25,
+body.dark-mode .bg-purple-50\/30,
+body.dark-mode .bg-purple-50\/35,
+body.dark-mode .bg-purple-50\/40,
+body.dark-mode .bg-purple-50\/50,
+body.dark-mode .bg-purple-50\/60,
+body.dark-mode .bg-purple-50\/70,
+body.dark-mode .bg-purple-50\/80,
+body.dark-mode .bg-purple-50\/85,
+body.dark-mode .bg-purple-50\/90,
+body.dark-mode .bg-purple-50\/95,
+body.dark-mode .bg-purple-100,
+body.dark-mode .bg-purple-100\/10,
+body.dark-mode .bg-purple-100\/15,
+body.dark-mode .bg-purple-100\/20,
+body.dark-mode .bg-purple-100\/25,
+body.dark-mode .bg-purple-100\/30,
+body.dark-mode .bg-purple-100\/35,
+body.dark-mode .bg-purple-100\/40,
+body.dark-mode .bg-purple-100\/50,
+body.dark-mode .bg-purple-100\/60,
+body.dark-mode .bg-purple-100\/70,
+body.dark-mode .bg-purple-100\/80,
+body.dark-mode .bg-purple-100\/85,
+body.dark-mode .bg-purple-100\/90,
+body.dark-mode .bg-purple-100\/95,
+body.dark-mode .bg-violet-50,
+body.dark-mode .bg-violet-50\/10,
+body.dark-mode .bg-violet-50\/15,
+body.dark-mode .bg-violet-50\/20,
+body.dark-mode .bg-violet-50\/25,
+body.dark-mode .bg-violet-50\/30,
+body.dark-mode .bg-violet-50\/35,
+body.dark-mode .bg-violet-50\/40,
+body.dark-mode .bg-violet-50\/50,
+body.dark-mode .bg-violet-50\/60,
+body.dark-mode .bg-violet-50\/70,
+body.dark-mode .bg-violet-50\/80,
+body.dark-mode .bg-violet-50\/85,
+body.dark-mode .bg-violet-50\/90,
+body.dark-mode .bg-violet-50\/95,
+body.dark-mode .bg-violet-100,
+body.dark-mode .bg-violet-100\/10,
+body.dark-mode .bg-violet-100\/15,
+body.dark-mode .bg-violet-100\/20,
+body.dark-mode .bg-violet-100\/25,
+body.dark-mode .bg-violet-100\/30,
+body.dark-mode .bg-violet-100\/35,
+body.dark-mode .bg-violet-100\/40,
+body.dark-mode .bg-violet-100\/50,
+body.dark-mode .bg-violet-100\/60,
+body.dark-mode .bg-violet-100\/70,
+body.dark-mode .bg-violet-100\/80,
+body.dark-mode .bg-violet-100\/85,
+body.dark-mode .bg-violet-100\/90,
+body.dark-mode .bg-violet-100\/95,
+body.dark-mode .bg-fuchsia-50,
+body.dark-mode .bg-fuchsia-50\/10,
+body.dark-mode .bg-fuchsia-50\/15,
+body.dark-mode .bg-fuchsia-50\/20,
+body.dark-mode .bg-fuchsia-50\/25,
+body.dark-mode .bg-fuchsia-50\/30,
+body.dark-mode .bg-fuchsia-50\/35,
+body.dark-mode .bg-fuchsia-50\/40,
+body.dark-mode .bg-fuchsia-50\/50,
+body.dark-mode .bg-fuchsia-50\/60,
+body.dark-mode .bg-fuchsia-50\/70,
+body.dark-mode .bg-fuchsia-50\/80,
+body.dark-mode .bg-fuchsia-50\/85,
+body.dark-mode .bg-fuchsia-50\/90,
+body.dark-mode .bg-fuchsia-50\/95,
+body.dark-mode .bg-fuchsia-100,
+body.dark-mode .bg-fuchsia-100\/10,
+body.dark-mode .bg-fuchsia-100\/15,
+body.dark-mode .bg-fuchsia-100\/20,
+body.dark-mode .bg-fuchsia-100\/25,
+body.dark-mode .bg-fuchsia-100\/30,
+body.dark-mode .bg-fuchsia-100\/35,
+body.dark-mode .bg-fuchsia-100\/40,
+body.dark-mode .bg-fuchsia-100\/50,
+body.dark-mode .bg-fuchsia-100\/60,
+body.dark-mode .bg-fuchsia-100\/70,
+body.dark-mode .bg-fuchsia-100\/80,
+body.dark-mode .bg-fuchsia-100\/85,
+body.dark-mode .bg-fuchsia-100\/90,
+body.dark-mode .bg-fuchsia-100\/95 {
+  background-color: rgba(139, 92, 246, 0.16) !important;
+}
+
+body.dark-mode .bg-emerald-50,
+body.dark-mode .bg-emerald-50\/10,
+body.dark-mode .bg-emerald-50\/15,
+body.dark-mode .bg-emerald-50\/20,
+body.dark-mode .bg-emerald-50\/25,
+body.dark-mode .bg-emerald-50\/30,
+body.dark-mode .bg-emerald-50\/35,
+body.dark-mode .bg-emerald-50\/40,
+body.dark-mode .bg-emerald-50\/50,
+body.dark-mode .bg-emerald-50\/60,
+body.dark-mode .bg-emerald-50\/70,
+body.dark-mode .bg-emerald-50\/80,
+body.dark-mode .bg-emerald-50\/85,
+body.dark-mode .bg-emerald-50\/90,
+body.dark-mode .bg-emerald-50\/95,
+body.dark-mode .bg-emerald-100,
+body.dark-mode .bg-emerald-100\/10,
+body.dark-mode .bg-emerald-100\/15,
+body.dark-mode .bg-emerald-100\/20,
+body.dark-mode .bg-emerald-100\/25,
+body.dark-mode .bg-emerald-100\/30,
+body.dark-mode .bg-emerald-100\/35,
+body.dark-mode .bg-emerald-100\/40,
+body.dark-mode .bg-emerald-100\/50,
+body.dark-mode .bg-emerald-100\/60,
+body.dark-mode .bg-emerald-100\/70,
+body.dark-mode .bg-emerald-100\/80,
+body.dark-mode .bg-emerald-100\/85,
+body.dark-mode .bg-emerald-100\/90,
+body.dark-mode .bg-emerald-100\/95,
+body.dark-mode .bg-green-50,
+body.dark-mode .bg-green-50\/10,
+body.dark-mode .bg-green-50\/15,
+body.dark-mode .bg-green-50\/20,
+body.dark-mode .bg-green-50\/25,
+body.dark-mode .bg-green-50\/30,
+body.dark-mode .bg-green-50\/35,
+body.dark-mode .bg-green-50\/40,
+body.dark-mode .bg-green-50\/50,
+body.dark-mode .bg-green-50\/60,
+body.dark-mode .bg-green-50\/70,
+body.dark-mode .bg-green-50\/80,
+body.dark-mode .bg-green-50\/85,
+body.dark-mode .bg-green-50\/90,
+body.dark-mode .bg-green-50\/95,
+body.dark-mode .bg-green-100,
+body.dark-mode .bg-green-100\/10,
+body.dark-mode .bg-green-100\/15,
+body.dark-mode .bg-green-100\/20,
+body.dark-mode .bg-green-100\/25,
+body.dark-mode .bg-green-100\/30,
+body.dark-mode .bg-green-100\/35,
+body.dark-mode .bg-green-100\/40,
+body.dark-mode .bg-green-100\/50,
+body.dark-mode .bg-green-100\/60,
+body.dark-mode .bg-green-100\/70,
+body.dark-mode .bg-green-100\/80,
+body.dark-mode .bg-green-100\/85,
+body.dark-mode .bg-green-100\/90,
+body.dark-mode .bg-green-100\/95,
+body.dark-mode .bg-teal-50,
+body.dark-mode .bg-teal-50\/10,
+body.dark-mode .bg-teal-50\/15,
+body.dark-mode .bg-teal-50\/20,
+body.dark-mode .bg-teal-50\/25,
+body.dark-mode .bg-teal-50\/30,
+body.dark-mode .bg-teal-50\/35,
+body.dark-mode .bg-teal-50\/40,
+body.dark-mode .bg-teal-50\/50,
+body.dark-mode .bg-teal-50\/60,
+body.dark-mode .bg-teal-50\/70,
+body.dark-mode .bg-teal-50\/80,
+body.dark-mode .bg-teal-50\/85,
+body.dark-mode .bg-teal-50\/90,
+body.dark-mode .bg-teal-50\/95,
+body.dark-mode .bg-teal-100,
+body.dark-mode .bg-teal-100\/10,
+body.dark-mode .bg-teal-100\/15,
+body.dark-mode .bg-teal-100\/20,
+body.dark-mode .bg-teal-100\/25,
+body.dark-mode .bg-teal-100\/30,
+body.dark-mode .bg-teal-100\/35,
+body.dark-mode .bg-teal-100\/40,
+body.dark-mode .bg-teal-100\/50,
+body.dark-mode .bg-teal-100\/60,
+body.dark-mode .bg-teal-100\/70,
+body.dark-mode .bg-teal-100\/80,
+body.dark-mode .bg-teal-100\/85,
+body.dark-mode .bg-teal-100\/90,
+body.dark-mode .bg-teal-100\/95,
+body.dark-mode .bg-lime-50,
+body.dark-mode .bg-lime-50\/10,
+body.dark-mode .bg-lime-50\/15,
+body.dark-mode .bg-lime-50\/20,
+body.dark-mode .bg-lime-50\/25,
+body.dark-mode .bg-lime-50\/30,
+body.dark-mode .bg-lime-50\/35,
+body.dark-mode .bg-lime-50\/40,
+body.dark-mode .bg-lime-50\/50,
+body.dark-mode .bg-lime-50\/60,
+body.dark-mode .bg-lime-50\/70,
+body.dark-mode .bg-lime-50\/80,
+body.dark-mode .bg-lime-50\/85,
+body.dark-mode .bg-lime-50\/90,
+body.dark-mode .bg-lime-50\/95,
+body.dark-mode .bg-lime-100,
+body.dark-mode .bg-lime-100\/10,
+body.dark-mode .bg-lime-100\/15,
+body.dark-mode .bg-lime-100\/20,
+body.dark-mode .bg-lime-100\/25,
+body.dark-mode .bg-lime-100\/30,
+body.dark-mode .bg-lime-100\/35,
+body.dark-mode .bg-lime-100\/40,
+body.dark-mode .bg-lime-100\/50,
+body.dark-mode .bg-lime-100\/60,
+body.dark-mode .bg-lime-100\/70,
+body.dark-mode .bg-lime-100\/80,
+body.dark-mode .bg-lime-100\/85,
+body.dark-mode .bg-lime-100\/90,
+body.dark-mode .bg-lime-100\/95 {
+  background-color: rgba(16, 185, 129, 0.14) !important;
+}
+
+body.dark-mode .bg-amber-50,
+body.dark-mode .bg-amber-50\/10,
+body.dark-mode .bg-amber-50\/15,
+body.dark-mode .bg-amber-50\/20,
+body.dark-mode .bg-amber-50\/25,
+body.dark-mode .bg-amber-50\/30,
+body.dark-mode .bg-amber-50\/35,
+body.dark-mode .bg-amber-50\/40,
+body.dark-mode .bg-amber-50\/50,
+body.dark-mode .bg-amber-50\/60,
+body.dark-mode .bg-amber-50\/70,
+body.dark-mode .bg-amber-50\/80,
+body.dark-mode .bg-amber-50\/85,
+body.dark-mode .bg-amber-50\/90,
+body.dark-mode .bg-amber-50\/95,
+body.dark-mode .bg-amber-100,
+body.dark-mode .bg-amber-100\/10,
+body.dark-mode .bg-amber-100\/15,
+body.dark-mode .bg-amber-100\/20,
+body.dark-mode .bg-amber-100\/25,
+body.dark-mode .bg-amber-100\/30,
+body.dark-mode .bg-amber-100\/35,
+body.dark-mode .bg-amber-100\/40,
+body.dark-mode .bg-amber-100\/50,
+body.dark-mode .bg-amber-100\/60,
+body.dark-mode .bg-amber-100\/70,
+body.dark-mode .bg-amber-100\/80,
+body.dark-mode .bg-amber-100\/85,
+body.dark-mode .bg-amber-100\/90,
+body.dark-mode .bg-amber-100\/95,
+body.dark-mode .bg-yellow-50,
+body.dark-mode .bg-yellow-50\/10,
+body.dark-mode .bg-yellow-50\/15,
+body.dark-mode .bg-yellow-50\/20,
+body.dark-mode .bg-yellow-50\/25,
+body.dark-mode .bg-yellow-50\/30,
+body.dark-mode .bg-yellow-50\/35,
+body.dark-mode .bg-yellow-50\/40,
+body.dark-mode .bg-yellow-50\/50,
+body.dark-mode .bg-yellow-50\/60,
+body.dark-mode .bg-yellow-50\/70,
+body.dark-mode .bg-yellow-50\/80,
+body.dark-mode .bg-yellow-50\/85,
+body.dark-mode .bg-yellow-50\/90,
+body.dark-mode .bg-yellow-50\/95,
+body.dark-mode .bg-yellow-100,
+body.dark-mode .bg-yellow-100\/10,
+body.dark-mode .bg-yellow-100\/15,
+body.dark-mode .bg-yellow-100\/20,
+body.dark-mode .bg-yellow-100\/25,
+body.dark-mode .bg-yellow-100\/30,
+body.dark-mode .bg-yellow-100\/35,
+body.dark-mode .bg-yellow-100\/40,
+body.dark-mode .bg-yellow-100\/50,
+body.dark-mode .bg-yellow-100\/60,
+body.dark-mode .bg-yellow-100\/70,
+body.dark-mode .bg-yellow-100\/80,
+body.dark-mode .bg-yellow-100\/85,
+body.dark-mode .bg-yellow-100\/90,
+body.dark-mode .bg-yellow-100\/95,
+body.dark-mode .bg-orange-50,
+body.dark-mode .bg-orange-50\/10,
+body.dark-mode .bg-orange-50\/15,
+body.dark-mode .bg-orange-50\/20,
+body.dark-mode .bg-orange-50\/25,
+body.dark-mode .bg-orange-50\/30,
+body.dark-mode .bg-orange-50\/35,
+body.dark-mode .bg-orange-50\/40,
+body.dark-mode .bg-orange-50\/50,
+body.dark-mode .bg-orange-50\/60,
+body.dark-mode .bg-orange-50\/70,
+body.dark-mode .bg-orange-50\/80,
+body.dark-mode .bg-orange-50\/85,
+body.dark-mode .bg-orange-50\/90,
+body.dark-mode .bg-orange-50\/95,
+body.dark-mode .bg-orange-100,
+body.dark-mode .bg-orange-100\/10,
+body.dark-mode .bg-orange-100\/15,
+body.dark-mode .bg-orange-100\/20,
+body.dark-mode .bg-orange-100\/25,
+body.dark-mode .bg-orange-100\/30,
+body.dark-mode .bg-orange-100\/35,
+body.dark-mode .bg-orange-100\/40,
+body.dark-mode .bg-orange-100\/50,
+body.dark-mode .bg-orange-100\/60,
+body.dark-mode .bg-orange-100\/70,
+body.dark-mode .bg-orange-100\/80,
+body.dark-mode .bg-orange-100\/85,
+body.dark-mode .bg-orange-100\/90,
+body.dark-mode .bg-orange-100\/95 {
+  background-color: rgba(245, 158, 11, 0.14) !important;
+}
+
+body.dark-mode .bg-red-50,
+body.dark-mode .bg-red-50\/10,
+body.dark-mode .bg-red-50\/15,
+body.dark-mode .bg-red-50\/20,
+body.dark-mode .bg-red-50\/25,
+body.dark-mode .bg-red-50\/30,
+body.dark-mode .bg-red-50\/35,
+body.dark-mode .bg-red-50\/40,
+body.dark-mode .bg-red-50\/50,
+body.dark-mode .bg-red-50\/60,
+body.dark-mode .bg-red-50\/70,
+body.dark-mode .bg-red-50\/80,
+body.dark-mode .bg-red-50\/85,
+body.dark-mode .bg-red-50\/90,
+body.dark-mode .bg-red-50\/95,
+body.dark-mode .bg-red-100,
+body.dark-mode .bg-red-100\/10,
+body.dark-mode .bg-red-100\/15,
+body.dark-mode .bg-red-100\/20,
+body.dark-mode .bg-red-100\/25,
+body.dark-mode .bg-red-100\/30,
+body.dark-mode .bg-red-100\/35,
+body.dark-mode .bg-red-100\/40,
+body.dark-mode .bg-red-100\/50,
+body.dark-mode .bg-red-100\/60,
+body.dark-mode .bg-red-100\/70,
+body.dark-mode .bg-red-100\/80,
+body.dark-mode .bg-red-100\/85,
+body.dark-mode .bg-red-100\/90,
+body.dark-mode .bg-red-100\/95,
+body.dark-mode .bg-rose-50,
+body.dark-mode .bg-rose-50\/10,
+body.dark-mode .bg-rose-50\/15,
+body.dark-mode .bg-rose-50\/20,
+body.dark-mode .bg-rose-50\/25,
+body.dark-mode .bg-rose-50\/30,
+body.dark-mode .bg-rose-50\/35,
+body.dark-mode .bg-rose-50\/40,
+body.dark-mode .bg-rose-50\/50,
+body.dark-mode .bg-rose-50\/60,
+body.dark-mode .bg-rose-50\/70,
+body.dark-mode .bg-rose-50\/80,
+body.dark-mode .bg-rose-50\/85,
+body.dark-mode .bg-rose-50\/90,
+body.dark-mode .bg-rose-50\/95,
+body.dark-mode .bg-rose-100,
+body.dark-mode .bg-rose-100\/10,
+body.dark-mode .bg-rose-100\/15,
+body.dark-mode .bg-rose-100\/20,
+body.dark-mode .bg-rose-100\/25,
+body.dark-mode .bg-rose-100\/30,
+body.dark-mode .bg-rose-100\/35,
+body.dark-mode .bg-rose-100\/40,
+body.dark-mode .bg-rose-100\/50,
+body.dark-mode .bg-rose-100\/60,
+body.dark-mode .bg-rose-100\/70,
+body.dark-mode .bg-rose-100\/80,
+body.dark-mode .bg-rose-100\/85,
+body.dark-mode .bg-rose-100\/90,
+body.dark-mode .bg-rose-100\/95,
+body.dark-mode .bg-pink-50,
+body.dark-mode .bg-pink-50\/10,
+body.dark-mode .bg-pink-50\/15,
+body.dark-mode .bg-pink-50\/20,
+body.dark-mode .bg-pink-50\/25,
+body.dark-mode .bg-pink-50\/30,
+body.dark-mode .bg-pink-50\/35,
+body.dark-mode .bg-pink-50\/40,
+body.dark-mode .bg-pink-50\/50,
+body.dark-mode .bg-pink-50\/60,
+body.dark-mode .bg-pink-50\/70,
+body.dark-mode .bg-pink-50\/80,
+body.dark-mode .bg-pink-50\/85,
+body.dark-mode .bg-pink-50\/90,
+body.dark-mode .bg-pink-50\/95,
+body.dark-mode .bg-pink-100,
+body.dark-mode .bg-pink-100\/10,
+body.dark-mode .bg-pink-100\/15,
+body.dark-mode .bg-pink-100\/20,
+body.dark-mode .bg-pink-100\/25,
+body.dark-mode .bg-pink-100\/30,
+body.dark-mode .bg-pink-100\/35,
+body.dark-mode .bg-pink-100\/40,
+body.dark-mode .bg-pink-100\/50,
+body.dark-mode .bg-pink-100\/60,
+body.dark-mode .bg-pink-100\/70,
+body.dark-mode .bg-pink-100\/80,
+body.dark-mode .bg-pink-100\/85,
+body.dark-mode .bg-pink-100\/90,
+body.dark-mode .bg-pink-100\/95 {
+  background-color: rgba(244, 63, 94, 0.14) !important;
+}
+
+body.dark-mode .bg-blue-200,
+body.dark-mode .bg-indigo-200,
+body.dark-mode .bg-sky-200 {
+  background-color: rgba(59, 130, 246, 0.24) !important;
+}
+
+body.dark-mode .bg-purple-200 {
+  background-color: rgba(139, 92, 246, 0.24) !important;
+}
+
+body.dark-mode .bg-emerald-200,
+body.dark-mode .bg-green-200,
+body.dark-mode .bg-teal-200 {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+}
+
+body.dark-mode .bg-amber-200,
+body.dark-mode .bg-yellow-200,
+body.dark-mode .bg-orange-200 {
+  background-color: rgba(245, 158, 11, 0.22) !important;
+}
+
+body.dark-mode .bg-red-200,
+body.dark-mode .bg-rose-200,
+body.dark-mode .bg-pink-200 {
+  background-color: rgba(244, 63, 94, 0.22) !important;
+}
+
+body.dark-mode .text-\[\#1A202C\],
+body.dark-mode .text-\[\#1a202c\],
+body.dark-mode .text-\[\#0F172A\],
+body.dark-mode .text-\[\#0f172a\],
+body.dark-mode .text-\[\#111827\],
+body.dark-mode .text-\[\#1A2340\],
+body.dark-mode .text-\[\#1a2340\],
+body.dark-mode .text-\[\#2A3B4C\],
+body.dark-mode .text-\[\#2a3b4c\],
+body.dark-mode .text-\[\#2D3748\],
+body.dark-mode .text-\[\#2d3748\],
+body.dark-mode .text-\[\#2A3A5A\],
+body.dark-mode .text-\[\#2a3a5a\],
+body.dark-mode .text-slate-950,
+body.dark-mode .text-slate-900,
+body.dark-mode .text-slate-800,
+body.dark-mode .text-gray-900,
+body.dark-mode .text-gray-800,
+body.dark-mode .text-black,
+body.dark-mode .text-zinc-900,
+body.dark-mode .text-neutral-900 {
+  color: var(--color-text) !important;
+}
+
+body.dark-mode .text-\[\#334155\],
+body.dark-mode .text-\[\#475569\],
+body.dark-mode .text-slate-700,
+body.dark-mode .text-slate-600,
+body.dark-mode .text-gray-700,
+body.dark-mode .text-gray-600 {
+  color: #CBD5E1 !important;
+}
+
+body.dark-mode .text-\[\#64748B\],
+body.dark-mode .text-\[\#64748b\],
+body.dark-mode .text-\[\#5b6b79\],
+body.dark-mode .text-\[\#5B6B79\],
+body.dark-mode .text-\[\#7A8CAA\],
+body.dark-mode .text-\[\#7a8caa\],
+body.dark-mode .text-slate-500,
+body.dark-mode .text-gray-500 {
+  color: var(--color-text-muted) !important;
+}
+
+body.dark-mode .text-\[\#2563EB\],
+body.dark-mode .text-\[\#2563eb\],
+body.dark-mode .text-\[\#1D4ED8\],
+body.dark-mode .text-\[\#1d4ed8\],
+body.dark-mode .text-blue-600,
+body.dark-mode .text-blue-700,
+body.dark-mode .text-blue-800,
+body.dark-mode .text-blue-900,
+body.dark-mode .text-indigo-600,
+body.dark-mode .text-indigo-700 {
+  color: var(--color-primary) !important;
+}
+
+body.dark-mode .text-purple-600,
+body.dark-mode .text-purple-700,
+body.dark-mode .text-purple-800,
+body.dark-mode .text-purple-900,
+body.dark-mode .text-violet-700,
+body.dark-mode .text-\[\#8B5CF6\],
+body.dark-mode .text-\[\#8b5cf6\] {
+  color: #C4B5FD !important;
+}
+
+body.dark-mode .text-emerald-600,
+body.dark-mode .text-emerald-700,
+body.dark-mode .text-emerald-800,
+body.dark-mode .text-green-600,
+body.dark-mode .text-green-700,
+body.dark-mode .text-teal-600,
+body.dark-mode .text-teal-700 {
+  color: #6EE7B7 !important;
+}
+
+body.dark-mode .text-amber-600,
+body.dark-mode .text-amber-700,
+body.dark-mode .text-amber-800,
+body.dark-mode .text-amber-900,
+body.dark-mode .text-yellow-600,
+body.dark-mode .text-yellow-700,
+body.dark-mode .text-orange-600,
+body.dark-mode .text-orange-700 {
+  color: #FCD34D !important;
+}
+
+body.dark-mode .text-red-600,
+body.dark-mode .text-red-700,
+body.dark-mode .text-rose-600,
+body.dark-mode .text-rose-700,
+body.dark-mode .text-rose-800,
+body.dark-mode .text-pink-700 {
+  color: #FDA4AF !important;
+}
+
+body.dark-mode .border-slate-100,
+body.dark-mode .border-slate-100\/10,
+body.dark-mode .border-slate-100\/15,
+body.dark-mode .border-slate-100\/20,
+body.dark-mode .border-slate-100\/25,
+body.dark-mode .border-slate-100\/30,
+body.dark-mode .border-slate-100\/35,
+body.dark-mode .border-slate-100\/40,
+body.dark-mode .border-slate-100\/50,
+body.dark-mode .border-slate-100\/60,
+body.dark-mode .border-slate-100\/70,
+body.dark-mode .border-slate-100\/80,
+body.dark-mode .border-slate-100\/85,
+body.dark-mode .border-slate-100\/90,
+body.dark-mode .border-slate-100\/95,
+body.dark-mode .border-slate-200,
+body.dark-mode .border-slate-200\/10,
+body.dark-mode .border-slate-200\/15,
+body.dark-mode .border-slate-200\/20,
+body.dark-mode .border-slate-200\/25,
+body.dark-mode .border-slate-200\/30,
+body.dark-mode .border-slate-200\/35,
+body.dark-mode .border-slate-200\/40,
+body.dark-mode .border-slate-200\/50,
+body.dark-mode .border-slate-200\/60,
+body.dark-mode .border-slate-200\/70,
+body.dark-mode .border-slate-200\/80,
+body.dark-mode .border-slate-200\/85,
+body.dark-mode .border-slate-200\/90,
+body.dark-mode .border-slate-200\/95,
+body.dark-mode .border-slate-300,
+body.dark-mode .border-slate-300\/10,
+body.dark-mode .border-slate-300\/15,
+body.dark-mode .border-slate-300\/20,
+body.dark-mode .border-slate-300\/25,
+body.dark-mode .border-slate-300\/30,
+body.dark-mode .border-slate-300\/35,
+body.dark-mode .border-slate-300\/40,
+body.dark-mode .border-slate-300\/50,
+body.dark-mode .border-slate-300\/60,
+body.dark-mode .border-slate-300\/70,
+body.dark-mode .border-slate-300\/80,
+body.dark-mode .border-slate-300\/85,
+body.dark-mode .border-slate-300\/90,
+body.dark-mode .border-slate-300\/95,
+body.dark-mode .border-gray-100,
+body.dark-mode .border-gray-100\/10,
+body.dark-mode .border-gray-100\/15,
+body.dark-mode .border-gray-100\/20,
+body.dark-mode .border-gray-100\/25,
+body.dark-mode .border-gray-100\/30,
+body.dark-mode .border-gray-100\/35,
+body.dark-mode .border-gray-100\/40,
+body.dark-mode .border-gray-100\/50,
+body.dark-mode .border-gray-100\/60,
+body.dark-mode .border-gray-100\/70,
+body.dark-mode .border-gray-100\/80,
+body.dark-mode .border-gray-100\/85,
+body.dark-mode .border-gray-100\/90,
+body.dark-mode .border-gray-100\/95,
+body.dark-mode .border-gray-200,
+body.dark-mode .border-gray-200\/10,
+body.dark-mode .border-gray-200\/15,
+body.dark-mode .border-gray-200\/20,
+body.dark-mode .border-gray-200\/25,
+body.dark-mode .border-gray-200\/30,
+body.dark-mode .border-gray-200\/35,
+body.dark-mode .border-gray-200\/40,
+body.dark-mode .border-gray-200\/50,
+body.dark-mode .border-gray-200\/60,
+body.dark-mode .border-gray-200\/70,
+body.dark-mode .border-gray-200\/80,
+body.dark-mode .border-gray-200\/85,
+body.dark-mode .border-gray-200\/90,
+body.dark-mode .border-gray-200\/95,
+body.dark-mode .border-gray-300,
+body.dark-mode .border-gray-300\/10,
+body.dark-mode .border-gray-300\/15,
+body.dark-mode .border-gray-300\/20,
+body.dark-mode .border-gray-300\/25,
+body.dark-mode .border-gray-300\/30,
+body.dark-mode .border-gray-300\/35,
+body.dark-mode .border-gray-300\/40,
+body.dark-mode .border-gray-300\/50,
+body.dark-mode .border-gray-300\/60,
+body.dark-mode .border-gray-300\/70,
+body.dark-mode .border-gray-300\/80,
+body.dark-mode .border-gray-300\/85,
+body.dark-mode .border-gray-300\/90,
+body.dark-mode .border-gray-300\/95,
+body.dark-mode .border-\[\#E2E8F0\],
+body.dark-mode .border-\[\#e2e8f0\],
+body.dark-mode .border-\[\#E2E8F0\]\/10,
+body.dark-mode .border-\[\#e2e8f0\]\/10,
+body.dark-mode .border-\[\#E2E8F0\]\/15,
+body.dark-mode .border-\[\#e2e8f0\]\/15,
+body.dark-mode .border-\[\#E2E8F0\]\/20,
+body.dark-mode .border-\[\#e2e8f0\]\/20,
+body.dark-mode .border-\[\#E2E8F0\]\/25,
+body.dark-mode .border-\[\#e2e8f0\]\/25,
+body.dark-mode .border-\[\#E2E8F0\]\/30,
+body.dark-mode .border-\[\#e2e8f0\]\/30,
+body.dark-mode .border-\[\#E2E8F0\]\/35,
+body.dark-mode .border-\[\#e2e8f0\]\/35,
+body.dark-mode .border-\[\#E2E8F0\]\/40,
+body.dark-mode .border-\[\#e2e8f0\]\/40,
+body.dark-mode .border-\[\#E2E8F0\]\/50,
+body.dark-mode .border-\[\#e2e8f0\]\/50,
+body.dark-mode .border-\[\#E2E8F0\]\/60,
+body.dark-mode .border-\[\#e2e8f0\]\/60,
+body.dark-mode .border-\[\#E2E8F0\]\/70,
+body.dark-mode .border-\[\#e2e8f0\]\/70,
+body.dark-mode .border-\[\#E2E8F0\]\/80,
+body.dark-mode .border-\[\#e2e8f0\]\/80,
+body.dark-mode .border-\[\#E2E8F0\]\/85,
+body.dark-mode .border-\[\#e2e8f0\]\/85,
+body.dark-mode .border-\[\#E2E8F0\]\/90,
+body.dark-mode .border-\[\#e2e8f0\]\/90,
+body.dark-mode .border-\[\#E2E8F0\]\/95,
+body.dark-mode .border-\[\#e2e8f0\]\/95,
+body.dark-mode .border-white,
+body.dark-mode .border-white\/10,
+body.dark-mode .border-white\/15,
+body.dark-mode .border-white\/20,
+body.dark-mode .border-white\/25,
+body.dark-mode .border-white\/30,
+body.dark-mode .border-white\/35,
+body.dark-mode .border-white\/40,
+body.dark-mode .border-white\/50,
+body.dark-mode .border-white\/60,
+body.dark-mode .border-white\/70,
+body.dark-mode .border-white\/80,
+body.dark-mode .border-white\/85,
+body.dark-mode .border-white\/90,
+body.dark-mode .border-white\/95 {
+  border-color: var(--color-border) !important;
+}
+
+body.dark-mode .border-blue-50,
+body.dark-mode .border-blue-50\/10,
+body.dark-mode .border-blue-50\/15,
+body.dark-mode .border-blue-50\/20,
+body.dark-mode .border-blue-50\/25,
+body.dark-mode .border-blue-50\/30,
+body.dark-mode .border-blue-50\/35,
+body.dark-mode .border-blue-50\/40,
+body.dark-mode .border-blue-50\/50,
+body.dark-mode .border-blue-50\/60,
+body.dark-mode .border-blue-50\/70,
+body.dark-mode .border-blue-50\/80,
+body.dark-mode .border-blue-50\/85,
+body.dark-mode .border-blue-50\/90,
+body.dark-mode .border-blue-50\/95,
+body.dark-mode .border-blue-100,
+body.dark-mode .border-blue-100\/10,
+body.dark-mode .border-blue-100\/15,
+body.dark-mode .border-blue-100\/20,
+body.dark-mode .border-blue-100\/25,
+body.dark-mode .border-blue-100\/30,
+body.dark-mode .border-blue-100\/35,
+body.dark-mode .border-blue-100\/40,
+body.dark-mode .border-blue-100\/50,
+body.dark-mode .border-blue-100\/60,
+body.dark-mode .border-blue-100\/70,
+body.dark-mode .border-blue-100\/80,
+body.dark-mode .border-blue-100\/85,
+body.dark-mode .border-blue-100\/90,
+body.dark-mode .border-blue-100\/95,
+body.dark-mode .border-blue-200,
+body.dark-mode .border-blue-200\/10,
+body.dark-mode .border-blue-200\/15,
+body.dark-mode .border-blue-200\/20,
+body.dark-mode .border-blue-200\/25,
+body.dark-mode .border-blue-200\/30,
+body.dark-mode .border-blue-200\/35,
+body.dark-mode .border-blue-200\/40,
+body.dark-mode .border-blue-200\/50,
+body.dark-mode .border-blue-200\/60,
+body.dark-mode .border-blue-200\/70,
+body.dark-mode .border-blue-200\/80,
+body.dark-mode .border-blue-200\/85,
+body.dark-mode .border-blue-200\/90,
+body.dark-mode .border-blue-200\/95,
+body.dark-mode .border-\[\#DCEBFF\],
+body.dark-mode .border-\[\#dcebff\],
+body.dark-mode .border-\[\#DCEBFF\]\/10,
+body.dark-mode .border-\[\#dcebff\]\/10,
+body.dark-mode .border-\[\#DCEBFF\]\/15,
+body.dark-mode .border-\[\#dcebff\]\/15,
+body.dark-mode .border-\[\#DCEBFF\]\/20,
+body.dark-mode .border-\[\#dcebff\]\/20,
+body.dark-mode .border-\[\#DCEBFF\]\/25,
+body.dark-mode .border-\[\#dcebff\]\/25,
+body.dark-mode .border-\[\#DCEBFF\]\/30,
+body.dark-mode .border-\[\#dcebff\]\/30,
+body.dark-mode .border-\[\#DCEBFF\]\/35,
+body.dark-mode .border-\[\#dcebff\]\/35,
+body.dark-mode .border-\[\#DCEBFF\]\/40,
+body.dark-mode .border-\[\#dcebff\]\/40,
+body.dark-mode .border-\[\#DCEBFF\]\/50,
+body.dark-mode .border-\[\#dcebff\]\/50,
+body.dark-mode .border-\[\#DCEBFF\]\/60,
+body.dark-mode .border-\[\#dcebff\]\/60,
+body.dark-mode .border-\[\#DCEBFF\]\/70,
+body.dark-mode .border-\[\#dcebff\]\/70,
+body.dark-mode .border-\[\#DCEBFF\]\/80,
+body.dark-mode .border-\[\#dcebff\]\/80,
+body.dark-mode .border-\[\#DCEBFF\]\/85,
+body.dark-mode .border-\[\#dcebff\]\/85,
+body.dark-mode .border-\[\#DCEBFF\]\/90,
+body.dark-mode .border-\[\#dcebff\]\/90,
+body.dark-mode .border-\[\#DCEBFF\]\/95,
+body.dark-mode .border-\[\#dcebff\]\/95,
+body.dark-mode .border-\[\#EBF4FF\],
+body.dark-mode .border-\[\#ebf4ff\],
+body.dark-mode .border-\[\#EBF4FF\]\/10,
+body.dark-mode .border-\[\#ebf4ff\]\/10,
+body.dark-mode .border-\[\#EBF4FF\]\/15,
+body.dark-mode .border-\[\#ebf4ff\]\/15,
+body.dark-mode .border-\[\#EBF4FF\]\/20,
+body.dark-mode .border-\[\#ebf4ff\]\/20,
+body.dark-mode .border-\[\#EBF4FF\]\/25,
+body.dark-mode .border-\[\#ebf4ff\]\/25,
+body.dark-mode .border-\[\#EBF4FF\]\/30,
+body.dark-mode .border-\[\#ebf4ff\]\/30,
+body.dark-mode .border-\[\#EBF4FF\]\/35,
+body.dark-mode .border-\[\#ebf4ff\]\/35,
+body.dark-mode .border-\[\#EBF4FF\]\/40,
+body.dark-mode .border-\[\#ebf4ff\]\/40,
+body.dark-mode .border-\[\#EBF4FF\]\/50,
+body.dark-mode .border-\[\#ebf4ff\]\/50,
+body.dark-mode .border-\[\#EBF4FF\]\/60,
+body.dark-mode .border-\[\#ebf4ff\]\/60,
+body.dark-mode .border-\[\#EBF4FF\]\/70,
+body.dark-mode .border-\[\#ebf4ff\]\/70,
+body.dark-mode .border-\[\#EBF4FF\]\/80,
+body.dark-mode .border-\[\#ebf4ff\]\/80,
+body.dark-mode .border-\[\#EBF4FF\]\/85,
+body.dark-mode .border-\[\#ebf4ff\]\/85,
+body.dark-mode .border-\[\#EBF4FF\]\/90,
+body.dark-mode .border-\[\#ebf4ff\]\/90,
+body.dark-mode .border-\[\#EBF4FF\]\/95,
+body.dark-mode .border-\[\#ebf4ff\]\/95,
+body.dark-mode .border-indigo-100,
+body.dark-mode .border-indigo-100\/10,
+body.dark-mode .border-indigo-100\/15,
+body.dark-mode .border-indigo-100\/20,
+body.dark-mode .border-indigo-100\/25,
+body.dark-mode .border-indigo-100\/30,
+body.dark-mode .border-indigo-100\/35,
+body.dark-mode .border-indigo-100\/40,
+body.dark-mode .border-indigo-100\/50,
+body.dark-mode .border-indigo-100\/60,
+body.dark-mode .border-indigo-100\/70,
+body.dark-mode .border-indigo-100\/80,
+body.dark-mode .border-indigo-100\/85,
+body.dark-mode .border-indigo-100\/90,
+body.dark-mode .border-indigo-100\/95,
+body.dark-mode .border-indigo-200,
+body.dark-mode .border-indigo-200\/10,
+body.dark-mode .border-indigo-200\/15,
+body.dark-mode .border-indigo-200\/20,
+body.dark-mode .border-indigo-200\/25,
+body.dark-mode .border-indigo-200\/30,
+body.dark-mode .border-indigo-200\/35,
+body.dark-mode .border-indigo-200\/40,
+body.dark-mode .border-indigo-200\/50,
+body.dark-mode .border-indigo-200\/60,
+body.dark-mode .border-indigo-200\/70,
+body.dark-mode .border-indigo-200\/80,
+body.dark-mode .border-indigo-200\/85,
+body.dark-mode .border-indigo-200\/90,
+body.dark-mode .border-indigo-200\/95,
+body.dark-mode .border-sky-100,
+body.dark-mode .border-sky-100\/10,
+body.dark-mode .border-sky-100\/15,
+body.dark-mode .border-sky-100\/20,
+body.dark-mode .border-sky-100\/25,
+body.dark-mode .border-sky-100\/30,
+body.dark-mode .border-sky-100\/35,
+body.dark-mode .border-sky-100\/40,
+body.dark-mode .border-sky-100\/50,
+body.dark-mode .border-sky-100\/60,
+body.dark-mode .border-sky-100\/70,
+body.dark-mode .border-sky-100\/80,
+body.dark-mode .border-sky-100\/85,
+body.dark-mode .border-sky-100\/90,
+body.dark-mode .border-sky-100\/95 {
+  border-color: rgba(59, 130, 246, 0.28) !important;
+}
+
+body.dark-mode .border-purple-50,
+body.dark-mode .border-purple-50\/10,
+body.dark-mode .border-purple-50\/15,
+body.dark-mode .border-purple-50\/20,
+body.dark-mode .border-purple-50\/25,
+body.dark-mode .border-purple-50\/30,
+body.dark-mode .border-purple-50\/35,
+body.dark-mode .border-purple-50\/40,
+body.dark-mode .border-purple-50\/50,
+body.dark-mode .border-purple-50\/60,
+body.dark-mode .border-purple-50\/70,
+body.dark-mode .border-purple-50\/80,
+body.dark-mode .border-purple-50\/85,
+body.dark-mode .border-purple-50\/90,
+body.dark-mode .border-purple-50\/95,
+body.dark-mode .border-purple-100,
+body.dark-mode .border-purple-100\/10,
+body.dark-mode .border-purple-100\/15,
+body.dark-mode .border-purple-100\/20,
+body.dark-mode .border-purple-100\/25,
+body.dark-mode .border-purple-100\/30,
+body.dark-mode .border-purple-100\/35,
+body.dark-mode .border-purple-100\/40,
+body.dark-mode .border-purple-100\/50,
+body.dark-mode .border-purple-100\/60,
+body.dark-mode .border-purple-100\/70,
+body.dark-mode .border-purple-100\/80,
+body.dark-mode .border-purple-100\/85,
+body.dark-mode .border-purple-100\/90,
+body.dark-mode .border-purple-100\/95,
+body.dark-mode .border-purple-200,
+body.dark-mode .border-purple-200\/10,
+body.dark-mode .border-purple-200\/15,
+body.dark-mode .border-purple-200\/20,
+body.dark-mode .border-purple-200\/25,
+body.dark-mode .border-purple-200\/30,
+body.dark-mode .border-purple-200\/35,
+body.dark-mode .border-purple-200\/40,
+body.dark-mode .border-purple-200\/50,
+body.dark-mode .border-purple-200\/60,
+body.dark-mode .border-purple-200\/70,
+body.dark-mode .border-purple-200\/80,
+body.dark-mode .border-purple-200\/85,
+body.dark-mode .border-purple-200\/90,
+body.dark-mode .border-purple-200\/95,
+body.dark-mode .border-violet-50,
+body.dark-mode .border-violet-50\/10,
+body.dark-mode .border-violet-50\/15,
+body.dark-mode .border-violet-50\/20,
+body.dark-mode .border-violet-50\/25,
+body.dark-mode .border-violet-50\/30,
+body.dark-mode .border-violet-50\/35,
+body.dark-mode .border-violet-50\/40,
+body.dark-mode .border-violet-50\/50,
+body.dark-mode .border-violet-50\/60,
+body.dark-mode .border-violet-50\/70,
+body.dark-mode .border-violet-50\/80,
+body.dark-mode .border-violet-50\/85,
+body.dark-mode .border-violet-50\/90,
+body.dark-mode .border-violet-50\/95,
+body.dark-mode .border-violet-100,
+body.dark-mode .border-violet-100\/10,
+body.dark-mode .border-violet-100\/15,
+body.dark-mode .border-violet-100\/20,
+body.dark-mode .border-violet-100\/25,
+body.dark-mode .border-violet-100\/30,
+body.dark-mode .border-violet-100\/35,
+body.dark-mode .border-violet-100\/40,
+body.dark-mode .border-violet-100\/50,
+body.dark-mode .border-violet-100\/60,
+body.dark-mode .border-violet-100\/70,
+body.dark-mode .border-violet-100\/80,
+body.dark-mode .border-violet-100\/85,
+body.dark-mode .border-violet-100\/90,
+body.dark-mode .border-violet-100\/95,
+body.dark-mode .border-violet-200,
+body.dark-mode .border-violet-200\/10,
+body.dark-mode .border-violet-200\/15,
+body.dark-mode .border-violet-200\/20,
+body.dark-mode .border-violet-200\/25,
+body.dark-mode .border-violet-200\/30,
+body.dark-mode .border-violet-200\/35,
+body.dark-mode .border-violet-200\/40,
+body.dark-mode .border-violet-200\/50,
+body.dark-mode .border-violet-200\/60,
+body.dark-mode .border-violet-200\/70,
+body.dark-mode .border-violet-200\/80,
+body.dark-mode .border-violet-200\/85,
+body.dark-mode .border-violet-200\/90,
+body.dark-mode .border-violet-200\/95 {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+body.dark-mode .border-emerald-50,
+body.dark-mode .border-emerald-50\/10,
+body.dark-mode .border-emerald-50\/15,
+body.dark-mode .border-emerald-50\/20,
+body.dark-mode .border-emerald-50\/25,
+body.dark-mode .border-emerald-50\/30,
+body.dark-mode .border-emerald-50\/35,
+body.dark-mode .border-emerald-50\/40,
+body.dark-mode .border-emerald-50\/50,
+body.dark-mode .border-emerald-50\/60,
+body.dark-mode .border-emerald-50\/70,
+body.dark-mode .border-emerald-50\/80,
+body.dark-mode .border-emerald-50\/85,
+body.dark-mode .border-emerald-50\/90,
+body.dark-mode .border-emerald-50\/95,
+body.dark-mode .border-emerald-100,
+body.dark-mode .border-emerald-100\/10,
+body.dark-mode .border-emerald-100\/15,
+body.dark-mode .border-emerald-100\/20,
+body.dark-mode .border-emerald-100\/25,
+body.dark-mode .border-emerald-100\/30,
+body.dark-mode .border-emerald-100\/35,
+body.dark-mode .border-emerald-100\/40,
+body.dark-mode .border-emerald-100\/50,
+body.dark-mode .border-emerald-100\/60,
+body.dark-mode .border-emerald-100\/70,
+body.dark-mode .border-emerald-100\/80,
+body.dark-mode .border-emerald-100\/85,
+body.dark-mode .border-emerald-100\/90,
+body.dark-mode .border-emerald-100\/95,
+body.dark-mode .border-emerald-200,
+body.dark-mode .border-emerald-200\/10,
+body.dark-mode .border-emerald-200\/15,
+body.dark-mode .border-emerald-200\/20,
+body.dark-mode .border-emerald-200\/25,
+body.dark-mode .border-emerald-200\/30,
+body.dark-mode .border-emerald-200\/35,
+body.dark-mode .border-emerald-200\/40,
+body.dark-mode .border-emerald-200\/50,
+body.dark-mode .border-emerald-200\/60,
+body.dark-mode .border-emerald-200\/70,
+body.dark-mode .border-emerald-200\/80,
+body.dark-mode .border-emerald-200\/85,
+body.dark-mode .border-emerald-200\/90,
+body.dark-mode .border-emerald-200\/95,
+body.dark-mode .border-green-50,
+body.dark-mode .border-green-50\/10,
+body.dark-mode .border-green-50\/15,
+body.dark-mode .border-green-50\/20,
+body.dark-mode .border-green-50\/25,
+body.dark-mode .border-green-50\/30,
+body.dark-mode .border-green-50\/35,
+body.dark-mode .border-green-50\/40,
+body.dark-mode .border-green-50\/50,
+body.dark-mode .border-green-50\/60,
+body.dark-mode .border-green-50\/70,
+body.dark-mode .border-green-50\/80,
+body.dark-mode .border-green-50\/85,
+body.dark-mode .border-green-50\/90,
+body.dark-mode .border-green-50\/95,
+body.dark-mode .border-green-100,
+body.dark-mode .border-green-100\/10,
+body.dark-mode .border-green-100\/15,
+body.dark-mode .border-green-100\/20,
+body.dark-mode .border-green-100\/25,
+body.dark-mode .border-green-100\/30,
+body.dark-mode .border-green-100\/35,
+body.dark-mode .border-green-100\/40,
+body.dark-mode .border-green-100\/50,
+body.dark-mode .border-green-100\/60,
+body.dark-mode .border-green-100\/70,
+body.dark-mode .border-green-100\/80,
+body.dark-mode .border-green-100\/85,
+body.dark-mode .border-green-100\/90,
+body.dark-mode .border-green-100\/95,
+body.dark-mode .border-green-200,
+body.dark-mode .border-green-200\/10,
+body.dark-mode .border-green-200\/15,
+body.dark-mode .border-green-200\/20,
+body.dark-mode .border-green-200\/25,
+body.dark-mode .border-green-200\/30,
+body.dark-mode .border-green-200\/35,
+body.dark-mode .border-green-200\/40,
+body.dark-mode .border-green-200\/50,
+body.dark-mode .border-green-200\/60,
+body.dark-mode .border-green-200\/70,
+body.dark-mode .border-green-200\/80,
+body.dark-mode .border-green-200\/85,
+body.dark-mode .border-green-200\/90,
+body.dark-mode .border-green-200\/95,
+body.dark-mode .border-teal-50,
+body.dark-mode .border-teal-50\/10,
+body.dark-mode .border-teal-50\/15,
+body.dark-mode .border-teal-50\/20,
+body.dark-mode .border-teal-50\/25,
+body.dark-mode .border-teal-50\/30,
+body.dark-mode .border-teal-50\/35,
+body.dark-mode .border-teal-50\/40,
+body.dark-mode .border-teal-50\/50,
+body.dark-mode .border-teal-50\/60,
+body.dark-mode .border-teal-50\/70,
+body.dark-mode .border-teal-50\/80,
+body.dark-mode .border-teal-50\/85,
+body.dark-mode .border-teal-50\/90,
+body.dark-mode .border-teal-50\/95,
+body.dark-mode .border-teal-100,
+body.dark-mode .border-teal-100\/10,
+body.dark-mode .border-teal-100\/15,
+body.dark-mode .border-teal-100\/20,
+body.dark-mode .border-teal-100\/25,
+body.dark-mode .border-teal-100\/30,
+body.dark-mode .border-teal-100\/35,
+body.dark-mode .border-teal-100\/40,
+body.dark-mode .border-teal-100\/50,
+body.dark-mode .border-teal-100\/60,
+body.dark-mode .border-teal-100\/70,
+body.dark-mode .border-teal-100\/80,
+body.dark-mode .border-teal-100\/85,
+body.dark-mode .border-teal-100\/90,
+body.dark-mode .border-teal-100\/95,
+body.dark-mode .border-teal-200,
+body.dark-mode .border-teal-200\/10,
+body.dark-mode .border-teal-200\/15,
+body.dark-mode .border-teal-200\/20,
+body.dark-mode .border-teal-200\/25,
+body.dark-mode .border-teal-200\/30,
+body.dark-mode .border-teal-200\/35,
+body.dark-mode .border-teal-200\/40,
+body.dark-mode .border-teal-200\/50,
+body.dark-mode .border-teal-200\/60,
+body.dark-mode .border-teal-200\/70,
+body.dark-mode .border-teal-200\/80,
+body.dark-mode .border-teal-200\/85,
+body.dark-mode .border-teal-200\/90,
+body.dark-mode .border-teal-200\/95 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+body.dark-mode .border-amber-50,
+body.dark-mode .border-amber-50\/10,
+body.dark-mode .border-amber-50\/15,
+body.dark-mode .border-amber-50\/20,
+body.dark-mode .border-amber-50\/25,
+body.dark-mode .border-amber-50\/30,
+body.dark-mode .border-amber-50\/35,
+body.dark-mode .border-amber-50\/40,
+body.dark-mode .border-amber-50\/50,
+body.dark-mode .border-amber-50\/60,
+body.dark-mode .border-amber-50\/70,
+body.dark-mode .border-amber-50\/80,
+body.dark-mode .border-amber-50\/85,
+body.dark-mode .border-amber-50\/90,
+body.dark-mode .border-amber-50\/95,
+body.dark-mode .border-amber-100,
+body.dark-mode .border-amber-100\/10,
+body.dark-mode .border-amber-100\/15,
+body.dark-mode .border-amber-100\/20,
+body.dark-mode .border-amber-100\/25,
+body.dark-mode .border-amber-100\/30,
+body.dark-mode .border-amber-100\/35,
+body.dark-mode .border-amber-100\/40,
+body.dark-mode .border-amber-100\/50,
+body.dark-mode .border-amber-100\/60,
+body.dark-mode .border-amber-100\/70,
+body.dark-mode .border-amber-100\/80,
+body.dark-mode .border-amber-100\/85,
+body.dark-mode .border-amber-100\/90,
+body.dark-mode .border-amber-100\/95,
+body.dark-mode .border-amber-200,
+body.dark-mode .border-amber-200\/10,
+body.dark-mode .border-amber-200\/15,
+body.dark-mode .border-amber-200\/20,
+body.dark-mode .border-amber-200\/25,
+body.dark-mode .border-amber-200\/30,
+body.dark-mode .border-amber-200\/35,
+body.dark-mode .border-amber-200\/40,
+body.dark-mode .border-amber-200\/50,
+body.dark-mode .border-amber-200\/60,
+body.dark-mode .border-amber-200\/70,
+body.dark-mode .border-amber-200\/80,
+body.dark-mode .border-amber-200\/85,
+body.dark-mode .border-amber-200\/90,
+body.dark-mode .border-amber-200\/95,
+body.dark-mode .border-yellow-50,
+body.dark-mode .border-yellow-50\/10,
+body.dark-mode .border-yellow-50\/15,
+body.dark-mode .border-yellow-50\/20,
+body.dark-mode .border-yellow-50\/25,
+body.dark-mode .border-yellow-50\/30,
+body.dark-mode .border-yellow-50\/35,
+body.dark-mode .border-yellow-50\/40,
+body.dark-mode .border-yellow-50\/50,
+body.dark-mode .border-yellow-50\/60,
+body.dark-mode .border-yellow-50\/70,
+body.dark-mode .border-yellow-50\/80,
+body.dark-mode .border-yellow-50\/85,
+body.dark-mode .border-yellow-50\/90,
+body.dark-mode .border-yellow-50\/95,
+body.dark-mode .border-yellow-100,
+body.dark-mode .border-yellow-100\/10,
+body.dark-mode .border-yellow-100\/15,
+body.dark-mode .border-yellow-100\/20,
+body.dark-mode .border-yellow-100\/25,
+body.dark-mode .border-yellow-100\/30,
+body.dark-mode .border-yellow-100\/35,
+body.dark-mode .border-yellow-100\/40,
+body.dark-mode .border-yellow-100\/50,
+body.dark-mode .border-yellow-100\/60,
+body.dark-mode .border-yellow-100\/70,
+body.dark-mode .border-yellow-100\/80,
+body.dark-mode .border-yellow-100\/85,
+body.dark-mode .border-yellow-100\/90,
+body.dark-mode .border-yellow-100\/95,
+body.dark-mode .border-yellow-200,
+body.dark-mode .border-yellow-200\/10,
+body.dark-mode .border-yellow-200\/15,
+body.dark-mode .border-yellow-200\/20,
+body.dark-mode .border-yellow-200\/25,
+body.dark-mode .border-yellow-200\/30,
+body.dark-mode .border-yellow-200\/35,
+body.dark-mode .border-yellow-200\/40,
+body.dark-mode .border-yellow-200\/50,
+body.dark-mode .border-yellow-200\/60,
+body.dark-mode .border-yellow-200\/70,
+body.dark-mode .border-yellow-200\/80,
+body.dark-mode .border-yellow-200\/85,
+body.dark-mode .border-yellow-200\/90,
+body.dark-mode .border-yellow-200\/95,
+body.dark-mode .border-orange-50,
+body.dark-mode .border-orange-50\/10,
+body.dark-mode .border-orange-50\/15,
+body.dark-mode .border-orange-50\/20,
+body.dark-mode .border-orange-50\/25,
+body.dark-mode .border-orange-50\/30,
+body.dark-mode .border-orange-50\/35,
+body.dark-mode .border-orange-50\/40,
+body.dark-mode .border-orange-50\/50,
+body.dark-mode .border-orange-50\/60,
+body.dark-mode .border-orange-50\/70,
+body.dark-mode .border-orange-50\/80,
+body.dark-mode .border-orange-50\/85,
+body.dark-mode .border-orange-50\/90,
+body.dark-mode .border-orange-50\/95,
+body.dark-mode .border-orange-100,
+body.dark-mode .border-orange-100\/10,
+body.dark-mode .border-orange-100\/15,
+body.dark-mode .border-orange-100\/20,
+body.dark-mode .border-orange-100\/25,
+body.dark-mode .border-orange-100\/30,
+body.dark-mode .border-orange-100\/35,
+body.dark-mode .border-orange-100\/40,
+body.dark-mode .border-orange-100\/50,
+body.dark-mode .border-orange-100\/60,
+body.dark-mode .border-orange-100\/70,
+body.dark-mode .border-orange-100\/80,
+body.dark-mode .border-orange-100\/85,
+body.dark-mode .border-orange-100\/90,
+body.dark-mode .border-orange-100\/95,
+body.dark-mode .border-orange-200,
+body.dark-mode .border-orange-200\/10,
+body.dark-mode .border-orange-200\/15,
+body.dark-mode .border-orange-200\/20,
+body.dark-mode .border-orange-200\/25,
+body.dark-mode .border-orange-200\/30,
+body.dark-mode .border-orange-200\/35,
+body.dark-mode .border-orange-200\/40,
+body.dark-mode .border-orange-200\/50,
+body.dark-mode .border-orange-200\/60,
+body.dark-mode .border-orange-200\/70,
+body.dark-mode .border-orange-200\/80,
+body.dark-mode .border-orange-200\/85,
+body.dark-mode .border-orange-200\/90,
+body.dark-mode .border-orange-200\/95 {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+body.dark-mode .border-red-50,
+body.dark-mode .border-red-50\/10,
+body.dark-mode .border-red-50\/15,
+body.dark-mode .border-red-50\/20,
+body.dark-mode .border-red-50\/25,
+body.dark-mode .border-red-50\/30,
+body.dark-mode .border-red-50\/35,
+body.dark-mode .border-red-50\/40,
+body.dark-mode .border-red-50\/50,
+body.dark-mode .border-red-50\/60,
+body.dark-mode .border-red-50\/70,
+body.dark-mode .border-red-50\/80,
+body.dark-mode .border-red-50\/85,
+body.dark-mode .border-red-50\/90,
+body.dark-mode .border-red-50\/95,
+body.dark-mode .border-red-100,
+body.dark-mode .border-red-100\/10,
+body.dark-mode .border-red-100\/15,
+body.dark-mode .border-red-100\/20,
+body.dark-mode .border-red-100\/25,
+body.dark-mode .border-red-100\/30,
+body.dark-mode .border-red-100\/35,
+body.dark-mode .border-red-100\/40,
+body.dark-mode .border-red-100\/50,
+body.dark-mode .border-red-100\/60,
+body.dark-mode .border-red-100\/70,
+body.dark-mode .border-red-100\/80,
+body.dark-mode .border-red-100\/85,
+body.dark-mode .border-red-100\/90,
+body.dark-mode .border-red-100\/95,
+body.dark-mode .border-red-200,
+body.dark-mode .border-red-200\/10,
+body.dark-mode .border-red-200\/15,
+body.dark-mode .border-red-200\/20,
+body.dark-mode .border-red-200\/25,
+body.dark-mode .border-red-200\/30,
+body.dark-mode .border-red-200\/35,
+body.dark-mode .border-red-200\/40,
+body.dark-mode .border-red-200\/50,
+body.dark-mode .border-red-200\/60,
+body.dark-mode .border-red-200\/70,
+body.dark-mode .border-red-200\/80,
+body.dark-mode .border-red-200\/85,
+body.dark-mode .border-red-200\/90,
+body.dark-mode .border-red-200\/95,
+body.dark-mode .border-rose-50,
+body.dark-mode .border-rose-50\/10,
+body.dark-mode .border-rose-50\/15,
+body.dark-mode .border-rose-50\/20,
+body.dark-mode .border-rose-50\/25,
+body.dark-mode .border-rose-50\/30,
+body.dark-mode .border-rose-50\/35,
+body.dark-mode .border-rose-50\/40,
+body.dark-mode .border-rose-50\/50,
+body.dark-mode .border-rose-50\/60,
+body.dark-mode .border-rose-50\/70,
+body.dark-mode .border-rose-50\/80,
+body.dark-mode .border-rose-50\/85,
+body.dark-mode .border-rose-50\/90,
+body.dark-mode .border-rose-50\/95,
+body.dark-mode .border-rose-100,
+body.dark-mode .border-rose-100\/10,
+body.dark-mode .border-rose-100\/15,
+body.dark-mode .border-rose-100\/20,
+body.dark-mode .border-rose-100\/25,
+body.dark-mode .border-rose-100\/30,
+body.dark-mode .border-rose-100\/35,
+body.dark-mode .border-rose-100\/40,
+body.dark-mode .border-rose-100\/50,
+body.dark-mode .border-rose-100\/60,
+body.dark-mode .border-rose-100\/70,
+body.dark-mode .border-rose-100\/80,
+body.dark-mode .border-rose-100\/85,
+body.dark-mode .border-rose-100\/90,
+body.dark-mode .border-rose-100\/95,
+body.dark-mode .border-rose-200,
+body.dark-mode .border-rose-200\/10,
+body.dark-mode .border-rose-200\/15,
+body.dark-mode .border-rose-200\/20,
+body.dark-mode .border-rose-200\/25,
+body.dark-mode .border-rose-200\/30,
+body.dark-mode .border-rose-200\/35,
+body.dark-mode .border-rose-200\/40,
+body.dark-mode .border-rose-200\/50,
+body.dark-mode .border-rose-200\/60,
+body.dark-mode .border-rose-200\/70,
+body.dark-mode .border-rose-200\/80,
+body.dark-mode .border-rose-200\/85,
+body.dark-mode .border-rose-200\/90,
+body.dark-mode .border-rose-200\/95,
+body.dark-mode .border-pink-50,
+body.dark-mode .border-pink-50\/10,
+body.dark-mode .border-pink-50\/15,
+body.dark-mode .border-pink-50\/20,
+body.dark-mode .border-pink-50\/25,
+body.dark-mode .border-pink-50\/30,
+body.dark-mode .border-pink-50\/35,
+body.dark-mode .border-pink-50\/40,
+body.dark-mode .border-pink-50\/50,
+body.dark-mode .border-pink-50\/60,
+body.dark-mode .border-pink-50\/70,
+body.dark-mode .border-pink-50\/80,
+body.dark-mode .border-pink-50\/85,
+body.dark-mode .border-pink-50\/90,
+body.dark-mode .border-pink-50\/95,
+body.dark-mode .border-pink-100,
+body.dark-mode .border-pink-100\/10,
+body.dark-mode .border-pink-100\/15,
+body.dark-mode .border-pink-100\/20,
+body.dark-mode .border-pink-100\/25,
+body.dark-mode .border-pink-100\/30,
+body.dark-mode .border-pink-100\/35,
+body.dark-mode .border-pink-100\/40,
+body.dark-mode .border-pink-100\/50,
+body.dark-mode .border-pink-100\/60,
+body.dark-mode .border-pink-100\/70,
+body.dark-mode .border-pink-100\/80,
+body.dark-mode .border-pink-100\/85,
+body.dark-mode .border-pink-100\/90,
+body.dark-mode .border-pink-100\/95,
+body.dark-mode .border-pink-200,
+body.dark-mode .border-pink-200\/10,
+body.dark-mode .border-pink-200\/15,
+body.dark-mode .border-pink-200\/20,
+body.dark-mode .border-pink-200\/25,
+body.dark-mode .border-pink-200\/30,
+body.dark-mode .border-pink-200\/35,
+body.dark-mode .border-pink-200\/40,
+body.dark-mode .border-pink-200\/50,
+body.dark-mode .border-pink-200\/60,
+body.dark-mode .border-pink-200\/70,
+body.dark-mode .border-pink-200\/80,
+body.dark-mode .border-pink-200\/85,
+body.dark-mode .border-pink-200\/90,
+body.dark-mode .border-pink-200\/95 {
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+body.dark-mode .divide-slate-100,
+body.dark-mode .divide-slate-200,
+body.dark-mode .divide-gray-100,
+body.dark-mode .divide-gray-200 {
+  border-color: var(--color-border) !important;
+}
+
+body.dark-mode .from-white,
+body.dark-mode .from-white\/10,
+body.dark-mode .from-white\/15,
+body.dark-mode .from-white\/20,
+body.dark-mode .from-white\/25,
+body.dark-mode .from-white\/30,
+body.dark-mode .from-white\/35,
+body.dark-mode .from-white\/40,
+body.dark-mode .from-white\/50,
+body.dark-mode .from-white\/60,
+body.dark-mode .from-white\/70,
+body.dark-mode .from-white\/80,
+body.dark-mode .from-white\/85,
+body.dark-mode .from-white\/90,
+body.dark-mode .from-white\/95,
+body.dark-mode .from-slate-50,
+body.dark-mode .from-slate-50\/10,
+body.dark-mode .from-slate-50\/15,
+body.dark-mode .from-slate-50\/20,
+body.dark-mode .from-slate-50\/25,
+body.dark-mode .from-slate-50\/30,
+body.dark-mode .from-slate-50\/35,
+body.dark-mode .from-slate-50\/40,
+body.dark-mode .from-slate-50\/50,
+body.dark-mode .from-slate-50\/60,
+body.dark-mode .from-slate-50\/70,
+body.dark-mode .from-slate-50\/80,
+body.dark-mode .from-slate-50\/85,
+body.dark-mode .from-slate-50\/90,
+body.dark-mode .from-slate-50\/95,
+body.dark-mode .from-gray-50,
+body.dark-mode .from-gray-50\/10,
+body.dark-mode .from-gray-50\/15,
+body.dark-mode .from-gray-50\/20,
+body.dark-mode .from-gray-50\/25,
+body.dark-mode .from-gray-50\/30,
+body.dark-mode .from-gray-50\/35,
+body.dark-mode .from-gray-50\/40,
+body.dark-mode .from-gray-50\/50,
+body.dark-mode .from-gray-50\/60,
+body.dark-mode .from-gray-50\/70,
+body.dark-mode .from-gray-50\/80,
+body.dark-mode .from-gray-50\/85,
+body.dark-mode .from-gray-50\/90,
+body.dark-mode .from-gray-50\/95,
+body.dark-mode .from-\[\#F8FAFC\],
+body.dark-mode .from-\[\#f8fafc\],
+body.dark-mode .from-\[\#F8FAFC\]\/10,
+body.dark-mode .from-\[\#f8fafc\]\/10,
+body.dark-mode .from-\[\#F8FAFC\]\/15,
+body.dark-mode .from-\[\#f8fafc\]\/15,
+body.dark-mode .from-\[\#F8FAFC\]\/20,
+body.dark-mode .from-\[\#f8fafc\]\/20,
+body.dark-mode .from-\[\#F8FAFC\]\/25,
+body.dark-mode .from-\[\#f8fafc\]\/25,
+body.dark-mode .from-\[\#F8FAFC\]\/30,
+body.dark-mode .from-\[\#f8fafc\]\/30,
+body.dark-mode .from-\[\#F8FAFC\]\/35,
+body.dark-mode .from-\[\#f8fafc\]\/35,
+body.dark-mode .from-\[\#F8FAFC\]\/40,
+body.dark-mode .from-\[\#f8fafc\]\/40,
+body.dark-mode .from-\[\#F8FAFC\]\/50,
+body.dark-mode .from-\[\#f8fafc\]\/50,
+body.dark-mode .from-\[\#F8FAFC\]\/60,
+body.dark-mode .from-\[\#f8fafc\]\/60,
+body.dark-mode .from-\[\#F8FAFC\]\/70,
+body.dark-mode .from-\[\#f8fafc\]\/70,
+body.dark-mode .from-\[\#F8FAFC\]\/80,
+body.dark-mode .from-\[\#f8fafc\]\/80,
+body.dark-mode .from-\[\#F8FAFC\]\/85,
+body.dark-mode .from-\[\#f8fafc\]\/85,
+body.dark-mode .from-\[\#F8FAFC\]\/90,
+body.dark-mode .from-\[\#f8fafc\]\/90,
+body.dark-mode .from-\[\#F8FAFC\]\/95,
+body.dark-mode .from-\[\#f8fafc\]\/95,
+body.dark-mode .from-blue-50,
+body.dark-mode .from-blue-50\/10,
+body.dark-mode .from-blue-50\/15,
+body.dark-mode .from-blue-50\/20,
+body.dark-mode .from-blue-50\/25,
+body.dark-mode .from-blue-50\/30,
+body.dark-mode .from-blue-50\/35,
+body.dark-mode .from-blue-50\/40,
+body.dark-mode .from-blue-50\/50,
+body.dark-mode .from-blue-50\/60,
+body.dark-mode .from-blue-50\/70,
+body.dark-mode .from-blue-50\/80,
+body.dark-mode .from-blue-50\/85,
+body.dark-mode .from-blue-50\/90,
+body.dark-mode .from-blue-50\/95,
+body.dark-mode .from-blue-100,
+body.dark-mode .from-blue-100\/10,
+body.dark-mode .from-blue-100\/15,
+body.dark-mode .from-blue-100\/20,
+body.dark-mode .from-blue-100\/25,
+body.dark-mode .from-blue-100\/30,
+body.dark-mode .from-blue-100\/35,
+body.dark-mode .from-blue-100\/40,
+body.dark-mode .from-blue-100\/50,
+body.dark-mode .from-blue-100\/60,
+body.dark-mode .from-blue-100\/70,
+body.dark-mode .from-blue-100\/80,
+body.dark-mode .from-blue-100\/85,
+body.dark-mode .from-blue-100\/90,
+body.dark-mode .from-blue-100\/95,
+body.dark-mode .from-indigo-50,
+body.dark-mode .from-indigo-50\/10,
+body.dark-mode .from-indigo-50\/15,
+body.dark-mode .from-indigo-50\/20,
+body.dark-mode .from-indigo-50\/25,
+body.dark-mode .from-indigo-50\/30,
+body.dark-mode .from-indigo-50\/35,
+body.dark-mode .from-indigo-50\/40,
+body.dark-mode .from-indigo-50\/50,
+body.dark-mode .from-indigo-50\/60,
+body.dark-mode .from-indigo-50\/70,
+body.dark-mode .from-indigo-50\/80,
+body.dark-mode .from-indigo-50\/85,
+body.dark-mode .from-indigo-50\/90,
+body.dark-mode .from-indigo-50\/95,
+body.dark-mode .from-indigo-100,
+body.dark-mode .from-indigo-100\/10,
+body.dark-mode .from-indigo-100\/15,
+body.dark-mode .from-indigo-100\/20,
+body.dark-mode .from-indigo-100\/25,
+body.dark-mode .from-indigo-100\/30,
+body.dark-mode .from-indigo-100\/35,
+body.dark-mode .from-indigo-100\/40,
+body.dark-mode .from-indigo-100\/50,
+body.dark-mode .from-indigo-100\/60,
+body.dark-mode .from-indigo-100\/70,
+body.dark-mode .from-indigo-100\/80,
+body.dark-mode .from-indigo-100\/85,
+body.dark-mode .from-indigo-100\/90,
+body.dark-mode .from-indigo-100\/95,
+body.dark-mode .from-purple-50,
+body.dark-mode .from-purple-50\/10,
+body.dark-mode .from-purple-50\/15,
+body.dark-mode .from-purple-50\/20,
+body.dark-mode .from-purple-50\/25,
+body.dark-mode .from-purple-50\/30,
+body.dark-mode .from-purple-50\/35,
+body.dark-mode .from-purple-50\/40,
+body.dark-mode .from-purple-50\/50,
+body.dark-mode .from-purple-50\/60,
+body.dark-mode .from-purple-50\/70,
+body.dark-mode .from-purple-50\/80,
+body.dark-mode .from-purple-50\/85,
+body.dark-mode .from-purple-50\/90,
+body.dark-mode .from-purple-50\/95,
+body.dark-mode .from-purple-100,
+body.dark-mode .from-purple-100\/10,
+body.dark-mode .from-purple-100\/15,
+body.dark-mode .from-purple-100\/20,
+body.dark-mode .from-purple-100\/25,
+body.dark-mode .from-purple-100\/30,
+body.dark-mode .from-purple-100\/35,
+body.dark-mode .from-purple-100\/40,
+body.dark-mode .from-purple-100\/50,
+body.dark-mode .from-purple-100\/60,
+body.dark-mode .from-purple-100\/70,
+body.dark-mode .from-purple-100\/80,
+body.dark-mode .from-purple-100\/85,
+body.dark-mode .from-purple-100\/90,
+body.dark-mode .from-purple-100\/95,
+body.dark-mode .from-emerald-50,
+body.dark-mode .from-emerald-50\/10,
+body.dark-mode .from-emerald-50\/15,
+body.dark-mode .from-emerald-50\/20,
+body.dark-mode .from-emerald-50\/25,
+body.dark-mode .from-emerald-50\/30,
+body.dark-mode .from-emerald-50\/35,
+body.dark-mode .from-emerald-50\/40,
+body.dark-mode .from-emerald-50\/50,
+body.dark-mode .from-emerald-50\/60,
+body.dark-mode .from-emerald-50\/70,
+body.dark-mode .from-emerald-50\/80,
+body.dark-mode .from-emerald-50\/85,
+body.dark-mode .from-emerald-50\/90,
+body.dark-mode .from-emerald-50\/95,
+body.dark-mode .from-green-50,
+body.dark-mode .from-green-50\/10,
+body.dark-mode .from-green-50\/15,
+body.dark-mode .from-green-50\/20,
+body.dark-mode .from-green-50\/25,
+body.dark-mode .from-green-50\/30,
+body.dark-mode .from-green-50\/35,
+body.dark-mode .from-green-50\/40,
+body.dark-mode .from-green-50\/50,
+body.dark-mode .from-green-50\/60,
+body.dark-mode .from-green-50\/70,
+body.dark-mode .from-green-50\/80,
+body.dark-mode .from-green-50\/85,
+body.dark-mode .from-green-50\/90,
+body.dark-mode .from-green-50\/95,
+body.dark-mode .from-teal-50,
+body.dark-mode .from-teal-50\/10,
+body.dark-mode .from-teal-50\/15,
+body.dark-mode .from-teal-50\/20,
+body.dark-mode .from-teal-50\/25,
+body.dark-mode .from-teal-50\/30,
+body.dark-mode .from-teal-50\/35,
+body.dark-mode .from-teal-50\/40,
+body.dark-mode .from-teal-50\/50,
+body.dark-mode .from-teal-50\/60,
+body.dark-mode .from-teal-50\/70,
+body.dark-mode .from-teal-50\/80,
+body.dark-mode .from-teal-50\/85,
+body.dark-mode .from-teal-50\/90,
+body.dark-mode .from-teal-50\/95,
+body.dark-mode .from-amber-50,
+body.dark-mode .from-amber-50\/10,
+body.dark-mode .from-amber-50\/15,
+body.dark-mode .from-amber-50\/20,
+body.dark-mode .from-amber-50\/25,
+body.dark-mode .from-amber-50\/30,
+body.dark-mode .from-amber-50\/35,
+body.dark-mode .from-amber-50\/40,
+body.dark-mode .from-amber-50\/50,
+body.dark-mode .from-amber-50\/60,
+body.dark-mode .from-amber-50\/70,
+body.dark-mode .from-amber-50\/80,
+body.dark-mode .from-amber-50\/85,
+body.dark-mode .from-amber-50\/90,
+body.dark-mode .from-amber-50\/95,
+body.dark-mode .from-orange-50,
+body.dark-mode .from-orange-50\/10,
+body.dark-mode .from-orange-50\/15,
+body.dark-mode .from-orange-50\/20,
+body.dark-mode .from-orange-50\/25,
+body.dark-mode .from-orange-50\/30,
+body.dark-mode .from-orange-50\/35,
+body.dark-mode .from-orange-50\/40,
+body.dark-mode .from-orange-50\/50,
+body.dark-mode .from-orange-50\/60,
+body.dark-mode .from-orange-50\/70,
+body.dark-mode .from-orange-50\/80,
+body.dark-mode .from-orange-50\/85,
+body.dark-mode .from-orange-50\/90,
+body.dark-mode .from-orange-50\/95,
+body.dark-mode .from-pink-50,
+body.dark-mode .from-pink-50\/10,
+body.dark-mode .from-pink-50\/15,
+body.dark-mode .from-pink-50\/20,
+body.dark-mode .from-pink-50\/25,
+body.dark-mode .from-pink-50\/30,
+body.dark-mode .from-pink-50\/35,
+body.dark-mode .from-pink-50\/40,
+body.dark-mode .from-pink-50\/50,
+body.dark-mode .from-pink-50\/60,
+body.dark-mode .from-pink-50\/70,
+body.dark-mode .from-pink-50\/80,
+body.dark-mode .from-pink-50\/85,
+body.dark-mode .from-pink-50\/90,
+body.dark-mode .from-pink-50\/95,
+body.dark-mode .from-sky-50,
+body.dark-mode .from-sky-50\/10,
+body.dark-mode .from-sky-50\/15,
+body.dark-mode .from-sky-50\/20,
+body.dark-mode .from-sky-50\/25,
+body.dark-mode .from-sky-50\/30,
+body.dark-mode .from-sky-50\/35,
+body.dark-mode .from-sky-50\/40,
+body.dark-mode .from-sky-50\/50,
+body.dark-mode .from-sky-50\/60,
+body.dark-mode .from-sky-50\/70,
+body.dark-mode .from-sky-50\/80,
+body.dark-mode .from-sky-50\/85,
+body.dark-mode .from-sky-50\/90,
+body.dark-mode .from-sky-50\/95,
+body.dark-mode .from-cyan-50,
+body.dark-mode .from-cyan-50\/10,
+body.dark-mode .from-cyan-50\/15,
+body.dark-mode .from-cyan-50\/20,
+body.dark-mode .from-cyan-50\/25,
+body.dark-mode .from-cyan-50\/30,
+body.dark-mode .from-cyan-50\/35,
+body.dark-mode .from-cyan-50\/40,
+body.dark-mode .from-cyan-50\/50,
+body.dark-mode .from-cyan-50\/60,
+body.dark-mode .from-cyan-50\/70,
+body.dark-mode .from-cyan-50\/80,
+body.dark-mode .from-cyan-50\/85,
+body.dark-mode .from-cyan-50\/90,
+body.dark-mode .from-cyan-50\/95 {
+  --tw-gradient-from: var(--color-surface) !important;
+}
+
+body.dark-mode .via-white,
+body.dark-mode .via-white\/10,
+body.dark-mode .via-white\/15,
+body.dark-mode .via-white\/20,
+body.dark-mode .via-white\/25,
+body.dark-mode .via-white\/30,
+body.dark-mode .via-white\/35,
+body.dark-mode .via-white\/40,
+body.dark-mode .via-white\/50,
+body.dark-mode .via-white\/60,
+body.dark-mode .via-white\/70,
+body.dark-mode .via-white\/80,
+body.dark-mode .via-white\/85,
+body.dark-mode .via-white\/90,
+body.dark-mode .via-white\/95,
+body.dark-mode .via-slate-50,
+body.dark-mode .via-slate-50\/10,
+body.dark-mode .via-slate-50\/15,
+body.dark-mode .via-slate-50\/20,
+body.dark-mode .via-slate-50\/25,
+body.dark-mode .via-slate-50\/30,
+body.dark-mode .via-slate-50\/35,
+body.dark-mode .via-slate-50\/40,
+body.dark-mode .via-slate-50\/50,
+body.dark-mode .via-slate-50\/60,
+body.dark-mode .via-slate-50\/70,
+body.dark-mode .via-slate-50\/80,
+body.dark-mode .via-slate-50\/85,
+body.dark-mode .via-slate-50\/90,
+body.dark-mode .via-slate-50\/95,
+body.dark-mode .via-gray-50,
+body.dark-mode .via-gray-50\/10,
+body.dark-mode .via-gray-50\/15,
+body.dark-mode .via-gray-50\/20,
+body.dark-mode .via-gray-50\/25,
+body.dark-mode .via-gray-50\/30,
+body.dark-mode .via-gray-50\/35,
+body.dark-mode .via-gray-50\/40,
+body.dark-mode .via-gray-50\/50,
+body.dark-mode .via-gray-50\/60,
+body.dark-mode .via-gray-50\/70,
+body.dark-mode .via-gray-50\/80,
+body.dark-mode .via-gray-50\/85,
+body.dark-mode .via-gray-50\/90,
+body.dark-mode .via-gray-50\/95,
+body.dark-mode .via-\[\#F8FAFC\],
+body.dark-mode .via-\[\#f8fafc\],
+body.dark-mode .via-\[\#F8FAFC\]\/10,
+body.dark-mode .via-\[\#f8fafc\]\/10,
+body.dark-mode .via-\[\#F8FAFC\]\/15,
+body.dark-mode .via-\[\#f8fafc\]\/15,
+body.dark-mode .via-\[\#F8FAFC\]\/20,
+body.dark-mode .via-\[\#f8fafc\]\/20,
+body.dark-mode .via-\[\#F8FAFC\]\/25,
+body.dark-mode .via-\[\#f8fafc\]\/25,
+body.dark-mode .via-\[\#F8FAFC\]\/30,
+body.dark-mode .via-\[\#f8fafc\]\/30,
+body.dark-mode .via-\[\#F8FAFC\]\/35,
+body.dark-mode .via-\[\#f8fafc\]\/35,
+body.dark-mode .via-\[\#F8FAFC\]\/40,
+body.dark-mode .via-\[\#f8fafc\]\/40,
+body.dark-mode .via-\[\#F8FAFC\]\/50,
+body.dark-mode .via-\[\#f8fafc\]\/50,
+body.dark-mode .via-\[\#F8FAFC\]\/60,
+body.dark-mode .via-\[\#f8fafc\]\/60,
+body.dark-mode .via-\[\#F8FAFC\]\/70,
+body.dark-mode .via-\[\#f8fafc\]\/70,
+body.dark-mode .via-\[\#F8FAFC\]\/80,
+body.dark-mode .via-\[\#f8fafc\]\/80,
+body.dark-mode .via-\[\#F8FAFC\]\/85,
+body.dark-mode .via-\[\#f8fafc\]\/85,
+body.dark-mode .via-\[\#F8FAFC\]\/90,
+body.dark-mode .via-\[\#f8fafc\]\/90,
+body.dark-mode .via-\[\#F8FAFC\]\/95,
+body.dark-mode .via-\[\#f8fafc\]\/95,
+body.dark-mode .via-blue-50,
+body.dark-mode .via-blue-50\/10,
+body.dark-mode .via-blue-50\/15,
+body.dark-mode .via-blue-50\/20,
+body.dark-mode .via-blue-50\/25,
+body.dark-mode .via-blue-50\/30,
+body.dark-mode .via-blue-50\/35,
+body.dark-mode .via-blue-50\/40,
+body.dark-mode .via-blue-50\/50,
+body.dark-mode .via-blue-50\/60,
+body.dark-mode .via-blue-50\/70,
+body.dark-mode .via-blue-50\/80,
+body.dark-mode .via-blue-50\/85,
+body.dark-mode .via-blue-50\/90,
+body.dark-mode .via-blue-50\/95,
+body.dark-mode .via-blue-100,
+body.dark-mode .via-blue-100\/10,
+body.dark-mode .via-blue-100\/15,
+body.dark-mode .via-blue-100\/20,
+body.dark-mode .via-blue-100\/25,
+body.dark-mode .via-blue-100\/30,
+body.dark-mode .via-blue-100\/35,
+body.dark-mode .via-blue-100\/40,
+body.dark-mode .via-blue-100\/50,
+body.dark-mode .via-blue-100\/60,
+body.dark-mode .via-blue-100\/70,
+body.dark-mode .via-blue-100\/80,
+body.dark-mode .via-blue-100\/85,
+body.dark-mode .via-blue-100\/90,
+body.dark-mode .via-blue-100\/95,
+body.dark-mode .via-indigo-50,
+body.dark-mode .via-indigo-50\/10,
+body.dark-mode .via-indigo-50\/15,
+body.dark-mode .via-indigo-50\/20,
+body.dark-mode .via-indigo-50\/25,
+body.dark-mode .via-indigo-50\/30,
+body.dark-mode .via-indigo-50\/35,
+body.dark-mode .via-indigo-50\/40,
+body.dark-mode .via-indigo-50\/50,
+body.dark-mode .via-indigo-50\/60,
+body.dark-mode .via-indigo-50\/70,
+body.dark-mode .via-indigo-50\/80,
+body.dark-mode .via-indigo-50\/85,
+body.dark-mode .via-indigo-50\/90,
+body.dark-mode .via-indigo-50\/95,
+body.dark-mode .via-indigo-100,
+body.dark-mode .via-indigo-100\/10,
+body.dark-mode .via-indigo-100\/15,
+body.dark-mode .via-indigo-100\/20,
+body.dark-mode .via-indigo-100\/25,
+body.dark-mode .via-indigo-100\/30,
+body.dark-mode .via-indigo-100\/35,
+body.dark-mode .via-indigo-100\/40,
+body.dark-mode .via-indigo-100\/50,
+body.dark-mode .via-indigo-100\/60,
+body.dark-mode .via-indigo-100\/70,
+body.dark-mode .via-indigo-100\/80,
+body.dark-mode .via-indigo-100\/85,
+body.dark-mode .via-indigo-100\/90,
+body.dark-mode .via-indigo-100\/95,
+body.dark-mode .via-purple-50,
+body.dark-mode .via-purple-50\/10,
+body.dark-mode .via-purple-50\/15,
+body.dark-mode .via-purple-50\/20,
+body.dark-mode .via-purple-50\/25,
+body.dark-mode .via-purple-50\/30,
+body.dark-mode .via-purple-50\/35,
+body.dark-mode .via-purple-50\/40,
+body.dark-mode .via-purple-50\/50,
+body.dark-mode .via-purple-50\/60,
+body.dark-mode .via-purple-50\/70,
+body.dark-mode .via-purple-50\/80,
+body.dark-mode .via-purple-50\/85,
+body.dark-mode .via-purple-50\/90,
+body.dark-mode .via-purple-50\/95,
+body.dark-mode .via-purple-100,
+body.dark-mode .via-purple-100\/10,
+body.dark-mode .via-purple-100\/15,
+body.dark-mode .via-purple-100\/20,
+body.dark-mode .via-purple-100\/25,
+body.dark-mode .via-purple-100\/30,
+body.dark-mode .via-purple-100\/35,
+body.dark-mode .via-purple-100\/40,
+body.dark-mode .via-purple-100\/50,
+body.dark-mode .via-purple-100\/60,
+body.dark-mode .via-purple-100\/70,
+body.dark-mode .via-purple-100\/80,
+body.dark-mode .via-purple-100\/85,
+body.dark-mode .via-purple-100\/90,
+body.dark-mode .via-purple-100\/95,
+body.dark-mode .via-emerald-50,
+body.dark-mode .via-emerald-50\/10,
+body.dark-mode .via-emerald-50\/15,
+body.dark-mode .via-emerald-50\/20,
+body.dark-mode .via-emerald-50\/25,
+body.dark-mode .via-emerald-50\/30,
+body.dark-mode .via-emerald-50\/35,
+body.dark-mode .via-emerald-50\/40,
+body.dark-mode .via-emerald-50\/50,
+body.dark-mode .via-emerald-50\/60,
+body.dark-mode .via-emerald-50\/70,
+body.dark-mode .via-emerald-50\/80,
+body.dark-mode .via-emerald-50\/85,
+body.dark-mode .via-emerald-50\/90,
+body.dark-mode .via-emerald-50\/95,
+body.dark-mode .via-green-50,
+body.dark-mode .via-green-50\/10,
+body.dark-mode .via-green-50\/15,
+body.dark-mode .via-green-50\/20,
+body.dark-mode .via-green-50\/25,
+body.dark-mode .via-green-50\/30,
+body.dark-mode .via-green-50\/35,
+body.dark-mode .via-green-50\/40,
+body.dark-mode .via-green-50\/50,
+body.dark-mode .via-green-50\/60,
+body.dark-mode .via-green-50\/70,
+body.dark-mode .via-green-50\/80,
+body.dark-mode .via-green-50\/85,
+body.dark-mode .via-green-50\/90,
+body.dark-mode .via-green-50\/95,
+body.dark-mode .via-teal-50,
+body.dark-mode .via-teal-50\/10,
+body.dark-mode .via-teal-50\/15,
+body.dark-mode .via-teal-50\/20,
+body.dark-mode .via-teal-50\/25,
+body.dark-mode .via-teal-50\/30,
+body.dark-mode .via-teal-50\/35,
+body.dark-mode .via-teal-50\/40,
+body.dark-mode .via-teal-50\/50,
+body.dark-mode .via-teal-50\/60,
+body.dark-mode .via-teal-50\/70,
+body.dark-mode .via-teal-50\/80,
+body.dark-mode .via-teal-50\/85,
+body.dark-mode .via-teal-50\/90,
+body.dark-mode .via-teal-50\/95,
+body.dark-mode .via-amber-50,
+body.dark-mode .via-amber-50\/10,
+body.dark-mode .via-amber-50\/15,
+body.dark-mode .via-amber-50\/20,
+body.dark-mode .via-amber-50\/25,
+body.dark-mode .via-amber-50\/30,
+body.dark-mode .via-amber-50\/35,
+body.dark-mode .via-amber-50\/40,
+body.dark-mode .via-amber-50\/50,
+body.dark-mode .via-amber-50\/60,
+body.dark-mode .via-amber-50\/70,
+body.dark-mode .via-amber-50\/80,
+body.dark-mode .via-amber-50\/85,
+body.dark-mode .via-amber-50\/90,
+body.dark-mode .via-amber-50\/95,
+body.dark-mode .via-orange-50,
+body.dark-mode .via-orange-50\/10,
+body.dark-mode .via-orange-50\/15,
+body.dark-mode .via-orange-50\/20,
+body.dark-mode .via-orange-50\/25,
+body.dark-mode .via-orange-50\/30,
+body.dark-mode .via-orange-50\/35,
+body.dark-mode .via-orange-50\/40,
+body.dark-mode .via-orange-50\/50,
+body.dark-mode .via-orange-50\/60,
+body.dark-mode .via-orange-50\/70,
+body.dark-mode .via-orange-50\/80,
+body.dark-mode .via-orange-50\/85,
+body.dark-mode .via-orange-50\/90,
+body.dark-mode .via-orange-50\/95,
+body.dark-mode .via-pink-50,
+body.dark-mode .via-pink-50\/10,
+body.dark-mode .via-pink-50\/15,
+body.dark-mode .via-pink-50\/20,
+body.dark-mode .via-pink-50\/25,
+body.dark-mode .via-pink-50\/30,
+body.dark-mode .via-pink-50\/35,
+body.dark-mode .via-pink-50\/40,
+body.dark-mode .via-pink-50\/50,
+body.dark-mode .via-pink-50\/60,
+body.dark-mode .via-pink-50\/70,
+body.dark-mode .via-pink-50\/80,
+body.dark-mode .via-pink-50\/85,
+body.dark-mode .via-pink-50\/90,
+body.dark-mode .via-pink-50\/95,
+body.dark-mode .via-sky-50,
+body.dark-mode .via-sky-50\/10,
+body.dark-mode .via-sky-50\/15,
+body.dark-mode .via-sky-50\/20,
+body.dark-mode .via-sky-50\/25,
+body.dark-mode .via-sky-50\/30,
+body.dark-mode .via-sky-50\/35,
+body.dark-mode .via-sky-50\/40,
+body.dark-mode .via-sky-50\/50,
+body.dark-mode .via-sky-50\/60,
+body.dark-mode .via-sky-50\/70,
+body.dark-mode .via-sky-50\/80,
+body.dark-mode .via-sky-50\/85,
+body.dark-mode .via-sky-50\/90,
+body.dark-mode .via-sky-50\/95,
+body.dark-mode .via-cyan-50,
+body.dark-mode .via-cyan-50\/10,
+body.dark-mode .via-cyan-50\/15,
+body.dark-mode .via-cyan-50\/20,
+body.dark-mode .via-cyan-50\/25,
+body.dark-mode .via-cyan-50\/30,
+body.dark-mode .via-cyan-50\/35,
+body.dark-mode .via-cyan-50\/40,
+body.dark-mode .via-cyan-50\/50,
+body.dark-mode .via-cyan-50\/60,
+body.dark-mode .via-cyan-50\/70,
+body.dark-mode .via-cyan-50\/80,
+body.dark-mode .via-cyan-50\/85,
+body.dark-mode .via-cyan-50\/90,
+body.dark-mode .via-cyan-50\/95 {
+  --tw-gradient-via: var(--color-surface) !important;
+}
+
+body.dark-mode .to-white,
+body.dark-mode .to-white\/10,
+body.dark-mode .to-white\/15,
+body.dark-mode .to-white\/20,
+body.dark-mode .to-white\/25,
+body.dark-mode .to-white\/30,
+body.dark-mode .to-white\/35,
+body.dark-mode .to-white\/40,
+body.dark-mode .to-white\/50,
+body.dark-mode .to-white\/60,
+body.dark-mode .to-white\/70,
+body.dark-mode .to-white\/80,
+body.dark-mode .to-white\/85,
+body.dark-mode .to-white\/90,
+body.dark-mode .to-white\/95,
+body.dark-mode .to-slate-50,
+body.dark-mode .to-slate-50\/10,
+body.dark-mode .to-slate-50\/15,
+body.dark-mode .to-slate-50\/20,
+body.dark-mode .to-slate-50\/25,
+body.dark-mode .to-slate-50\/30,
+body.dark-mode .to-slate-50\/35,
+body.dark-mode .to-slate-50\/40,
+body.dark-mode .to-slate-50\/50,
+body.dark-mode .to-slate-50\/60,
+body.dark-mode .to-slate-50\/70,
+body.dark-mode .to-slate-50\/80,
+body.dark-mode .to-slate-50\/85,
+body.dark-mode .to-slate-50\/90,
+body.dark-mode .to-slate-50\/95,
+body.dark-mode .to-gray-50,
+body.dark-mode .to-gray-50\/10,
+body.dark-mode .to-gray-50\/15,
+body.dark-mode .to-gray-50\/20,
+body.dark-mode .to-gray-50\/25,
+body.dark-mode .to-gray-50\/30,
+body.dark-mode .to-gray-50\/35,
+body.dark-mode .to-gray-50\/40,
+body.dark-mode .to-gray-50\/50,
+body.dark-mode .to-gray-50\/60,
+body.dark-mode .to-gray-50\/70,
+body.dark-mode .to-gray-50\/80,
+body.dark-mode .to-gray-50\/85,
+body.dark-mode .to-gray-50\/90,
+body.dark-mode .to-gray-50\/95,
+body.dark-mode .to-\[\#F8FAFC\],
+body.dark-mode .to-\[\#f8fafc\],
+body.dark-mode .to-\[\#F8FAFC\]\/10,
+body.dark-mode .to-\[\#f8fafc\]\/10,
+body.dark-mode .to-\[\#F8FAFC\]\/15,
+body.dark-mode .to-\[\#f8fafc\]\/15,
+body.dark-mode .to-\[\#F8FAFC\]\/20,
+body.dark-mode .to-\[\#f8fafc\]\/20,
+body.dark-mode .to-\[\#F8FAFC\]\/25,
+body.dark-mode .to-\[\#f8fafc\]\/25,
+body.dark-mode .to-\[\#F8FAFC\]\/30,
+body.dark-mode .to-\[\#f8fafc\]\/30,
+body.dark-mode .to-\[\#F8FAFC\]\/35,
+body.dark-mode .to-\[\#f8fafc\]\/35,
+body.dark-mode .to-\[\#F8FAFC\]\/40,
+body.dark-mode .to-\[\#f8fafc\]\/40,
+body.dark-mode .to-\[\#F8FAFC\]\/50,
+body.dark-mode .to-\[\#f8fafc\]\/50,
+body.dark-mode .to-\[\#F8FAFC\]\/60,
+body.dark-mode .to-\[\#f8fafc\]\/60,
+body.dark-mode .to-\[\#F8FAFC\]\/70,
+body.dark-mode .to-\[\#f8fafc\]\/70,
+body.dark-mode .to-\[\#F8FAFC\]\/80,
+body.dark-mode .to-\[\#f8fafc\]\/80,
+body.dark-mode .to-\[\#F8FAFC\]\/85,
+body.dark-mode .to-\[\#f8fafc\]\/85,
+body.dark-mode .to-\[\#F8FAFC\]\/90,
+body.dark-mode .to-\[\#f8fafc\]\/90,
+body.dark-mode .to-\[\#F8FAFC\]\/95,
+body.dark-mode .to-\[\#f8fafc\]\/95,
+body.dark-mode .to-blue-50,
+body.dark-mode .to-blue-50\/10,
+body.dark-mode .to-blue-50\/15,
+body.dark-mode .to-blue-50\/20,
+body.dark-mode .to-blue-50\/25,
+body.dark-mode .to-blue-50\/30,
+body.dark-mode .to-blue-50\/35,
+body.dark-mode .to-blue-50\/40,
+body.dark-mode .to-blue-50\/50,
+body.dark-mode .to-blue-50\/60,
+body.dark-mode .to-blue-50\/70,
+body.dark-mode .to-blue-50\/80,
+body.dark-mode .to-blue-50\/85,
+body.dark-mode .to-blue-50\/90,
+body.dark-mode .to-blue-50\/95,
+body.dark-mode .to-blue-100,
+body.dark-mode .to-blue-100\/10,
+body.dark-mode .to-blue-100\/15,
+body.dark-mode .to-blue-100\/20,
+body.dark-mode .to-blue-100\/25,
+body.dark-mode .to-blue-100\/30,
+body.dark-mode .to-blue-100\/35,
+body.dark-mode .to-blue-100\/40,
+body.dark-mode .to-blue-100\/50,
+body.dark-mode .to-blue-100\/60,
+body.dark-mode .to-blue-100\/70,
+body.dark-mode .to-blue-100\/80,
+body.dark-mode .to-blue-100\/85,
+body.dark-mode .to-blue-100\/90,
+body.dark-mode .to-blue-100\/95,
+body.dark-mode .to-indigo-50,
+body.dark-mode .to-indigo-50\/10,
+body.dark-mode .to-indigo-50\/15,
+body.dark-mode .to-indigo-50\/20,
+body.dark-mode .to-indigo-50\/25,
+body.dark-mode .to-indigo-50\/30,
+body.dark-mode .to-indigo-50\/35,
+body.dark-mode .to-indigo-50\/40,
+body.dark-mode .to-indigo-50\/50,
+body.dark-mode .to-indigo-50\/60,
+body.dark-mode .to-indigo-50\/70,
+body.dark-mode .to-indigo-50\/80,
+body.dark-mode .to-indigo-50\/85,
+body.dark-mode .to-indigo-50\/90,
+body.dark-mode .to-indigo-50\/95,
+body.dark-mode .to-indigo-100,
+body.dark-mode .to-indigo-100\/10,
+body.dark-mode .to-indigo-100\/15,
+body.dark-mode .to-indigo-100\/20,
+body.dark-mode .to-indigo-100\/25,
+body.dark-mode .to-indigo-100\/30,
+body.dark-mode .to-indigo-100\/35,
+body.dark-mode .to-indigo-100\/40,
+body.dark-mode .to-indigo-100\/50,
+body.dark-mode .to-indigo-100\/60,
+body.dark-mode .to-indigo-100\/70,
+body.dark-mode .to-indigo-100\/80,
+body.dark-mode .to-indigo-100\/85,
+body.dark-mode .to-indigo-100\/90,
+body.dark-mode .to-indigo-100\/95,
+body.dark-mode .to-purple-50,
+body.dark-mode .to-purple-50\/10,
+body.dark-mode .to-purple-50\/15,
+body.dark-mode .to-purple-50\/20,
+body.dark-mode .to-purple-50\/25,
+body.dark-mode .to-purple-50\/30,
+body.dark-mode .to-purple-50\/35,
+body.dark-mode .to-purple-50\/40,
+body.dark-mode .to-purple-50\/50,
+body.dark-mode .to-purple-50\/60,
+body.dark-mode .to-purple-50\/70,
+body.dark-mode .to-purple-50\/80,
+body.dark-mode .to-purple-50\/85,
+body.dark-mode .to-purple-50\/90,
+body.dark-mode .to-purple-50\/95,
+body.dark-mode .to-purple-100,
+body.dark-mode .to-purple-100\/10,
+body.dark-mode .to-purple-100\/15,
+body.dark-mode .to-purple-100\/20,
+body.dark-mode .to-purple-100\/25,
+body.dark-mode .to-purple-100\/30,
+body.dark-mode .to-purple-100\/35,
+body.dark-mode .to-purple-100\/40,
+body.dark-mode .to-purple-100\/50,
+body.dark-mode .to-purple-100\/60,
+body.dark-mode .to-purple-100\/70,
+body.dark-mode .to-purple-100\/80,
+body.dark-mode .to-purple-100\/85,
+body.dark-mode .to-purple-100\/90,
+body.dark-mode .to-purple-100\/95,
+body.dark-mode .to-emerald-50,
+body.dark-mode .to-emerald-50\/10,
+body.dark-mode .to-emerald-50\/15,
+body.dark-mode .to-emerald-50\/20,
+body.dark-mode .to-emerald-50\/25,
+body.dark-mode .to-emerald-50\/30,
+body.dark-mode .to-emerald-50\/35,
+body.dark-mode .to-emerald-50\/40,
+body.dark-mode .to-emerald-50\/50,
+body.dark-mode .to-emerald-50\/60,
+body.dark-mode .to-emerald-50\/70,
+body.dark-mode .to-emerald-50\/80,
+body.dark-mode .to-emerald-50\/85,
+body.dark-mode .to-emerald-50\/90,
+body.dark-mode .to-emerald-50\/95,
+body.dark-mode .to-green-50,
+body.dark-mode .to-green-50\/10,
+body.dark-mode .to-green-50\/15,
+body.dark-mode .to-green-50\/20,
+body.dark-mode .to-green-50\/25,
+body.dark-mode .to-green-50\/30,
+body.dark-mode .to-green-50\/35,
+body.dark-mode .to-green-50\/40,
+body.dark-mode .to-green-50\/50,
+body.dark-mode .to-green-50\/60,
+body.dark-mode .to-green-50\/70,
+body.dark-mode .to-green-50\/80,
+body.dark-mode .to-green-50\/85,
+body.dark-mode .to-green-50\/90,
+body.dark-mode .to-green-50\/95,
+body.dark-mode .to-teal-50,
+body.dark-mode .to-teal-50\/10,
+body.dark-mode .to-teal-50\/15,
+body.dark-mode .to-teal-50\/20,
+body.dark-mode .to-teal-50\/25,
+body.dark-mode .to-teal-50\/30,
+body.dark-mode .to-teal-50\/35,
+body.dark-mode .to-teal-50\/40,
+body.dark-mode .to-teal-50\/50,
+body.dark-mode .to-teal-50\/60,
+body.dark-mode .to-teal-50\/70,
+body.dark-mode .to-teal-50\/80,
+body.dark-mode .to-teal-50\/85,
+body.dark-mode .to-teal-50\/90,
+body.dark-mode .to-teal-50\/95,
+body.dark-mode .to-amber-50,
+body.dark-mode .to-amber-50\/10,
+body.dark-mode .to-amber-50\/15,
+body.dark-mode .to-amber-50\/20,
+body.dark-mode .to-amber-50\/25,
+body.dark-mode .to-amber-50\/30,
+body.dark-mode .to-amber-50\/35,
+body.dark-mode .to-amber-50\/40,
+body.dark-mode .to-amber-50\/50,
+body.dark-mode .to-amber-50\/60,
+body.dark-mode .to-amber-50\/70,
+body.dark-mode .to-amber-50\/80,
+body.dark-mode .to-amber-50\/85,
+body.dark-mode .to-amber-50\/90,
+body.dark-mode .to-amber-50\/95,
+body.dark-mode .to-orange-50,
+body.dark-mode .to-orange-50\/10,
+body.dark-mode .to-orange-50\/15,
+body.dark-mode .to-orange-50\/20,
+body.dark-mode .to-orange-50\/25,
+body.dark-mode .to-orange-50\/30,
+body.dark-mode .to-orange-50\/35,
+body.dark-mode .to-orange-50\/40,
+body.dark-mode .to-orange-50\/50,
+body.dark-mode .to-orange-50\/60,
+body.dark-mode .to-orange-50\/70,
+body.dark-mode .to-orange-50\/80,
+body.dark-mode .to-orange-50\/85,
+body.dark-mode .to-orange-50\/90,
+body.dark-mode .to-orange-50\/95,
+body.dark-mode .to-pink-50,
+body.dark-mode .to-pink-50\/10,
+body.dark-mode .to-pink-50\/15,
+body.dark-mode .to-pink-50\/20,
+body.dark-mode .to-pink-50\/25,
+body.dark-mode .to-pink-50\/30,
+body.dark-mode .to-pink-50\/35,
+body.dark-mode .to-pink-50\/40,
+body.dark-mode .to-pink-50\/50,
+body.dark-mode .to-pink-50\/60,
+body.dark-mode .to-pink-50\/70,
+body.dark-mode .to-pink-50\/80,
+body.dark-mode .to-pink-50\/85,
+body.dark-mode .to-pink-50\/90,
+body.dark-mode .to-pink-50\/95,
+body.dark-mode .to-sky-50,
+body.dark-mode .to-sky-50\/10,
+body.dark-mode .to-sky-50\/15,
+body.dark-mode .to-sky-50\/20,
+body.dark-mode .to-sky-50\/25,
+body.dark-mode .to-sky-50\/30,
+body.dark-mode .to-sky-50\/35,
+body.dark-mode .to-sky-50\/40,
+body.dark-mode .to-sky-50\/50,
+body.dark-mode .to-sky-50\/60,
+body.dark-mode .to-sky-50\/70,
+body.dark-mode .to-sky-50\/80,
+body.dark-mode .to-sky-50\/85,
+body.dark-mode .to-sky-50\/90,
+body.dark-mode .to-sky-50\/95,
+body.dark-mode .to-cyan-50,
+body.dark-mode .to-cyan-50\/10,
+body.dark-mode .to-cyan-50\/15,
+body.dark-mode .to-cyan-50\/20,
+body.dark-mode .to-cyan-50\/25,
+body.dark-mode .to-cyan-50\/30,
+body.dark-mode .to-cyan-50\/35,
+body.dark-mode .to-cyan-50\/40,
+body.dark-mode .to-cyan-50\/50,
+body.dark-mode .to-cyan-50\/60,
+body.dark-mode .to-cyan-50\/70,
+body.dark-mode .to-cyan-50\/80,
+body.dark-mode .to-cyan-50\/85,
+body.dark-mode .to-cyan-50\/90,
+body.dark-mode .to-cyan-50\/95 {
+  --tw-gradient-to: var(--color-surface) !important;
+}
+
+body.dark-mode .hover\:bg-white:hover,
+body.dark-mode .hover\:bg-slate-50:hover,
+body.dark-mode .hover\:bg-gray-50:hover,
+body.dark-mode .hover\:bg-\[\#F8FAFC\]:hover,
+body.dark-mode .hover\:bg-\[\#f8fafc\]:hover,
+body.dark-mode .hover\:bg-slate-100:hover,
+body.dark-mode .hover\:bg-gray-100:hover {
+  background-color: #1E293B !important;
+}
+
+body.dark-mode .hover\:bg-blue-50:hover,
+body.dark-mode .hover\:bg-blue-100:hover,
+body.dark-mode .hover\:bg-indigo-50:hover,
+body.dark-mode .hover\:bg-blue-50\/80:hover,
+body.dark-mode .hover\:bg-blue-100\/80:hover {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+body.dark-mode .hover\:text-slate-900:hover,
+body.dark-mode .hover\:text-\[\#1A202C\]:hover,
+body.dark-mode .hover\:text-\[\#1a202c\]:hover,
+body.dark-mode .hover\:text-gray-900:hover {
+  color: #FFFFFF !important;
+}
+
+
+/* One-off light colours used on logged-in pages */
+body.dark-mode .bg-\[\#EBF4FF\],
+body.dark-mode .bg-\[\#ebf4ff\],
+body.dark-mode .bg-\[\#DCEBFF\],
+body.dark-mode .bg-\[\#dcebff\] {
+  background-color: rgba(59, 130, 246, 0.14) !important;
+}
+body.dark-mode .from-blue-200 {
+  --tw-gradient-from: var(--color-surface) !important;
+}
+body.dark-mode .text-amber-700\/60 {
+  color: rgba(252, 211, 77, 0.7) !important;
+}
+body.dark-mode .text-\[\#0A66C2\],
+body.dark-mode .text-\[\#0a66c2\] {
+  color: #4DA3FF !important;
+}
+
+/* Keep small white UI parts white (toggle-switch knobs, slider thumbs) */
+body.dark-mode .bg-white.rounded-full.absolute {
+  background-color: #FFFFFF !important;
+}
+
+/* Form fields: dark field, light text, visible border */
+body.dark-mode input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+body.dark-mode textarea,
+body.dark-mode select {
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
+  border-color: #334155;
+}
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #64748B;
+}
+body.dark-mode option {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Primary blue buttons: lighter blue with dark text for contrast on dark pages */
+body.dark-mode .bg-\[\#2563EB\] {
+  background-color: var(--color-primary) !important;
+  color: #0B1120 !important;
+}
+
+/* Accessibility preferences are shared by every dashboard tab. */
+.dashboard-content {
+  width: var(--accessibility-content-width);
+  max-width: 100%;
+  margin-inline: auto;
+  line-height: var(--accessibility-line-height);
+  letter-spacing: var(--accessibility-letter-spacing);
+}
+
+.dashboard-content p,
+.dashboard-content li,
+.dashboard-content label,
+.dashboard-content button,
+.dashboard-content input,
+.dashboard-content textarea,
+.dashboard-content select {
+  line-height: var(--accessibility-line-height);
+  letter-spacing: var(--accessibility-letter-spacing);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LEGACY CLASSES — kept for backward compat
+───────────────────────────────────────────────────────────────────────────── */
+
+.mild-dyslexia {
+  --font-body:           'Lexend', Arial, sans-serif;
+  --line-height-body:    1.7;
+  --letter-spacing-body: 0.03em;
+}
+
+.high-contrast {
+  --color-bg:      #FEF9E7 !important;
+  --color-text:    #111111 !important;
+  --color-surface: #FFFEF5 !important;
+}
+
+.text-highlight {
+  background-color: rgba(255, 238, 0, 0.35) !important;
+  padding: 2px 5px !important;
+  border-radius: 4px !important;
+}
+
+.line-focus {
+  position: relative;
+}
+
+.line-focus::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100vw;
+  width: 200vw;
+  height: 2em;
+  background-color: rgba(255, 240, 0, 0.12);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MOTION — reduce aggressive animations always, more so in dyslexia mode
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Smooth global transitions */
+*, *::before, *::after {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    opacity 0.2s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LANDING — persistent character idle motion (disabled for reduced motion /
+   dyslexia mode by the component itself, and by the rules below)
+───────────────────────────────────────────────────────────────────────────── */
+@keyframes nb-idle-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.nb-idle-float {
+  animation: nb-idle-float 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+.nb-character-layer {
+  will-change: opacity;
+  backface-visibility: hidden;
+}
+
+/* Honour prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body.accessibility-reduce-motion,
+body.accessibility-reduce-motion html {
+  scroll-behavior: auto;
+}
+
+body.accessibility-reduce-motion *,
+body.accessibility-reduce-motion *::before,
+body.accessibility-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+body.dyslexia-mode:not(.fun-mode) * {
+  animation-duration: 0.4s !important;
+  transition-duration: 0.3s !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLLBAR STYLING
+───────────────────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TAILWIND @theme override
+───────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-border: var(--color-border);
+  
+  --color-primary: var(--color-primary);
+  --color-coral: var(--color-coral);
+  --color-coral-soft: var(--color-coral-soft);
+  
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
+}

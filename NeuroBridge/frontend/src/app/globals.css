@@ -2,6 +2,7 @@
 @import "tailwindcss";
 /* Landing page components (explicit so new files are always scanned) */
 @source "../components/landing";
+@source "../components/auth";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -321,6 +322,36 @@ p {
   gap: var(--card-gap);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   FUN MODE — the reader's own font, line spacing, weight and letter spacing.
+   Values are CSS variables set on <html> by App.tsx, so every slider change
+   applies to the whole site instantly. Elements marked [data-font-preview]
+   (the font samples in the Fun-mode menu, the landing-page demo) keep their
+   own font so the samples stay accurate.
+───────────────────────────────────────────────────────────────────────────── */
+body.fun-mode {
+  font-family: var(--fun-font) !important;
+  line-height: var(--fun-line-height) !important;
+}
+body.fun-mode *:not([data-font-preview]):not([data-font-preview] *) {
+  font-family: var(--fun-font) !important;
+  letter-spacing: var(--fun-letter-spacing) !important;
+}
+/* Font samples show each font as-is (normal spacing); inline styles on the
+   live preview still win because this rule is not !important. */
+body.fun-mode [data-font-preview],
+body.fun-mode [data-font-preview] * {
+  letter-spacing: normal;
+}
+/* Body text follows the line-spacing and weight sliders; headings and
+   buttons keep their own emphasis. */
+body.fun-mode :is(p, li, dd, dt, blockquote, label, td, th, textarea, input, select):not([data-font-preview]):not([data-font-preview] *) {
+  line-height: var(--fun-line-height) !important;
+  font-weight: var(--fun-weight) !important;
+}
+body.fun-mode :is(p, li, dd, dt) :is(span, a, em):not(.font-bold):not(.font-black):not(.font-semibold):not(.font-extrabold) {
+  font-weight: inherit !important;
+}
 /* ─────────────────────────────────────────────────────────────────────────────
    DYSLEXIA MODE — LAYOUT ADJUSTMENTS
 ───────────────────────────────────────────────────────────────────────────── */
@@ -3183,7 +3214,7 @@ body.accessibility-reduce-motion *::after {
   scroll-behavior: auto !important;
 }
 
-body.dyslexia-mode * {
+body.dyslexia-mode:not(.fun-mode) * {
   animation-duration: 0.4s !important;
   transition-duration: 0.3s !important;
 }

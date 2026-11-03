@@ -9,55 +9,154 @@ import nodemailer from 'nodemailer';
 
 export const emailAuthRouter = Router();
 
-// ─── Email Transporter ─────────────────────────────────────────────────────────
-// Uses Gmail with App Password. Set EMAIL_USER and EMAIL_PASSWORD in .env
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE || 'gmail',
+// ─── EMAIL SENDING ────────────────────────────────────────────────────────────
+// Order of attempts:
+//   1. Gmail SMTP on port 465 (SSL)        — EMAIL_USER + EMAIL_PASSWORD (App Password)
+//   2. Gmail SMTP on port 587 (STARTTLS)   — some networks block 465 but allow 587
+//   3. Resend HTTPS API                    — RESEND_API_KEY; works where SMTP ports are
+//      blocked (college / office Wi-Fi). Note: with the shared sender
+//      onboarding@resend.dev, Resend only delivers to the Resend account's own email.
+// The last failure reason is kept so the UI and /email-status can explain it.
+
+type EmailAttempt = { via: string; ok: boolean; error?: string };
+let lastEmailReport: { at: string; to: string; attempts: EmailAttempt[] } | null = null;
+
+const gmailConfigured = () => {
+  const pass = process.env.EMAIL_PASSWORD;
+  return !!process.env.EMAIL_USER && !!pass && pass !== 'your-gmail-app-password-here';
+};
+
+const smtpTransport = (port: 465 | 587) =>
+  nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port,
+    secure: port === 465,
+    requireTLS: port === 587,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      // App Passwords are shown with spaces ("abcd efgh ijkl mnop"); Gmail wants them without
+      pass: (process.env.EMAIL_PASSWORD || '').replace(/\s+/g, ''),
     },
-    tls: {
-      rejectUnauthorized: false,
-    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
+
+/** Turn nodemailer / network errors into something a person can act on. */
+const explainEmailError = (error: any): string => {
+  const code = error?.code || '';
+  const responseCode = error?.responseCode;
+  const msg = String(error?.message || error);
+  if (code === 'EAUTH' || responseCode === 535 || /BadCredentials|Username and Password not accepted/i.test(msg)) {
+    return 'Gmail rejected the login. The App Password is wrong or was revoked — make a new one at https://myaccount.google.com/apppasswords (2-Step Verification must be on) and put it in EMAIL_PASSWORD.';
+  }
+  if (['ETIMEDOUT', 'ECONNREFUSED', 'ECONNRESET', 'ESOCKET', 'EDNS', 'ENOTFOUND', 'EAI_AGAIN', 'ECONNECTION'].includes(code) || /timeout/i.test(msg)) {
+    return `Could not reach the mail server (${code || 'timeout'}). This network is probably blocking email ports 465/587 — try another Wi-Fi or a phone hotspot, or set up Resend.`;
+  }
+  return `${code ? code + ': ' : ''}${msg}`.slice(0, 300);
 };
+
+const sendViaResend = async (to: string, subject: string, html: string): Promise<void> => {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error('RESEND_API_KEY is not set');
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: process.env.RESEND_FROM || 'NeuroBridge <onboarding@resend.dev>', to: [to], subject, html }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Resend ${res.status}: ${body.slice(0, 200)}`);
+  }
+};
+
+// Helper: send email — returns true when any method delivered it to the mail server
+const sendEmail = async (to: string, subject: string, html: string): Promise<boolean> => {
+  const attempts: EmailAttempt[] = [];
+  const fromAddress = process.env.EMAIL_FROM || `NeuroBridge <${process.env.EMAIL_USER}>`;
+
+  if (gmailConfigured()) {
+    for (const port of [465, 587] as const) {
+      try {
+        const info = await smtpTransport(port).sendMail({ from: fromAddress, to, subject, html });
+        attempts.push({ via: `gmail:${port}`, ok: true });
+        lastEmailReport = { at: new Date().toISOString(), to, attempts };
+        console.log(`✅ Email sent to ${to} via Gmail port ${port} — Message ID: ${info.messageId}`);
+        return true;
+      } catch (error: any) {
+        const reason = explainEmailError(error);
+        attempts.push({ via: `gmail:${port}`, ok: false, error: reason });
+        console.error(`❌ Gmail (port ${port}) failed: ${reason}`);
+        if (error?.code === 'EAUTH') break; // wrong password — the other port won't help
+      }
+    }
+  } else {
+    attempts.push({ via: 'gmail', ok: false, error: 'EMAIL_USER / EMAIL_PASSWORD are not set in backend/.env' });
+  }
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendViaResend(to, subject, html);
+      attempts.push({ via: 'resend', ok: true });
+      lastEmailReport = { at: new Date().toISOString(), to, attempts };
+      console.log(`✅ Email sent to ${to} via Resend`);
+      return true;
+    } catch (error: any) {
+      const reason = String(error?.message || error).slice(0, 300);
+      attempts.push({ via: 'resend', ok: false, error: reason });
+      console.error(`❌ Resend failed: ${reason}`);
+    }
+  }
+
+  lastEmailReport = { at: new Date().toISOString(), to, attempts };
+  return false;
+};
+
+/** Short reason for the most recent failed send (shown on the sign-up screen in dev). */
+const lastEmailError = (): string | undefined =>
+  lastEmailReport?.attempts.find((a) => !a.ok && a.via.startsWith('gmail'))?.error ||
+  lastEmailReport?.attempts.find((a) => !a.ok)?.error;
+
+// Check Gmail login once at startup so problems show up in the terminal straight away
+if (gmailConfigured()) {
+  smtpTransport(465)
+    .verify()
+    .then(() => console.log(`✅ Email ready: Gmail login OK for ${process.env.EMAIL_USER}`))
+    .catch((error: any) => console.error(`⚠️  Email check failed: ${explainEmailError(error)}`));
+} else {
+  console.warn('⚠️  Email not configured: set EMAIL_USER and EMAIL_PASSWORD in backend/.env');
+}
 
 // Helper: generate a secure random token
 const generateToken = (): string => {
   return crypto.randomBytes(32).toString('hex');
 };
 
-// Helper: send email — logs detailed error if sending fails
-const sendEmail = async (to: string, subject: string, html: string): Promise<boolean> => {
-  const emailUser = process.env.EMAIL_USER;
-  const emailPass = process.env.EMAIL_PASSWORD;
-
-  if (!emailUser || !emailPass || emailPass === 'your-gmail-app-password-here') {
-    console.error('❌ EMAIL NOT CONFIGURED: Set EMAIL_USER and EMAIL_PASSWORD in backend/.env');
-    console.error('   Get a Gmail App Password at: https://myaccount.google.com/apppasswords');
-    return false;
-  }
-
-  try {
-    const transporter = createTransporter();
-    const fromAddress = process.env.EMAIL_FROM || `NeuroBridge <${emailUser}>`;
-
-    const info = await transporter.sendMail({
-      from: fromAddress,
-      to,
-      subject,
-      html,
-    });
-
-    console.log(`✅ Email sent to ${to} — Message ID: ${info.messageId}`);
-    return true;
-  } catch (error: any) {
-    console.error('❌ Email send error:', error?.message || error);
-    return false;
-  }
+// ─── PASSWORD POLICY ──────────────────────────────────────────────────────────
+// Same rules as the sign-up form: 6+ characters, at least one number and at
+// least one special character (anything that is not a letter or a digit).
+const passwordProblem = (password: unknown): string | null => {
+  if (typeof password !== 'string' || password.length < 6) return 'Password must be at least 6 characters long';
+  if (password.length > 128) return 'Password must be 128 characters or fewer';
+  if (!/\d/.test(password)) return 'Password must include at least one number';
+  if (!/[^A-Za-z0-9]/.test(password)) return 'Password must include at least one special character (for example ! @ # $)';
+  return null;
 };
+
+// ─── PENDING SIGN-UPS ─────────────────────────────────────────────────────────
+// After sign-up the browser gets an opaque id it can poll to learn when the
+// email link has been clicked (so the page can move on by itself). The id
+// reveals nothing about the email address. Kept in memory; 24 h lifetime.
+const PENDING_TTL_MS = 24 * 60 * 60 * 1000;
+const pendingSignups = new Map<string, { email: string; expires: number }>();
+const createPendingId = (email: string): string => {
+  const now = Date.now();
+  for (const [id, entry] of pendingSignups) if (entry.expires < now) pendingSignups.delete(id);
+  const id = crypto.randomBytes(24).toString('hex');
+  pendingSignups.set(id, { email, expires: now + PENDING_TTL_MS });
+  return id;
+};
+
 
 // ─── Email HTML Templates ──────────────────────────────────────────────────────
 const verificationEmailHtml = (link: string) => `
@@ -151,8 +250,9 @@ emailAuthRouter.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    const pwProblem = passwordProblem(password);
+    if (pwProblem) {
+      return res.status(400).json({ error: pwProblem });
     }
 
     // ── Check duplicate email ────────────────────────────────────────────────
@@ -163,10 +263,15 @@ emailAuthRouter.post('/register', async (req: Request, res: Response) => {
         const newToken = generateToken();
         await database.saveVerificationToken(existingUser.email, newToken, 24 * 60);
         const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5147'}/verify-email?token=${newToken}`;
-        await sendEmail(email, 'Verify Your NeuroBridge Account', verificationEmailHtml(verificationLink));
+        const resent = await sendEmail(existingUser.email, 'Verify Your NeuroBridge Account', verificationEmailHtml(verificationLink));
 
         return res.status(400).json({
           error: 'Account already exists but email not verified. A new verification email has been sent — please check your inbox.',
+          needsVerification: true,
+          emailSent: resent,
+          emailError: !resent && process.env.NODE_ENV !== 'production' ? lastEmailError() : undefined,
+          devVerifyLink: !resent && process.env.NODE_ENV !== 'production' ? verificationLink : undefined,
+          pendingId: createPendingId(existingUser.email),
         });
       }
       return res.status(400).json({ error: 'An account with this email already exists. Please login.' });
@@ -203,6 +308,8 @@ emailAuthRouter.post('/register', async (req: Request, res: Response) => {
         emailSent: false,
         // In dev mode expose the link so you can test without email
         devVerifyLink: process.env.NODE_ENV !== 'production' ? verificationLink : undefined,
+        emailError: process.env.NODE_ENV !== 'production' ? lastEmailError() : undefined,
+        pendingId: createPendingId(normalizedEmail),
         user: { id: user.id, name: user.name, email: user.email, email_verified: false },
       });
     }
@@ -211,6 +318,7 @@ emailAuthRouter.post('/register', async (req: Request, res: Response) => {
       success: true,
       message: `Account created! We sent a verification email to ${normalizedEmail}. Please check your inbox (and spam folder) and click the link to activate your account.`,
       emailSent: true,
+      pendingId: createPendingId(normalizedEmail),
       user: { id: user.id, name: user.name, email: user.email, email_verified: false },
     });
   } catch (error) {
@@ -245,10 +353,69 @@ emailAuthRouter.post('/verify-email', async (req: Request, res: Response) => {
     return res.json({
       success: true,
       message: 'Email verified successfully! You can now log in.',
+      email: user.email,
     });
   } catch (error) {
     console.error('Email verification error:', error);
     res.status(500).json({ error: 'Verification failed. Please try again.' });
+  }
+});
+
+// ─── EMAIL + DATABASE STATUS (development only, this computer only) ──────────
+// GET /api/auth/email/email-status        → which database users go to + mail setup
+// GET /api/auth/email/email-status?test=1 → also logs in to Gmail right now
+emailAuthRouter.get('/email-status', async (req: Request, res: Response) => {
+  const ip = req.ip || req.socket.remoteAddress || '';
+  const isLocal = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip);
+  if (process.env.NODE_ENV === 'production' || !isLocal) return res.status(404).end();
+
+  const conn = UserModel.db;
+  let gmailLogin: string | undefined;
+  if (req.query.test && gmailConfigured()) {
+    gmailLogin = await smtpTransport(465)
+      .verify()
+      .then(() => 'ok')
+      .catch((error: any) => explainEmailError(error));
+  }
+  const recent = await UserModel.find({}, { email: 1, email_verified: 1, google_id: 1, created_at: 1 })
+    .sort({ created_at: -1 })
+    .limit(5)
+    .lean();
+  return res.json({
+    database: { host: conn.host, port: conn.port, name: conn.name, collection: UserModel.collection.collectionName },
+    users: await UserModel.countDocuments(),
+    recentUsers: recent.map((u: any) => ({
+      email: u.email,
+      verified: !!u.email_verified,
+      google: !!u.google_id,
+      created_at: u.created_at,
+    })),
+    email: {
+      gmailUser: process.env.EMAIL_USER || null,
+      gmailPasswordSet: gmailConfigured(),
+      resendKeySet: !!process.env.RESEND_API_KEY,
+      gmailLogin,
+      lastSend: lastEmailReport,
+    },
+  });
+});
+
+// ─── VERIFICATION STATUS ──────────────────────────────────────────────────────
+// GET /api/auth/email/verification-status/:pendingId
+// Polled by the "check your email" screen right after sign-up.
+emailAuthRouter.get('/verification-status/:pendingId', async (req: Request, res: Response) => {
+  try {
+    const entry = pendingSignups.get(String(req.params.pendingId || ''));
+    if (!entry || entry.expires < Date.now()) {
+      return res.status(404).json({ error: 'Unknown or expired sign-up' });
+    }
+    const user = await database.findUserByEmail(entry.email);
+    const verified = !!user?.email_verified;
+    if (verified) pendingSignups.delete(String(req.params.pendingId));
+    return res.json({ verified });
+  } catch (error) {
+    console.error('Verification status error:', error);
+    res.status(500).json({ error: 'Could not check verification status' });
   }
 });
 
@@ -332,7 +499,14 @@ emailAuthRouter.post('/resend-verification', async (req: Request, res: Response)
     const newToken = generateToken();
     await database.saveVerificationToken(user.email, newToken, 24 * 60);
     const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5147'}/verify-email?token=${newToken}`;
-    await sendEmail(user.email, 'Verify Your NeuroBridge Account', verificationEmailHtml(verificationLink));
+    const sent = await sendEmail(user.email, 'Verify Your NeuroBridge Account', verificationEmailHtml(verificationLink));
+    if (!sent) {
+      return res.status(502).json({
+        error: 'Could not send the email right now. Please try again in a minute.',
+        emailError: process.env.NODE_ENV !== 'production' ? lastEmailError() : undefined,
+        devVerifyLink: process.env.NODE_ENV !== 'production' ? verificationLink : undefined,
+      });
+    }
 
     return res.json({ success: true, message: 'Verification email resent. Please check your inbox.' });
   } catch (error) {
@@ -404,8 +578,9 @@ emailAuthRouter.post('/reset-password', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Token and new password are required' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    const newPwProblem = passwordProblem(newPassword);
+    if (newPwProblem) {
+      return res.status(400).json({ error: newPwProblem });
     }
 
     // Validate the reset token

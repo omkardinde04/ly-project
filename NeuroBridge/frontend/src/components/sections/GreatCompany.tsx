@@ -4,7 +4,7 @@ import { Clapperboard, MonitorPlay, Rocket, Palette, Zap, Waves, Sparkles } from
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 
 export function GreatCompany() {
-  const { isDarkMode, reduceMotion, isDyslexiaMode } = useDyslexia();
+  const { isDarkMode, reduceMotion } = useDyslexia();
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -28,51 +28,51 @@ export function GreatCompany() {
   const people = [
     {
       icon: <Clapperboard size={20} />,
-      quote: `"I was seen as the dumbest person in school. But movies let me think in pictures, not words."`,
+      quote: 'Makes films loved around the world.',
       name: 'Steven Spielberg',
-      role: "Legendary Film Director · Schindler's List, E.T.",
+      role: 'Film director',
       accent: 'text-[#2563EB] bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-900',
-      tag: 'Think in Pictures',
+      tag: 'Thinks in pictures',
     },
     {
       icon: <MonitorPlay size={20} />,
-      quote: `"Creativity is just connecting things. Dyslexia made me see connections others missed."`,
+      quote: 'Helped start Apple and change computers.',
       name: 'Steve Jobs',
-      role: 'Co-founder, Apple · Visionary Innovator',
+      role: 'Apple co-founder',
       accent: 'text-[#7C3AED] bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-900',
-      tag: 'Connect Ideas',
+      tag: 'Connects ideas',
     },
     {
       icon: <Rocket size={20} />,
-      quote: `"My brain works differently — and that's exactly why I could imagine things no one else dared to."`,
+      quote: 'Started the Virgin group of companies.',
       name: 'Richard Branson',
-      role: 'Founder, Virgin Group · Entrepreneur',
+      role: 'Business leader',
       accent: 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-900',
       tag: 'Vivid Imagination',
     },
     {
       icon: <Palette size={20} />,
-      quote: `"I struggled to read as a child. But I could see beauty and tell stories that words couldn't capture."`,
+      quote: 'Painted the Mona Lisa and drew new inventions.',
       name: 'Leonardo da Vinci',
-      role: 'Artist, Inventor & Polymath Genius',
+      role: 'Artist and inventor',
       accent: 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-900',
       tag: 'Visual Thinking',
     },
     {
       icon: <Zap size={20} />,
-      quote: `"My teachers gave up on me. I proved that the mind, not the grade, is the real measure of a person."`,
+      quote: 'Changed how we understand space and time.',
       name: 'Albert Einstein',
-      role: 'Physicist · Nobel Prize Winner',
+      role: 'Scientist',
       accent: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-900',
       tag: 'Deep Curiosity',
     },
     {
       icon: <Waves size={20} />,
-      quote: `"Dyslexia taught me to work harder and focus deeper. It's the reason I never gave up."`,
+      quote: 'Won 23 Olympic gold medals.',
       name: 'Michael Phelps',
-      role: '23× Olympic Gold Medalist',
+      role: 'Swimmer',
       accent: 'text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 border-cyan-200 dark:border-cyan-900',
-      tag: 'Relentless Focus',
+      tag: 'Never gives up',
     },
   ];
 
@@ -81,17 +81,17 @@ export function GreatCompany() {
       <div className="max-w-3xl space-y-3">
         <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-semibold">
           <Sparkles size={14} />
-          <span>You're in Great Company</span>
+          <span>You're in great company</span>
         </div>
         <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
           isDarkMode ? 'text-white' : 'text-slate-900'
         }`}>
-          Dyslexia didn't stop them. It shaped them.
+          Dyslexia did not stop them.
         </h2>
         <p className={`text-base sm:text-lg font-normal leading-relaxed ${
           isDarkMode ? 'text-slate-300' : 'text-slate-600'
         }`}>
-          Some of the world's greatest innovators, artists, and leaders think differently—just like you.
+          Many great people think differently, just like you.
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export function GreatCompany() {
         {people.map((person, index) => (
           <motion.div
             key={person.name}
-            style={reduceMotion || isDyslexiaMode ? {} : { y: colParallax[index] }}
+            style={reduceMotion ? {} : { y: colParallax[index] }}
             initial={reduceMotion ? false : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
@@ -127,8 +127,8 @@ export function GreatCompany() {
                 </span>
               </div>
 
-              {/* Natural, comfortable quote text */}
-              <p className={`text-xs sm:text-sm italic leading-relaxed mb-6 font-normal ${
+              {/* One short, plain fact */}
+              <p className={`text-sm sm:text-base leading-relaxed mb-6 font-normal ${
                 isDarkMode ? 'text-slate-200' : 'text-slate-600'
               }`}>
                 {person.quote}

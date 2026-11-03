@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { DyslexiaProvider, useDyslexia } from './contexts/DyslexiaContext';
+import { fontStack } from './utils/funFonts';
 import { AssistantProvider } from './contexts/AssistantContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SpotlightReaderProvider } from './contexts/SpotlightReaderContext';
@@ -40,6 +41,10 @@ function Layout({ children }: { children: ReactNode }) {
     reduceMotion,
     contentWidth,
     language,
+    funFont,
+    funLineHeight,
+    funWeight,
+    funLetterSpacing,
   } = useDyslexia();
 
   // Apply class directly on <body> so our CSS token system works globally
@@ -54,8 +59,18 @@ function Layout({ children }: { children: ReactNode }) {
       'high-contrast',
       'accessibility-high-contrast',
       'accessibility-reduce-motion',
+      'fun-mode',
     );
     root.classList.remove('accessibility-reduce-motion');
+
+    // Fun mode: the reader's chosen font / spacing / weight, applied site-wide
+    if (isDyslexiaMode) {
+      body.classList.add('fun-mode');
+      root.style.setProperty('--fun-font', fontStack(funFont));
+      root.style.setProperty('--fun-line-height', String(funLineHeight));
+      root.style.setProperty('--fun-weight', String(funWeight));
+      root.style.setProperty('--fun-letter-spacing', `${funLetterSpacing}em`);
+    }
 
     if (isDyslexiaMode) {
       if (dyslexiaLevel === 'severe') {
@@ -90,8 +105,9 @@ function Layout({ children }: { children: ReactNode }) {
       root.style.removeProperty('--accessibility-line-height');
       root.style.removeProperty('--accessibility-letter-spacing');
       root.style.removeProperty('--accessibility-content-width');
+      ['--fun-font', '--fun-line-height', '--fun-weight', '--fun-letter-spacing'].forEach((v) => root.style.removeProperty(v));
     };
-  }, [isDyslexiaMode, dyslexiaLevel, textSize, lineSpacing, letterSpacing, highContrast, reduceMotion, contentWidth, language]);
+  }, [isDyslexiaMode, dyslexiaLevel, textSize, lineSpacing, letterSpacing, highContrast, reduceMotion, contentWidth, language, funFont, funLineHeight, funWeight, funLetterSpacing]);
 
   return <>{children}</>;
 }

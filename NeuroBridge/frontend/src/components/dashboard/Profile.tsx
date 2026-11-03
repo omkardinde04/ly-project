@@ -601,13 +601,13 @@ export function Profile() {
 
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F8FAFC]">
-                <span className="text-[#64748B] font-medium">Dyslexia Mode</span>
+                <span className="text-[#64748B] font-medium">Fun Mode</span>
                 <span
                   className={`font-bold ${
                     isDyslexiaMode ? 'text-purple-700' : 'text-[#1A202C]'
                   }`}
                 >
-                  {isDyslexiaMode ? 'OpenDyslexic Active' : 'Standard Font'}
+                  {isDyslexiaMode ? 'On' : 'Off'}
                 </span>
               </div>
 

@@ -1,6 +1,38 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { AUTH_CHANNEL, EMAIL_AUTH_API } from '../../utils/emailVerification';
+
+type VerifyResult = { success?: boolean; error?: string; email?: string };
+
+// One request per token, even when React runs the effect twice in dev
+// (a second request would find the token already used and report a failure).
+const verifyRequests = new Map<string, Promise<VerifyResult>>();
+function verifyOnce(token: string): Promise<VerifyResult> {
+  let request = verifyRequests.get(token);
+  if (!request) {
+    request = fetch(`${EMAIL_AUTH_API}/verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }).then((response) => response.json() as Promise<VerifyResult>);
+    request.catch(() => verifyRequests.delete(token));
+    verifyRequests.set(token, request);
+  }
+  return request;
+}
+
+/** Tell the sign-up tab (still showing "check your email") that we're done. */
+function announceVerified(email?: string) {
+  if (typeof BroadcastChannel === 'undefined') return;
+  try {
+    const channel = new BroadcastChannel(AUTH_CHANNEL);
+    channel.postMessage({ type: 'email-verified', email });
+    channel.close();
+  } catch {
+    /* the sign-up tab also polls the server, so this is only a speed-up */
+  }
+}
 
 export function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -18,29 +50,32 @@ export function VerifyEmail() {
       }
 
       try {
-        const response = await fetch('http://localhost:4000/api/auth/email/verify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token })
-        });
-
-        const data = await response.json();
+        const data = await verifyOnce(token);
+        if (cancelled) return;
 
         if (data.success) {
           setStatus('success');
           setMessage('Email verified successfully! Redirecting to login...');
-          setTimeout(() => navigate('/login'), 3000);
+          announceVerified(data.email);
+          redirectTimer = window.setTimeout(() => navigate('/login'), 3000);
         } else {
           setStatus('error');
           setMessage(data.error || 'Failed to verify email. The link may have expired.');
         }
-      } catch (error) {
+      } catch {
+        if (cancelled) return;
         setStatus('error');
         setMessage('Network error. Please try again later.');
       }
     };
 
+    let cancelled = false;
+    let redirectTimer: number | undefined;
     verifyEmail();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(redirectTimer);
+    };
   }, [token, navigate]);
 
   return (

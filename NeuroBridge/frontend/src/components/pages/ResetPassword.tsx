@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import { PasswordStrength } from '../auth/PasswordStrength';
+import { meetsPasswordRules } from '../../utils/passwordRules';
 
 export function ResetPassword() {
     const [password, setPassword] = useState('');
@@ -27,14 +29,7 @@ export function ResetPassword() {
         }
     }, [token]);
 
-    const passwordStrength = () => {
-        if (!password) return null;
-        if (password.length < 6) return { label: 'Too short', color: 'bg-red-400', width: '25%' };
-        if (password.length < 8) return { label: 'Weak', color: 'bg-orange-400', width: '50%' };
-        if (password.length < 12 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) return { label: 'Fair', color: 'bg-yellow-400', width: '75%' };
-        return { label: 'Strong', color: 'bg-green-400', width: '100%' };
-    };
-    const strength = passwordStrength();
+    const passwordOk = meetsPasswordRules(password);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,8 +44,8 @@ export function ResetPassword() {
             return;
         }
 
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters long.');
+        if (!passwordOk) {
+            setError('Your password needs at least 6 characters, 1 number and 1 special character.');
             return;
         }
 
@@ -176,7 +171,9 @@ export function ResetPassword() {
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                                            placeholder="Enter new password (min 6 chars)"
+                                            placeholder="6+ characters, a number and a symbol"
+                                            autoComplete="new-password"
+                                            aria-describedby="reset-password-rules"
                                             required
                                             className="w-full pl-14 pr-12 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[15px] font-medium text-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-surface transition-colors"
                                         />
@@ -191,18 +188,7 @@ export function ResetPassword() {
                                             }
                                         </button>
                                     </div>
-                                    {/* Password strength bar */}
-                                    {strength && (
-                                        <div className="mt-2">
-                                            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
-                                                    style={{ width: strength.width }}
-                                                />
-                                            </div>
-                                            <p className="text-xs text-text-muted mt-1 font-medium">{strength.label}</p>
-                                        </div>
-                                    )}
+                                    <PasswordStrength id="reset-password-rules" password={password} />
                                 </div>
 
                                 {/* Confirm Password */}
@@ -249,7 +235,7 @@ export function ResetPassword() {
 
                                 <button
                                     type="submit"
-                                    disabled={isLoading || !password || !confirmPassword}
+                                    disabled={isLoading || !passwordOk || password !== confirmPassword}
                                     className="w-full py-3.5 bg-primary hover:bg-blue-700 text-white font-bold rounded-2xl shadow-sm transition-colors text-[16px] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? (

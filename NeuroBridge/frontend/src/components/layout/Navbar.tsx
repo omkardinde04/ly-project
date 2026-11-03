@@ -6,6 +6,7 @@ import { AudioControl } from '../ui/AudioControl';
 import { DarkModeToggle } from '../ui/DarkModeToggle';
 import { LanguageSelector } from '../ui/LanguageSelector';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
+import { FunModeMenu } from '../ui/FunModeMenu';
 import { Menu, X, ArrowRight } from 'lucide-react';
 
 /**
@@ -29,7 +30,7 @@ export function Navbar({
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginPage = location.pathname === '/login';
-  const { isDyslexiaMode, toggleDyslexiaMode, isDarkMode } = useDyslexia();
+  const { isDarkMode } = useDyslexia();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavigation = (link: string) => {
@@ -247,23 +248,8 @@ export function Navbar({
               <LanguageSelector />
             </div>
 
-            <div className="flex items-center justify-between max-w-sm">
-              <span className={`text-xs font-bold ${isDarkMode ? 'text-slate-200' : 'text-[#1A202C]'}`}>Dyslexia Font</span>
-              <button
-                type="button"
-                onClick={toggleDyslexiaMode}
-                aria-pressed={isDyslexiaMode}
-                aria-label="Toggle dyslexia font"
-                className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${focusRing} ${
-                  isDyslexiaMode ? 'bg-[#2563EB]' : isDarkMode ? 'bg-slate-600' : 'bg-slate-300'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                    isDyslexiaMode ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
+            <div className={`max-w-sm rounded-2xl border p-4 ${isDarkMode ? 'border-slate-700 bg-slate-900/80' : 'border-slate-200 bg-white/90'}`}>
+              <FunModeMenu variant="inline" />
             </div>
 
             {!isLoginPage && showLogin && (

@@ -92,7 +92,7 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
   // Active accessibility tags count
   const activeFeatures = [
     { label: 'TTS Audio', active: true, icon: Volume2, color: 'bg-blue-50 text-[#2563EB] border-blue-100' },
-    { label: isDyslexiaMode ? 'Dyslexia Font' : 'Readable Font', active: isDyslexiaMode, icon: Type, color: 'bg-purple-50 text-purple-700 border-purple-200' },
+    { label: isDyslexiaMode ? 'Fun Mode' : 'Readable Font', active: isDyslexiaMode, icon: Type, color: 'bg-purple-50 text-purple-700 border-purple-200' },
     { label: 'High Contrast', active: highContrast, icon: Eye, color: 'bg-slate-100 text-slate-800 border-slate-200' },
     { label: 'Calm Motion', active: reduceMotion, icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   ].filter(f => f.active);

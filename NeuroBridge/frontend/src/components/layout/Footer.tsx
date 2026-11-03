@@ -89,9 +89,6 @@ export function Footer() {
                 <span className="text-[#2563EB] dark:text-blue-400 font-bold">OpenDyslexic Engine</span>
               </li>
               <li>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">WCAG AAA Contrast</span>
-              </li>
-              <li>
                 <span className="text-purple-600 dark:text-purple-400 font-bold">JARVIS Voice Assistant</span>
               </li>
             </ul>
