@@ -4,7 +4,6 @@ import { LogoIcon } from '../ui/LogoIcon';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { AudioControl } from '../ui/AudioControl';
 import { DarkModeToggle } from '../ui/DarkModeToggle';
-import { LanguageSelector } from '../ui/LanguageSelector';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { FunModeMenu } from '../ui/FunModeMenu';
 import { Menu, X, ArrowRight } from 'lucide-react';
@@ -13,8 +12,8 @@ import { Menu, X, ArrowRight } from 'lucide-react';
  * Responsive layout (nothing ever overflows the row):
  *   < sm   : logo · Get Started · ☰                (everything else in the drawer)
  *   sm–lg  : logo · 🌙 · Log in · Get Started · ☰
- *   lg–xl  : logo · nav links · 🌙 · Log in · Get Started · ☰  (Listen / language / dyslexia in the drawer)
- *   xl+    : logo · nav links · Listen · 🌙 · language · dyslexia · Log in · Get Started
+ *   lg–xl  : logo · nav links · 🌙 · Log in · Get Started · ☰  (Listen / Fun mode in the drawer)
+ *   xl+    : logo · nav links · Listen · 🌙 · Fun mode · Log in · Get Started
  *   2xl+   : + tagline under the logo
  *
  * Visually the bar has no box: it is transparent with a frosted blur of the
@@ -38,7 +37,7 @@ export function Navbar({
     const routeMap: Record<string, string> = {
       Home: '/',
       Learn: '/learn',
-      Opportunities: '/opportunities',
+      'Chrome Extension': '/chrome-extension',
       Games: '/learn',
       Courses: '/courses',
       Assessment: '/assessment',
@@ -52,8 +51,8 @@ export function Navbar({
 
   const isActiveLink = (link: string) =>
     (link === 'Home' && location.pathname === '/') ||
+    (link === 'Chrome Extension' && location.pathname.startsWith('/chrome-extension')) ||
     ((link === 'Games' || link === 'Learn') && location.pathname.startsWith('/learn')) ||
-    (link === 'Opportunities' && location.pathname.startsWith('/opportunities')) ||
     (link === 'Courses' && location.pathname.startsWith('/courses')) ||
     (link === 'Assessment' && location.pathname.startsWith('/assessment')) ||
     (link === 'Community' && location.pathname.startsWith('/community')) ||
@@ -117,7 +116,7 @@ export function Navbar({
                   <button
                     key={link}
                     type="button"
-                    data-jarvis-id={`nav-${link.toLowerCase()}`}
+                    data-jarvis-id={`nav-${link.toLowerCase().replace(/\s+/g, '-')}`}
                     onClick={() => handleNavigation(link)}
                     aria-current={isActive ? 'page' : undefined}
                     className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${focusRing} ${
@@ -143,7 +142,6 @@ export function Navbar({
             <div className="hidden xl:flex items-center gap-2">
               <AudioControl showControls={false} />
               <DarkModeToggle />
-              <LanguageSelector />
               <DyslexiaToggle />
             </div>
             {/* Theme toggle stays one tap away on smaller screens */}
@@ -245,7 +243,6 @@ export function Navbar({
               <span className="inline-flex sm:hidden">
                 <DarkModeToggle />
               </span>
-              <LanguageSelector />
             </div>
 
             <div className={`max-w-sm rounded-2xl border p-4 ${isDarkMode ? 'border-slate-700 bg-slate-900/80' : 'border-slate-200 bg-white/90'}`}>

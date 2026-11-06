@@ -454,27 +454,12 @@ export function Profile() {
               <div>
                 <h2 className="text-base font-extrabold text-[#1A202C]">Platform Preferences</h2>
                 <p className="text-xs text-[#64748B] font-medium">
-                  Customize language, regional timing, and notification alerts.
+                  Customize regional timing and notification alerts.
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1A202C] uppercase tracking-wider mb-1.5">
-                  Preferred Language
-                </label>
-                <select
-                  value={preferences.language}
-                  onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 bg-[#F8FAFC] focus:bg-white text-xs sm:text-sm text-[#1A202C] font-semibold outline-none transition-all"
-                >
-                  <option>English (US)</option>
-                  <option>Hindi (हिंदी)</option>
-                  <option>Marathi (मराठी)</option>
-                </select>
-              </div>
-
               <div>
                 <label className="block text-xs font-bold text-[#1A202C] uppercase tracking-wider mb-1.5">
                   Time Zone

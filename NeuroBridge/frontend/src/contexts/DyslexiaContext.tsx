@@ -99,7 +99,8 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return { ...defaultSettings, ...parsed };
+        // The site is English-only: ignore any Hindi/Marathi choice saved earlier
+        return { ...defaultSettings, ...parsed, language: 'en' };
       } catch (e) {
         return defaultSettings;
       }
@@ -137,8 +138,9 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, isDarkMode: !prev.isDarkMode }));
   };
 
-  const setLanguage = (lang: Language) => {
-    setSettings(prev => ({ ...prev, language: lang }));
+  // English-only for now; kept so existing callers keep working
+  const setLanguage = () => {
+    setSettings(prev => (prev.language === 'en' ? prev : { ...prev, language: 'en' }));
   };
 
   const setAudioSpeed = (speed: number) => {

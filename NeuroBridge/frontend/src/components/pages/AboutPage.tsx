@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { usePublicStats } from '../../hooks/usePublicStats';
+import { CountUp } from '../ui/CountUp';
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 18 },
@@ -9,6 +11,7 @@ const fade = (delay = 0) => ({
 
 export function AboutPage() {
   const { isDyslexiaMode } = useDyslexia();
+  const { stats, failed } = usePublicStats();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-8">
@@ -42,7 +45,7 @@ export function AboutPage() {
               {[
                 'Dyslexia assessments',
                 'Personalised learning',
-                'Job opportunities',
+                'Chrome reading helper',
                 'Supportive communities',
               ].map((f, i) => (
                 <li key={i} className="flex items-start gap-2">
@@ -77,7 +80,7 @@ export function AboutPage() {
             {[
               { label: 'Assess', sub: 'Comprehensive testing' },
               { label: 'Learn', sub: 'Personalised paths' },
-              { label: 'Connect', sub: 'Jobs and community' },
+              { label: 'Connect', sub: 'Supportive community' },
             ].map((c, i) => (
               <div key={i} className="bg-surface rounded-xl p-4 text-center shadow-sm border border-border">
                 <div className={`text-xl font-black mb-1 text-text`}>{c.label}</div>
@@ -92,14 +95,23 @@ export function AboutPage() {
       <motion.div {...fade(0.2)}>
         <h2 className="text-2xl font-bold text-text mb-4">Our Impact</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-          {[
-            { value: '10K+', label: 'Users supported' },
-            { value: '92%', label: 'Report better focus' },
-            { value: '3', label: 'Languages supported' },
-            { value: '1,200+', label: 'Opportunities listed' },
-          ].map((stat, i) => (
+          {/* Live totals from the backend — see backend/src/routes/stats.ts */}
+          {([
+            { key: 'students', label: 'Students supported' },
+            { key: 'assessments', label: 'Assessments taken' },
+            { key: 'courses', label: 'Courses available' },
+            { key: 'posts', label: 'Community posts' },
+          ] as const).map((stat, i) => (
             <div key={i} className={`bg-surface border border-border rounded-2xl p-5 text-text shadow-sm`}>
-              <div className="text-2xl font-black mb-1 text-text">{stat.value}</div>
+              <div className="text-2xl font-black mb-1 text-text">
+                {stats ? (
+                  <CountUp value={stats[stat.key]} />
+                ) : failed ? (
+                  '—'
+                ) : (
+                  <span aria-label="Loading" className="inline-block h-7 w-14 rounded-md bg-surface-2 animate-pulse motion-reduce:animate-none align-middle" />
+                )}
+              </div>
               <div className="text-xs font-medium text-text-muted leading-snug">{stat.label}</div>
             </div>
           ))}
@@ -113,7 +125,12 @@ export function AboutPage() {
             <span className="text-text text-lg">✉️</span>
             <div>
               <div className="text-xs text-text-muted font-medium">Email</div>
-              <div className="font-bold text-text text-sm">contact@neurobridge.com</div>
+              <a
+                href="mailto:neurobridge.support@gmail.com"
+                className="font-bold text-text text-sm hover:text-primary hover:underline"
+              >
+                neurobridge.support@gmail.com
+              </a>
             </div>
           </div>
         </div>

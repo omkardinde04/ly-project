@@ -17,78 +17,6 @@ export interface SpeechSegment {
   tone: SpeechTone;
 }
 
-// Preferred natural human-sounding voice keywords by language in priority order
-const PREFERRED_VOICE_NAMES: Record<Language, string[]> = {
-  en: [
-    // Top-tier Siri-like Apple voices (macOS / iOS)
-    'Ava (Premium)',
-    'Ava (Enhanced)',
-    'Samantha (Premium)',
-    'Samantha (Enhanced)',
-    'Zoe (Premium)',
-    'Zoe (Enhanced)',
-    'Serena (Premium)',
-    'Serena (Enhanced)',
-    'Daniel (Enhanced)',
-    'Oliver (Enhanced)',
-    'Kate (Enhanced)',
-    'Jamie (Premium)',
-    'Jamie (Enhanced)',
-    'Evan (Enhanced)',
-    'Allison (Enhanced)',
-    'Nicky (Enhanced)',
-    'Siri',
-    'Ava',
-    'Samantha',
-    'Zoe',
-    'Serena',
-    'Daniel',
-    'Oliver',
-    'Kate',
-    // Microsoft Natural / Neural voices (Edge / Windows)
-    'Microsoft Jenny Online (Natural)',
-    'Microsoft Aria Online (Natural)',
-    'Microsoft Guy Online (Natural)',
-    'Microsoft Christopher Online (Natural)',
-    'Jenny (Natural)',
-    'Aria (Natural)',
-    'Guy (Natural)',
-    // Google voices (Chrome / Android)
-    'Google US English',
-    'Google UK English Female',
-    'Google UK English Male',
-    // Standard fallbacks
-    'Karen',
-    'Moira',
-    'Fiona',
-    'Tessa',
-  ],
-  hi: [
-    // Microsoft Natural & Google
-    'Microsoft Swara Online (Natural)',
-    'Microsoft Madhur Online (Natural)',
-    'Microsoft Aarav Online (Natural)',
-    'Swara (Natural)',
-    'Google हिन्दी',
-    'Google Hindi',
-    'Lekha (Enhanced)',
-    'Lekha',
-    'Microsoft Kalpana',
-    'Hindi',
-  ],
-  mr: [
-    // Google & Microsoft
-    'Google मराठी',
-    'Google Marathi',
-    'Microsoft Marathi',
-    'Lekha (Enhanced)',
-    'Lekha',
-    'Marathi',
-    'Google हिन्दी',
-    'Google Hindi',
-  ],
-};
-
 let cachedVoices: SpeechSynthesisVoice[] = [];
 
 export function getLoadedVoices(): SpeechSynthesisVoice[] {
@@ -108,60 +36,74 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   };
 }
 
+// Old formant / novelty voices that sound robotic (macOS "Eloquence" + novelty
+// voices, Windows SAPI desktop voices). Used only if nothing else exists.
+const ROBOTIC_VOICES = [
+  'albert', 'bad news', 'bahh', 'bells', 'boing', 'bubbles', 'cellos', 'good news', 'jester', 'organ',
+  'superstar', 'trinoids', 'whisper', 'wobble', 'zarvox', 'fred', 'junior', 'kathy', 'ralph',
+  'eddy', 'flo', 'grandma', 'grandpa', 'reed', 'rocko', 'sandy', 'shelley',
+  'microsoft david', 'microsoft zira', 'microsoft mark', 'microsoft hazel', 'microsoft heera', 'microsoft ravi',
+];
+
+// Warm, clear voices people tend to like (Siri / Alexa style). Small bonus only.
+const FAVOURITE_VOICES = [
+  'ava', 'jenny', 'aria', 'emma', 'andrew', 'brian', 'neerja', 'prabhat', 'samantha', 'zoe', 'evan',
+  'nathan', 'joelle', 'noelle', 'allison', 'susan', 'serena', 'karen', 'daniel', 'libby', 'sonia',
+];
+
+/** Higher = more natural. Exported for debugging in the console. */
+export function scoreVoice(v: SpeechSynthesisVoice, language: Language = 'en'): number {
+  const name = `${v.name} ${v.voiceURI}`.toLowerCase();
+  const lang = v.lang.toLowerCase().replace('_', '-');
+  let score = 0;
+
+  if (ROBOTIC_VOICES.some((r) => name.includes(r))) return -1000;
+
+  // Neural / cloud voices — by far the most human
+  if (/\b(natural|neural)\b/.test(name) || name.includes('online')) score += 120;
+  if (name.includes('multilingual')) score += 10;
+  // Apple's downloadable high-quality voices (Settings → Accessibility → Spoken Content)
+  if (name.includes('premium')) score += 110;
+  else if (name.includes('enhanced')) score += 95;
+  // Chrome's Google network voices
+  if (name.includes('google')) score += 80;
+  // Apple's newer standard voices are fine; the "compact" ones less so
+  if (name.includes('compact')) score -= 20;
+  if (FAVOURITE_VOICES.some((f) => new RegExp(`\\b${f}\\b`).test(name))) score += 15;
+
+  // Language fit
+  if (language === 'en') {
+    if (lang === 'en-us') score += 12;
+    else if (lang === 'en-gb' || lang === 'en-in') score += 10;
+    else if (lang.startsWith('en')) score += 6;
+    else score -= 200;
+  } else if (!lang.startsWith(language)) {
+    score -= 200;
+  }
+
+  // The browser's own default is usually a sensible tie-breaker
+  if (v.default) score += 2;
+  return score;
+}
+
 /**
- * Finds the highest quality, most natural human-sounding voice for a given language.
+ * Finds the most natural, human-sounding voice installed for a language.
+ * Best results: Microsoft Edge (Natural voices), Chrome (Google voices), or a
+ * Mac with a Premium/Enhanced voice downloaded.
  */
 export function getBestNaturalVoice(language: Language = 'en'): SpeechSynthesisVoice | null {
   const voices = getLoadedVoices();
   if (!voices.length) return null;
-
-  const targetLang = language.toLowerCase();
-  const langCandidates = voices.filter((v) => {
-    const vLang = v.lang.toLowerCase().replace('_', '-');
-    if (targetLang === 'en') return vLang.startsWith('en');
-    if (targetLang === 'hi') return vLang.startsWith('hi');
-    if (targetLang === 'mr') return vLang.startsWith('mr') || vLang.startsWith('hi');
-    return vLang.includes(targetLang);
-  });
-
-  const voicePool = langCandidates.length > 0 ? langCandidates : voices;
-  const preferences = PREFERRED_VOICE_NAMES[language] || PREFERRED_VOICE_NAMES.en;
-
-  // 1. Check exact match in preference list
-  for (const preferred of preferences) {
-    const found = voicePool.find(
-      (v) =>
-        v.name.toLowerCase().includes(preferred.toLowerCase()) ||
-        v.voiceURI.toLowerCase().includes(preferred.toLowerCase())
-    );
-    if (found) return found;
+  let best: SpeechSynthesisVoice | null = null;
+  let bestScore = -Infinity;
+  for (const v of voices) {
+    const sc = scoreVoice(v, language);
+    if (sc > bestScore) {
+      best = v;
+      bestScore = sc;
+    }
   }
-
-  // 2. Prefer any voice labeled 'Enhanced', 'Premium', 'Natural', or 'Neural' (skipping legacy robotic voices like Alex/Fred/Albert)
-  const roboticFilter = ['alex', 'fred', 'albert', 'bad news', 'bahh', 'bells', 'boing', 'bubbles', 'cellos', 'deranged', 'good news', 'hysterical', 'pipe organ', 'trinoids', 'whisper', 'zarvox'];
-  const highQualityCandidate = voicePool.find((v) => {
-    const name = v.name.toLowerCase();
-    const isRobotic = roboticFilter.some((r) => name.includes(r));
-    if (isRobotic) return false;
-
-    return (
-      name.includes('enhanced') ||
-      name.includes('premium') ||
-      name.includes('natural') ||
-      name.includes('neural') ||
-      name.includes('siri') ||
-      name.includes('google')
-    );
-  });
-  if (highQualityCandidate) return highQualityCandidate;
-
-  // 3. Fallback to any non-robotic voice in the pool
-  const cleanFallback = voicePool.find((v) => {
-    const name = v.name.toLowerCase();
-    return !roboticFilter.some((r) => name.includes(r));
-  });
-
-  return cleanFallback || voicePool[0] || null;
+  return best;
 }
 
 /**
@@ -179,8 +121,8 @@ export function getNaturalVoiceConfig(
     mr: 'mr-IN',
   };
 
-  // Human conversational speaking speed and pitch
-  const baseRate = 1.0;
+  // A touch slower than the engine default sounds calmer and more human
+  const baseRate = 0.95;
   const basePitch = 1.0;
 
   return {
@@ -289,3 +231,37 @@ export function splitTextIntoSpeechSegments(text: string, language: Language = '
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Groups sentences into natural chunks (about 2–3 sentences, max ~220 chars).
+ * Speaking a chunk in one go lets the voice keep its own rhythm instead of
+ * restarting the intonation at every full stop, which sounds robotic.
+ * (Chunks stay short because some browser voices stop after ~15 seconds.)
+ */
+export function splitTextIntoSpeechChunks(text: string, maxChars = 220): string[] {
+  const cleaned = cleanTextForSpeech(text);
+  if (!cleaned) return [];
+  const sentences = cleaned.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [cleaned];
+  const chunks: string[] = [];
+  let current = '';
+  for (const raw of sentences) {
+    const sentence = raw.trim();
+    if (!sentence) continue;
+    if (current && (current + ' ' + sentence).length > maxChars) {
+      chunks.push(current);
+      current = sentence;
+    } else {
+      current = current ? `${current} ${sentence}` : sentence;
+    }
+    // A very long sentence: split at commas so it still flows
+    while (current.length > maxChars * 1.6) {
+      const cut = current.lastIndexOf(', ', maxChars);
+      const at = cut > 40 ? cut + 1 : maxChars;
+      chunks.push(current.slice(0, at).trim());
+      current = current.slice(at).trim();
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+

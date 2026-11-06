@@ -547,7 +547,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
             </div>
             <h3 className="text-base sm:text-lg font-black text-[#1A202C]">Download NeuroBridge Chrome Extension</h3>
             <p className="text-xs text-slate-600 font-medium leading-relaxed max-w-lg mt-0.5">
-              Take your calibrated OpenDyslexic font, line-tracking ruler, and multisensory audio reader to any webpage across the internet.
+              Get the OpenDyslexic font and a line-tracking reading ruler on every website you visit.
             </p>
           </div>
         </div>

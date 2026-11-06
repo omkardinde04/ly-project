@@ -12,7 +12,6 @@ import {
   Sparkles,
   Bot,
   User,
-  Globe,
   Radio,
   Compass,
   ArrowDown,
@@ -53,7 +52,6 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
     confirmPendingAction,
     cancelPendingAction,
     language,
-    setLanguage,
     addMessage,
     wakeWordEnabled,
     isReadingPage,
@@ -68,7 +66,6 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
-  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechService = useRef(getSpeechService()).current;
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -181,16 +178,6 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
     }
   };
 
-  const handleLanguageChange = (lang: Language) => {
-    setLanguage(lang);
-    setShowLanguageSelector(false);
-    const confirmationMessages = {
-      en: 'Language changed to English',
-      hi: 'भाषा हिंदी में बदल दी गई है',
-      mr: 'भाषा मराठीमध्ये बदलली गेली आहे',
-    };
-    speakFeedback(confirmationMessages[lang], lang);
-  };
 
   // Quick Action Suggestions
   const quickSuggestions = [
@@ -286,17 +273,6 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  {/* Language Selector */}
-                  <button
-                    type="button"
-                    onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                    className="px-2 py-1 text-[11px] font-black bg-white/15 hover:bg-white/25 rounded-xl border border-white/20 transition-colors cursor-pointer flex items-center gap-1"
-                    title="Change Language"
-                  >
-                    <Globe size={11} />
-                    <span>{language.toUpperCase()}</span>
-                  </button>
-
                   {/* Minimize Button */}
                   <button
                     type="button"
@@ -396,31 +372,6 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                       <span>Confirmation required</span>
                     </>
                   )}
-                </motion.div>
-              )}
-
-              {/* Language Selector Drawer */}
-              {showLanguageSelector && (
-                <motion.div
-                  className="bg-blue-50/90 p-2.5 border-b border-blue-100 flex gap-2 justify-center shrink-0"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  {(['en', 'hi', 'mr'] as const).map((lang) => (
-                    <button
-                      key={lang}
-                      type="button"
-                      onClick={() => handleLanguageChange(lang)}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        language === lang
-                          ? 'bg-[#2563EB] text-white shadow-xs'
-                          : 'bg-white text-[#1A202C] border border-blue-200 hover:bg-blue-50'
-                      }`}
-                    >
-                      {lang === 'en' ? 'English' : lang === 'hi' ? 'हिंदी' : 'मराठी'}
-                    </button>
-                  ))}
                 </motion.div>
               )}
 

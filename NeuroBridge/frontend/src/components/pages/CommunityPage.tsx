@@ -170,9 +170,9 @@ export function CommunityPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* ══ SECTION 3 — STATIC COMMUNITY TIPS ═══════════════════════════════ */}
+      {/* ══ SECTION 3 — HELPFUL TIPS ═══════════════════════════════ */}
       <motion.div {...fade(0.25)}>
-        <h2 className="text-lg font-black text-text mb-4">From the Community</h2>
+        <h2 className="text-lg font-black text-text mb-4">Helpful tips</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {STATIC_TIPS.map((tip, i) => (
             <motion.div
@@ -190,7 +190,6 @@ export function CommunityPage() {
                   {tip.tag}
                 </span>
                 <p className="text-text text-sm leading-relaxed">{tip.text}</p>
-                <p className="text-text-muted text-xs mt-2">— Community member</p>
               </div>
             </motion.div>
           ))}

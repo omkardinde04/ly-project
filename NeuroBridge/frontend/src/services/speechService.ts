@@ -3,9 +3,8 @@
 import type { Language, TextToSpeechOptions } from '../types/assistant';
 import {
   getNaturalVoiceConfig,
-  splitTextIntoSpeechSegments,
+  splitTextIntoSpeechChunks,
   getLoadedVoices,
-  sleep,
 } from '../utils/naturalVoice';
 
 export class SpeechService {
@@ -60,8 +59,9 @@ export class SpeechService {
     this.isSpeakingActive = true;
 
     const voiceLanguage = (options.language || 'en') as Language;
-    const segments = splitTextIntoSpeechSegments(text, voiceLanguage);
-    if (!segments.length) {
+    // Speak in flowing chunks of a few sentences (see splitTextIntoSpeechChunks)
+    const chunks = splitTextIntoSpeechChunks(text);
+    if (!chunks.length) {
       this.isSpeakingActive = false;
       return;
     }
@@ -70,10 +70,8 @@ export class SpeechService {
     const config = getNaturalVoiceConfig(voiceLanguage, speedMultiplier);
 
     try {
-      for (let i = 0; i < segments.length; i++) {
+      for (const chunk of chunks) {
         if (this.cancelCurrentSpeech) break;
-
-        const segment = segments[i];
 
         await new Promise<void>((resolve, reject) => {
           if (this.cancelCurrentSpeech) {
@@ -81,45 +79,14 @@ export class SpeechService {
             return;
           }
 
-          const utterance = new SpeechSynthesisUtterance(segment.text);
-          utterance.lang = config.lang;
+          const utterance = new SpeechSynthesisUtterance(chunk);
+          utterance.lang = config.voice?.lang || config.lang;
           if (config.voice) {
             utterance.voice = config.voice;
           }
-
-          let tonePitchMultiplier = 1.0;
-          let toneRateMultiplier = 1.0;
-
-          switch (segment.tone) {
-            case 'celebrating':
-              tonePitchMultiplier = 1.1;
-              toneRateMultiplier = 1.05;
-              break;
-            case 'warning':
-              tonePitchMultiplier = 0.95;
-              toneRateMultiplier = 0.9;
-              break;
-            case 'encouraging':
-              tonePitchMultiplier = 1.05;
-              toneRateMultiplier = 1.02;
-              break;
-            case 'explaining':
-              tonePitchMultiplier = 0.98;
-              toneRateMultiplier = 0.92;
-              break;
-            default:
-              break;
-          }
-
-          if (segment.isQuestion) {
-            tonePitchMultiplier *= 1.06;
-          }
-
-          const finalPitch = Math.max(0.5, Math.min(2.0, config.pitch * tonePitchMultiplier));
-          const finalRate = Math.max(0.5, Math.min(2.0, config.rate * toneRateMultiplier));
-
-          utterance.rate = options.speed !== undefined ? options.speed : finalRate;
-          utterance.pitch = options.pitch !== undefined ? options.pitch : finalPitch;
+          // One steady pitch and pace: the voice adds its own natural expression
+          utterance.rate = options.speed !== undefined ? options.speed : config.rate;
+          utterance.pitch = options.pitch !== undefined ? options.pitch : config.pitch;
           utterance.volume = options.volume !== undefined ? options.volume : config.volume;
 
           utterance.onstart = () => {
@@ -134,7 +101,7 @@ export class SpeechService {
 
           utterance.onerror = (event: any) => {
             if (event.error !== 'interrupted' && event.error !== 'canceled') {
-              console.warn('Speech synthesis segment error', event);
+              console.warn('Speech synthesis error', event);
               reject(new Error(event.error || 'Speech synthesis error'));
             } else {
               resolve();
@@ -143,10 +110,6 @@ export class SpeechService {
 
           this.speechSynthesis.speak(utterance);
         });
-
-        if (i < segments.length - 1 && !this.cancelCurrentSpeech) {
-          await sleep(segment.pauseAfterMs);
-        }
       }
     } finally {
       this.isSpeakingActive = false;

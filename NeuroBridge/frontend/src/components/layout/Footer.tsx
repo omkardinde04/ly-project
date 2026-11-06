@@ -28,7 +28,7 @@ export function Footer() {
               isDarkMode ? 'text-slate-400' : 'text-[#64748B]'
             }`}>
               Empowering neurodivergent and dyslexic students with cognitive brain games,
-              visual courses, diagnostic assessments, friend chat, and our personalized Chrome reading extension.
+              visual courses, diagnostic assessments, friend chat, and our free Chrome reading extension.
             </p>
           </div>
 
@@ -58,8 +58,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/assessment" className="hover:text-[#2563EB] dark:hover:text-blue-400 transition-colors">
-                  Chrome Extension (Post-Test)
+                <Link to="/chrome-extension" className="hover:text-[#2563EB] dark:hover:text-blue-400 transition-colors">
+                  Chrome Extension
                 </Link>
               </li>
               <li>
@@ -96,10 +96,9 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className={`pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-medium ${
+        <div className={`pt-6 border-t flex items-center justify-center gap-3 text-xs font-medium ${
           isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-[#64748B]'
         }`}>
-          <div>© 2026 NeuroBridge. All rights reserved.</div>
           <div className="flex items-center gap-1.5">
             <span>Built with care for neurodivergent minds</span>
           </div>

@@ -25,6 +25,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { getNaturalVoiceConfig } from '../../utils/naturalVoice';
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Nearby Care — find hospitals, psychiatrists, therapists, etc. near the student
@@ -469,7 +470,12 @@ export function NearbyCare() {
   const speak = useCallback((text: string) => {
     if (!voiceRef.current || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voiceConfig = getNaturalVoiceConfig('en');
+    if (voiceConfig.voice) utterance.voice = voiceConfig.voice;
+    utterance.lang = voiceConfig.voice?.lang || voiceConfig.lang;
+    utterance.rate = voiceConfig.rate;
+    window.speechSynthesis.speak(utterance);
   }, []);
 
   const stopNavigation = useCallback(() => {

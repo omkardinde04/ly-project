@@ -24,7 +24,6 @@ import { Settings } from '../dashboard/Settings';
 import { CoursesDashboard } from '../pages/CoursesDashboard';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { DarkModeToggle } from '../ui/DarkModeToggle';
-import { LanguageSelector } from '../ui/LanguageSelector';
 import { AudioControl } from '../ui/AudioControl';
 import { LinkedInConnect } from '../dashboard/LinkedInConnect';
 import { Brain } from '../dashboard/Brain';
@@ -167,11 +166,10 @@ export function Dashboard() {
 
           </div>
 
-          {/* Listen · Dark mode · Language · Fun mode — one place, at the top */}
+          {/* Listen · Dark mode · Fun mode — one place, at the top */}
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 ml-auto">
             <AudioControl showControls={false} />
             <DarkModeToggle />
-            <LanguageSelector />
             <DyslexiaToggle />
           </div>
         </div>

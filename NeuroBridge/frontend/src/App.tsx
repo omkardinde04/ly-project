@@ -19,6 +19,7 @@ import { Learn } from './components/pages/Learn';
 import { OpportunitiesPage } from './components/pages/OpportunitiesPage';
 import { CommunityPage } from './components/pages/CommunityPage';
 import { AboutPage } from './components/pages/AboutPage';
+import { ChromeExtensionPage } from './components/pages/ChromeExtensionPage';
 import { ForgotPassword } from './components/pages/ForgotPassword';
 import { ResetPassword } from './components/pages/ResetPassword';
 import { VerifyEmail } from './components/pages/VerifyEmail';
@@ -135,7 +136,7 @@ function AppContent() {
   return (
     <Layout>
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}>
-        {!isDashboard && <Navbar links={["Home", "Learn", "Opportunities", "Community", "About"]} showLogin={true} />}
+        {!isDashboard && <Navbar links={["Home", "Learn", "Chrome Extension", "Community", "About"]} showLogin={true} />}
         <main className={`flex-1 ${isDashboard ? "" : "w-full"}`}>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -218,6 +219,7 @@ function AppContent() {
               } 
             />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/chrome-extension" element={<ChromeExtensionPage />} />
             <Route path="/resume-builder" element={<Navigate to="/dashboard" replace />} />
             <Route path="/auth-redirect" element={<AuthRedirect />} />
             <Route path="/verify-email" element={<VerifyEmail />} />

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { API_BASE } from '../../config/api';
+import { getNaturalVoiceConfig } from '../../utils/naturalVoice';
 
 const BACKEND_URL = API_BASE;
 
@@ -515,8 +516,11 @@ function DynamicVideoPlayer({
 
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(scenes[index].text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.1;
+    const voiceConfig = getNaturalVoiceConfig('en', 0.95);
+    if (voiceConfig.voice) utterance.voice = voiceConfig.voice;
+    utterance.lang = voiceConfig.voice?.lang || voiceConfig.lang;
+    utterance.rate = voiceConfig.rate;
+    utterance.pitch = voiceConfig.pitch;
     currentUtterance.current = utterance;
 
     utterance.onend = () => {

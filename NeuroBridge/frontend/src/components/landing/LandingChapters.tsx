@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { usePublicStats } from '../../hooks/usePublicStats';
+import { CountUp } from '../ui/CountUp';
 import {
   ArrowRight,
   BookOpen,
@@ -166,11 +168,12 @@ function CheckList({ items }: { items: string[] }) {
 
 const PHRASES = ['for your goals.', 'for your brain.', 'for your future.', 'for every learner.', 'for you.'];
 
-const HERO_STATS = [
-  { value: '12,000+', label: 'Students helped', color: 'text-[#2563EB] dark:text-blue-400' },
-  { value: '100%', label: 'Made for dyslexia', color: 'text-emerald-600 dark:text-emerald-400' },
-  { value: '94%', label: 'Feel more confident', color: 'text-[#7C3AED] dark:text-purple-400' },
-  { value: 'Chrome', label: 'Free reading helper', color: 'text-amber-600 dark:text-amber-400' },
+// Live totals from the backend (GET /api/stats/public); the last box is a fact, not a count
+const HERO_STATS: { key: 'students' | 'assessments' | 'practiceMinutes' | null; fixed?: string; label: string; color: string }[] = [
+  { key: 'students', label: 'Students joined', color: 'text-[#2563EB] dark:text-blue-400' },
+  { key: 'assessments', label: 'Assessments taken', color: 'text-emerald-600 dark:text-emerald-400' },
+  { key: 'practiceMinutes', label: 'Minutes of practice', color: 'text-[#7C3AED] dark:text-purple-400' },
+  { key: null, fixed: 'Chrome', label: 'Free reading helper', color: 'text-amber-600 dark:text-amber-400' },
 ];
 
 export function HeroChapter() {
@@ -178,6 +181,7 @@ export function HeroChapter() {
   const t = useTone();
   const { reduceMotion, isDyslexiaMode, toggleDyslexiaMode } = useDyslexia();
   const [phraseIndex, setPhraseIndex] = useState(0);
+  const { stats, failed } = usePublicStats();
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -310,7 +314,20 @@ export function HeroChapter() {
             {...(reduceMotion ? {} : popIn(0.5 + i * 0.08))}
             className={`flex flex-col-reverse justify-end p-4 rounded-2xl border ${t.isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200/80 shadow-2xs'}`}>
             <dt className={`text-xs mt-0.5 ${t.muted}`}>{s.label}</dt>
-            <dd className={`text-lg sm:text-xl font-black leading-tight ${s.color}`}>{s.value}</dd>
+            <dd className={`text-lg sm:text-xl font-black leading-tight ${s.color}`}>
+              {s.key === null ? (
+                s.fixed
+              ) : stats ? (
+                <CountUp value={stats[s.key]} />
+              ) : failed ? (
+                '—'
+              ) : (
+                <span
+                  aria-label="Loading"
+                  className={`inline-block h-6 w-14 rounded-md align-middle ${t.isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} ${reduceMotion ? '' : 'animate-pulse'}`}
+                />
+              )}
+            </dd>
           </motion.div>
         ))}
       </dl>
@@ -344,7 +361,7 @@ const PILLARS = [
   {
     title: 'Assess',
     subtitle: 'Quick test',
-    desc: 'A 5-minute test finds what helps you read.',
+    desc: 'A 15-minute test finds what helps you read.',
     icon: UserCheck,
     color: 'text-emerald-700 dark:text-emerald-400',
     bg: 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/80 dark:border-emerald-900/60',
@@ -584,7 +601,7 @@ export function JarvisChapter() {
           <CheckList
             items={[
               'Makes long text short',
-              'Reads aloud in English, Hindi and Marathi',
+              'Reads any page aloud in a natural voice',
               'Makes flashcards and study notes',
             ]}
           />
@@ -706,7 +723,7 @@ export function ExtensionChapter() {
           Easy reading on every website.
         </h2>
         <p className={`text-base leading-relaxed max-w-2xl ${t.body}`}>
-          After your test, get our free Chrome helper. It adds your font, ruler and voice to any website.
+          After your test, get our free Chrome helper. It adds an easy-to-read font and a reading ruler to any website.
         </p>
       </div>
 
@@ -752,14 +769,23 @@ export function ExtensionChapter() {
         items={[
           'Unlocks when you finish the test',
           'The ruler follows your mouse',
-          'Reads any page out loud',
+          'Works on every website'
         ]}
       />
 
-      <button type="button" onClick={() => navigate('/assessment')} className={primaryBtn}>
-        <span>Take the test to get it</span>
-        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={() => navigate('/assessment')} className={primaryBtn}>
+          <span>Take the test to get it</span>
+          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/chrome-extension')}
+          className={`px-5 py-3 rounded-2xl border text-sm font-bold transition-colors cursor-pointer ${t.isDarkMode ? 'border-slate-700 text-slate-200 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+        >
+          See how it works
+        </button>
+      </div>
     </Chapter>
   );
 }
