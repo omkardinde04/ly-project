@@ -170,12 +170,17 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
                 <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-blue-500 mb-1.5 drop-shadow-md">
                   <ArrowUp size={36} strokeWidth={2.5} />
                 </motion.div>
-                <div className="bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-lg text-sm flex items-center gap-3 border border-blue-500">
+                <button
+                  type="button"
+                  onClick={handleStartAssessment}
+                  title="Got it"
+                  className="bg-blue-600 hover:bg-blue-700 active:scale-98 text-white px-5 py-2.5 rounded-xl shadow-lg text-sm flex items-center gap-3 border border-blue-500 cursor-pointer transition-all group"
+                >
                   <span className="font-medium">Read instructions.</span>
-                  <button onClick={handleStartAssessment} title="Got it" className="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors shrink-0 cursor-pointer">
+                  <span className="bg-white/20 group-hover:bg-white/30 p-2 rounded-full transition-colors shrink-0 flex items-center justify-center">
                     <ThumbsUp size={18} />
-                  </button>
-                </div>
+                  </span>
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

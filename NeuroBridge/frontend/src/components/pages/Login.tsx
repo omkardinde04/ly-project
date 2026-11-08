@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Bot,
   Sliders,
-  FileText,
+  Chrome,
   AlertCircle,
   Check,
 } from 'lucide-react';
@@ -252,7 +252,7 @@ export function Login() {
             </h2>
 
             <p className="text-xs sm:text-sm text-[#64748B] font-medium leading-relaxed">
-              An accessible learning and career platform designed around how your mind works best.
+              An accessible learning platform designed around how your mind works best.
             </p>
           </div>
 
@@ -285,13 +285,13 @@ export function Login() {
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/80 border border-blue-100/80 shadow-2xs backdrop-blur-xs">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <FileText size={16} />
+              <div className="w-8 h-8 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0">
+                <Chrome size={16} />
               </div>
               <div className="text-xs">
-                <span className="font-extrabold text-[#1A202C] block">ATS Resume Builder</span>
+                <span className="font-extrabold text-[#1A202C] block">Chrome Web Extension</span>
                 <span className="text-[11px] text-[#64748B]">
-                  Match with neuro-inclusive employers
+                  Reading ruler & dyslexia font on any site
                 </span>
               </div>
             </div>

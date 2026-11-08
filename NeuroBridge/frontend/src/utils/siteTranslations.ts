@@ -354,7 +354,7 @@ const ROWS: [string, string, string][] = [
   ['Sam is facing you. Which hand is Sam waving?', 'Sam आपकी ओर देख रहा है। Sam कौन-सा हाथ हिला रहा है?', 'Sam तुमच्याकडे पाहत आहे. Sam कोणता हात हलवत आहे?'],
   ['Left', 'बायाँ', 'डावा'],
   ['Right', 'दायाँ', 'उजवा'],
-  ['You got all 5 stars!', 'आपको सभी 5 तारे मिले!', 'तुम्हाला सर्व 5 तारे मिळाले!'],
+  ['Great job!', 'बहुत बढ़िया!', 'खूप छान!'],
   ['Press Next to keep going.', 'आगे बढ़ने के लिए Next दबाएँ।', 'पुढे जाण्यासाठी Next दाबा.'],
   ['What would you do? Tap a picture.', 'आप क्या करेंगे? एक तस्वीर पर टैप करें।', 'तुम्ही काय कराल? एका चित्रावर टॅप करा.'],
   ['What would you do? Pick one.', 'आप क्या करेंगे? एक चुनें।', 'तुम्ही काय कराल? एक निवडा.'],

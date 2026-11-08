@@ -200,7 +200,7 @@ export function LeftRightGameTask({ onComplete }: { onComplete: (isCorrect: bool
             <span className="text-6xl" aria-hidden>
               🤖🎉
             </span>
-            <p className="text-xl font-black text-[#1A202C]">You got all 5 stars!</p>
+            <p className="text-xl font-black text-[#1A202C]">Great job!</p>
             <p className="text-sm font-semibold text-slate-500">Press Next to keep going.</p>
           </motion.div>
         ) : (

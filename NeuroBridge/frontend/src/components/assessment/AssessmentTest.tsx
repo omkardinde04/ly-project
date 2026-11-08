@@ -137,6 +137,7 @@ interface AssessmentMetrics {
   audioReplayCount: number;
   questionMetrics: QuestionMetric[];
   readingTrackingCount?: number;
+  readingTimeSec?: number;
 }
 
 interface QuestionMetric {
@@ -326,6 +327,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const [justCompleted, setJustCompleted] = useState(false);
   const [showObjectNamingOptions, setShowObjectNamingOptions] = useState(false);
   const previousQuestionRef = useRef(0);
+  const q5ReadingTimeRef = useRef<number>(0);
 
   useEffect(() => {
     if (partAQuestions[currentQuestion].type === 'object_naming') {
@@ -382,7 +384,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
 
       const questionMetrics: QuestionMetric[] = answers.map((answer, index) => ({
         questionId: partAQuestions[index].id,
-        timeTaken: 10,
+        timeTaken:
+          partAQuestions[index].type === 'reading_reread_tracking' && q5ReadingTimeRef.current > 0
+            ? q5ReadingTimeRef.current
+            : 10,
         selectedOption: answer,
         isCorrect: answer === (partAQuestions[index] as any).correctAnswer,
         optionChanges: optionChanges[index] || 0,
@@ -400,6 +405,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         audioReplayCount: totalAudioReplays,
         questionMetrics,
         readingTrackingCount: trackingMetrics.trackCount,
+        readingTimeSec: q5ReadingTimeRef.current > 0 ? q5ReadingTimeRef.current : undefined,
       };
 
       // Score based on frequency weights (higher weight = more difficulty indicators)
@@ -569,7 +575,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <ReadingRereadTask
                   question={currentQ}
-                  onComplete={(rereadCount) => {
+                  onComplete={(rereadCount, readingMetrics) => {
+                    if (readingMetrics?.readingTimeSec) {
+                      q5ReadingTimeRef.current = readingMetrics.readingTimeSec;
+                    }
                     handleAnswer(0);
                   }}
                 />

@@ -205,15 +205,20 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
             <p className="text-lg font-bold text-slate-700 mb-6">Do these 3 steps in order.</p>
 
             <div className="flex flex-col items-center">
-              <div className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow-md text-xs flex items-center gap-3 border border-blue-500 mb-2">
+              <button
+                type="button"
+                onClick={beginActivity}
+                className="bg-blue-600 hover:bg-blue-700 active:scale-98 text-white px-4 py-2 rounded-xl shadow-md text-xs flex items-center gap-3 border border-blue-500 mb-2 cursor-pointer transition-all"
+              >
                 <span className="font-bold tracking-wide">Ready? Click Start.</span>
-              </div>
+              </button>
               <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-blue-500 mb-2 drop-shadow-md">
                 <ArrowDown size={24} strokeWidth={3} />
               </motion.div>
               <button
+                type="button"
                 onClick={beginActivity}
-                className="bg-blue-500 hover:bg-blue-600 text-white text-lg font-black tracking-widest py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-lg font-black tracking-widest py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
               >
                 START
               </button>
@@ -337,15 +342,20 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
             </p>
             
             <div className="flex items-center">
-              <div className="bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-md text-sm font-bold border border-emerald-500 mr-4">
+              <button
+                type="button"
+                onClick={handleProceed}
+                className="bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white px-4 py-2 rounded-xl shadow-md text-sm font-bold border border-emerald-500 mr-4 cursor-pointer transition-all"
+              >
                 Click Next
-              </div>
+              </button>
               <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-emerald-500 mr-4">
                 <ArrowRight size={28} strokeWidth={3} />
               </motion.div>
               <button
+                type="button"
                 onClick={handleProceed}
-                className="bg-blue-500 hover:bg-blue-600 text-white text-xl font-black tracking-widest py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-xl font-black tracking-widest py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
               >
                 NEXT
               </button>
