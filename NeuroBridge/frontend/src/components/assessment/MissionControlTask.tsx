@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowDown, ArrowRight, Check, X } from 'lucide-react';
+import { ArrowDown, ArrowRight } from 'lucide-react';
 
 type StepType = 'KEYPRESS' | 'CLICK';
 
@@ -39,7 +39,6 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
   type Phase = 'ready' | 'instructions' | 'playing' | 'done' | 'timeout';
   const [phase, setPhase] = useState<Phase>('ready');
   const [completedSteps, setCompletedSteps] = useState(0);
-  const [stepResults, setStepResults] = useState<(boolean | null)[]>([null, null, null]);
   const [clickedItem, setClickedItem] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(40);
   const isTransitioningRef = useRef(false);
@@ -62,7 +61,6 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
   const beginActivity = () => {
     setPhase('instructions');
     setCompletedSteps(0);
-    setStepResults([null, null, null]);
     setClickedItem(null);
     setTimeLeft(40);
     isTransitioningRef.current = false;
@@ -94,13 +92,13 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
     };
   }, [phase]);
 
-  const endActivity = useCallback((results: (boolean | null)[]) => {
+  const endActivity = useCallback(() => {
     if (timerInterval.current) clearInterval(timerInterval.current);
     const now = Date.now();
-    const correctCount = results.filter(r => r === true).length;
-    metrics.current.completion_rate = Math.round((correctCount / ACTIVITY.length) * 100);
+    const correctCount = ACTIVITY.length - metrics.current.sequence_errors;
+    metrics.current.completion_rate = Math.round((Math.max(0, correctCount) / ACTIVITY.length) * 100);
     metrics.current.total_time_ms = now - playStartTime.current;
-    metrics.current.isCorrect = metrics.current.sequence_errors === 0 && correctCount === ACTIVITY.length;
+    metrics.current.isCorrect = metrics.current.sequence_errors === 0;
 
     setPhase('done');
   }, []);
@@ -126,19 +124,16 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
     setClickedItem(value);
 
     const currentStepIdx = completedSteps;
-    const target = ACTIVITY[currentStepIdx];
 
-    // Determine correctness for the current step
+    // Quietly calculate correctness in the background without exposing to student
     let isStepCorrect = false;
     if (currentStepIdx === 0) {
-      // Step 1: Shape click
       isStepCorrect = type === 'CLICK' && value === 'blue-circle';
       if (!isStepCorrect) {
         metrics.current.extra_click_count += 1;
         metrics.current.sequence_errors += 1;
       }
     } else if (currentStepIdx === 1) {
-      // Step 2: Directional arrow
       const valLower = value.toLowerCase();
       isStepCorrect = valLower === 'arrowleft' || valLower === 'left' || valLower === '←';
       if (!isStepCorrect) {
@@ -146,7 +141,6 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
         metrics.current.sequence_errors += 1;
       }
     } else if (currentStepIdx === 2) {
-      // Step 3: Letter typing
       isStepCorrect = value.toLowerCase() === 'a';
       if (!isStepCorrect) {
         metrics.current.wrong_key_count += 1;
@@ -154,12 +148,7 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
       }
     }
 
-    // Update step results array
-    const updatedResults = [...stepResults];
-    updatedResults[currentStepIdx] = isStepCorrect;
-    setStepResults(updatedResults);
-
-    // Brief delay to let student see feedback, then advance to next step or complete
+    // Smooth transition to next step
     setTimeout(() => {
       setClickedItem(null);
       const nextStep = currentStepIdx + 1;
@@ -167,10 +156,10 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
       isTransitioningRef.current = false;
 
       if (nextStep >= ACTIVITY.length) {
-        endActivity(updatedResults);
+        endActivity();
       }
-    }, 280);
-  }, [phase, completedSteps, stepResults, endActivity]);
+    }, 250);
+  }, [phase, completedSteps, endActivity]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -180,10 +169,8 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
       if (phase !== 'playing' || isTransitioningRef.current) return;
 
       if (completedSteps === 1) {
-        // Step 2 responds to arrow keys
         handleAction('KEYPRESS', e.key);
       } else if (completedSteps === 2) {
-        // Step 3 responds to letter keys
         if (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Enter') {
           handleAction('KEYPRESS', e.key);
         }
@@ -196,10 +183,8 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
 
   const shapeGlow = (id: string) =>
     clickedItem === id
-      ? '0 0 0 6px rgba(77,166,255,0.3), 0 4px 18px rgba(77,166,255,0.4)'
+      ? '0 0 0 6px rgba(77,166,255,0.35), 0 4px 18px rgba(77,166,255,0.45)'
       : '0 2px 10px rgba(0,0,0,0.06)';
-
-  const correctCount = stepResults.filter(r => r === true).length;
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-4">
@@ -310,22 +295,15 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
             animate={{ opacity: 1 }}
             className="flex flex-col items-center w-full max-w-lg bg-white p-6 rounded-3xl shadow-sm border border-slate-100"
           >
-            {/* Visual Sequence Feedback Header */}
+            {/* Visual Sequence Progress - Neutral, Non-judgmental */}
             <div className="bg-slate-100 rounded-3xl py-4 px-8 mb-6 flex items-center justify-center gap-6 text-4xl shadow-inner w-full">
               {/* Step 1: Circle */}
               <div className="relative flex flex-col items-center">
-                <span className={`transition-opacity ${completedSteps > 0 ? "opacity-35" : "opacity-100 font-bold scale-110"}`}>
+                <span className={`transition-all duration-300 ${completedSteps > 0 ? "opacity-35 scale-95" : completedSteps === 0 ? "opacity-100 scale-105" : "opacity-60"}`}>
                   🔵
                 </span>
-                {stepResults[0] === true && (
-                  <span className="absolute -bottom-2 -right-2 text-emerald-600 bg-white rounded-full p-1 shadow-sm border border-emerald-200">
-                    <Check size={16} strokeWidth={3} />
-                  </span>
-                )}
-                {stepResults[0] === false && (
-                  <span className="absolute -bottom-2 -right-2 text-rose-600 bg-white rounded-full p-1 shadow-sm border border-rose-200">
-                    <X size={16} strokeWidth={3} />
-                  </span>
+                {completedSteps > 0 && (
+                  <span className="absolute -bottom-2 -right-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
                 )}
               </div>
               
@@ -333,18 +311,11 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
               
               {/* Step 2: Left Arrow */}
               <div className="relative flex flex-col items-center">
-                <span className={`font-black text-slate-700 transition-opacity ${completedSteps > 1 ? "opacity-35" : completedSteps === 1 ? "opacity-100 scale-110 text-blue-600" : "opacity-60"}`}>
+                <span className={`font-black text-slate-700 transition-all duration-300 ${completedSteps > 1 ? "opacity-35 scale-95" : completedSteps === 1 ? "opacity-100 scale-105 text-blue-600" : "opacity-60"}`}>
                   ←
                 </span>
-                {stepResults[1] === true && (
-                  <span className="absolute -bottom-2 -right-2 text-emerald-600 bg-white rounded-full p-1 shadow-sm border border-emerald-200">
-                    <Check size={16} strokeWidth={3} />
-                  </span>
-                )}
-                {stepResults[1] === false && (
-                  <span className="absolute -bottom-2 -right-2 text-rose-600 bg-white rounded-full p-1 shadow-sm border border-rose-200">
-                    <X size={16} strokeWidth={3} />
-                  </span>
+                {completedSteps > 1 && (
+                  <span className="absolute -bottom-2 -right-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
                 )}
               </div>
 
@@ -352,18 +323,11 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
               
               {/* Step 3: Letter A */}
               <div className="relative flex flex-col items-center">
-                <span className={`font-black text-slate-800 transition-opacity ${completedSteps > 2 ? "opacity-35" : completedSteps === 2 ? "opacity-100 scale-110 text-blue-600" : "opacity-60"}`}>
+                <span className={`font-black text-slate-800 transition-all duration-300 ${completedSteps > 2 ? "opacity-35 scale-95" : completedSteps === 2 ? "opacity-100 scale-105 text-blue-600" : "opacity-60"}`}>
                   A
                 </span>
-                {stepResults[2] === true && (
-                  <span className="absolute -bottom-2 -right-2 text-emerald-600 bg-white rounded-full p-1 shadow-sm border border-emerald-200">
-                    <Check size={16} strokeWidth={3} />
-                  </span>
-                )}
-                {stepResults[2] === false && (
-                  <span className="absolute -bottom-2 -right-2 text-rose-600 bg-white rounded-full p-1 shadow-sm border border-rose-200">
-                    <X size={16} strokeWidth={3} />
-                  </span>
+                {completedSteps > 2 && (
+                  <span className="absolute -bottom-2 -right-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
                 )}
               </div>
             </div>
@@ -389,7 +353,7 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
             <div className="w-full flex items-center justify-center p-6 bg-slate-50 rounded-3xl border-2 border-slate-100 shadow-sm min-h-[160px]">
               {completedSteps === 0 && (
                 <div className="flex items-center justify-center gap-6 sm:gap-8">
-                  {/* Option 1: Blue Circle (Correct) */}
+                  {/* Shape 1: Blue Circle */}
                   <button
                     type="button"
                     onClick={() => handleAction('CLICK', 'blue-circle')}
@@ -401,7 +365,7 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
                     title="Blue Circle"
                   />
                   
-                  {/* Option 2: Green Square (Wrong) */}
+                  {/* Shape 2: Green Square */}
                   <button
                     type="button"
                     onClick={() => handleAction('CLICK', 'green-square')}
@@ -413,7 +377,7 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
                     title="Green Square"
                   />
                   
-                  {/* Option 3: Orange Triangle (Wrong) */}
+                  {/* Shape 3: Orange Triangle */}
                   <button
                     type="button"
                     onClick={() => handleAction('CLICK', 'orange-triangle')}
@@ -421,7 +385,7 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
                     style={{
                       clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
                       background: 'linear-gradient(160deg, #FFD580, #FFB347)',
-                      boxShadow: clickedItem === 'orange-triangle' ? '0 0 0 6px rgba(255,179,71,0.2)' : 'none'
+                      boxShadow: shapeGlow('orange-triangle')
                     }}
                     title="Orange Triangle"
                   />
@@ -430,12 +394,12 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
 
               {completedSteps === 1 && (
                 <div className="grid grid-cols-4 gap-3 sm:gap-4 w-full max-w-sm">
-                  {/* Option 1: Left Arrow (Correct) */}
+                  {/* Left Arrow */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'ArrowLeft')}
                     className={`py-4 px-3 rounded-2xl text-2xl font-black border-2 transition-all flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
-                      clickedItem === 'ArrowLeft'
+                      clickedItem?.toLowerCase() === 'arrowleft'
                         ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-95'
                         : 'bg-white text-slate-800 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50'
                     }`}
@@ -444,42 +408,42 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
                     <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mt-1">Left</span>
                   </button>
 
-                  {/* Option 2: Up Arrow (Wrong) */}
+                  {/* Up Arrow */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'ArrowUp')}
                     className={`py-4 px-3 rounded-2xl text-2xl font-black border-2 transition-all flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
-                      clickedItem === 'ArrowUp'
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-md scale-95'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                      clickedItem?.toLowerCase() === 'arrowup'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-95'
+                        : 'bg-white text-slate-800 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50'
                     }`}
                   >
                     <span>↑</span>
                     <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mt-1">Up</span>
                   </button>
 
-                  {/* Option 3: Right Arrow (Wrong) */}
+                  {/* Right Arrow */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'ArrowRight')}
                     className={`py-4 px-3 rounded-2xl text-2xl font-black border-2 transition-all flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
-                      clickedItem === 'ArrowRight'
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-md scale-95'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                      clickedItem?.toLowerCase() === 'arrowright'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-95'
+                        : 'bg-white text-slate-800 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50'
                     }`}
                   >
                     <span>→</span>
                     <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400 mt-1">Right</span>
                   </button>
 
-                  {/* Option 4: Down Arrow (Wrong) */}
+                  {/* Down Arrow */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'ArrowDown')}
                     className={`py-4 px-3 rounded-2xl text-2xl font-black border-2 transition-all flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
-                      clickedItem === 'ArrowDown'
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-md scale-95'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                      clickedItem?.toLowerCase() === 'arrowdown'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-95'
+                        : 'bg-white text-slate-800 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50'
                     }`}
                   >
                     <span>↓</span>
@@ -490,7 +454,7 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
 
               {completedSteps === 2 && (
                 <div className="grid grid-cols-4 gap-3 sm:gap-4 w-full max-w-sm">
-                  {/* Option A (Correct) */}
+                  {/* Option A */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'a')}
@@ -503,40 +467,40 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
                     <span>A</span>
                   </button>
 
-                  {/* Option B (Wrong) */}
+                  {/* Option B */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'b')}
                     className={`py-4 px-3 rounded-2xl text-3xl font-black border-2 transition-all flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
                       clickedItem?.toLowerCase() === 'b'
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-md scale-95'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-95'
+                        : 'bg-white text-slate-800 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50'
                     }`}
                   >
                     <span>B</span>
                   </button>
 
-                  {/* Option C (Wrong) */}
+                  {/* Option C */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'c')}
                     className={`py-4 px-3 rounded-2xl text-3xl font-black border-2 transition-all flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
                       clickedItem?.toLowerCase() === 'c'
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-md scale-95'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-95'
+                        : 'bg-white text-slate-800 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50'
                     }`}
                   >
                     <span>C</span>
                   </button>
 
-                  {/* Option D (Wrong) */}
+                  {/* Option D */}
                   <button
                     type="button"
                     onClick={() => handleAction('KEYPRESS', 'd')}
                     className={`py-4 px-3 rounded-2xl text-3xl font-black border-2 transition-all flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
                       clickedItem?.toLowerCase() === 'd'
-                        ? 'bg-rose-500 text-white border-rose-500 shadow-md scale-95'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-95'
+                        : 'bg-white text-slate-800 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50'
                     }`}
                   >
                     <span>D</span>
@@ -558,40 +522,16 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center text-center gap-4 bg-white p-8 sm:p-10 rounded-3xl shadow-sm border border-slate-100 max-w-md w-full"
           >
-            <div className={`text-5xl p-5 rounded-full shadow-sm border ${
-              correctCount === 3
-                ? 'text-emerald-500 bg-emerald-50 border-emerald-100'
-                : 'text-blue-500 bg-blue-50 border-blue-100'
-            }`}>
-              {correctCount === 3 ? <Check size={48} strokeWidth={3} /> : '🎯'}
+            <div className="text-5xl p-5 rounded-full shadow-sm border text-blue-500 bg-blue-50 border-blue-100">
+              🚀
             </div>
             
             <h2 className="text-2xl font-black text-slate-800">
-              {correctCount === 3 ? 'Done!' : 'Mission Completed!'}
+              Mission Completed!
             </h2>
-            <p className="text-base font-bold text-slate-500 mb-2">
-              {correctCount === 3
-                ? 'Great job following the complete sequence.'
-                : `You finished the sequence (${correctCount} of 3 correct).`}
+            <p className="text-base font-bold text-slate-500 mb-4">
+              Great job following the steps and completing the sequence.
             </p>
-
-            {/* Sequence Summary Badges */}
-            <div className="flex items-center justify-center gap-3 bg-slate-50 py-3 px-6 rounded-2xl border border-slate-100 mb-4 w-full">
-              <div className="flex items-center gap-1.5 text-base font-bold">
-                <span>🔵</span>
-                {stepResults[0] ? <span className="text-emerald-600 font-black">✓</span> : <span className="text-rose-500 font-black">✗</span>}
-              </div>
-              <span className="text-slate-300">→</span>
-              <div className="flex items-center gap-1.5 text-base font-bold">
-                <span>←</span>
-                {stepResults[1] ? <span className="text-emerald-600 font-black">✓</span> : <span className="text-rose-500 font-black">✗</span>}
-              </div>
-              <span className="text-slate-300">→</span>
-              <div className="flex items-center gap-1.5 text-base font-bold">
-                <span>A</span>
-                {stepResults[2] ? <span className="text-emerald-600 font-black">✓</span> : <span className="text-rose-500 font-black">✗</span>}
-              </div>
-            </div>
             
             <div className="flex items-center justify-center">
               <button
