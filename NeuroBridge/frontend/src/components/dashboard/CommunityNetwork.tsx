@@ -290,7 +290,7 @@ export function CommunityNetwork({ posts = [] }: { posts?: NetworkPost[] }) {
                   {person.name}
                 </h3>
                 <p className="truncate text-[11px] font-medium text-[#64748B]">
-                  {person.classification || person.email}
+                  {person.classification || ''}
                 </p>
                 <p className="text-[10px] font-bold text-[#2563EB] mt-0.5">
                   View Profile & Activity →
@@ -405,7 +405,7 @@ function ProfileView({
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-[#1A202C]">{person.name}</h2>
           <p className="text-xs sm:text-sm font-medium text-[#64748B]">
-            {person.classification || person.email}
+            {person.classification || ''}
           </p>
         </div>
       </div>
