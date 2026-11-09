@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import {
@@ -233,6 +233,12 @@ export function NearbyCare() {
   const [arrived, setArrived] = useState(false);
   const [voice, setVoice] = useState(false);
   const [navError, setNavError] = useState('');
+  const [confirmCall, setConfirmCall] = useState<{
+    number: string;
+    name: string;
+    description: string;
+    variant: 'emergency' | 'helpline';
+  } | null>(null);
   const [livePos, setLivePos] = useState<LngLat | null>(null);
 
   const mapEl = useRef<HTMLDivElement | null>(null);
@@ -624,18 +630,36 @@ export function NearbyCare() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a
-            href="tel:112"
-            className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-full bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors"
+          <button
+            type="button"
+            onClick={() =>
+              setConfirmCall({
+                number: '112',
+                name: 'Emergency Services (112)',
+                description:
+                  'This will place an emergency phone call to 112 (Police, Fire, and Ambulance dispatch). Only proceed if you are experiencing an immediate emergency.',
+                variant: 'emergency',
+              })
+            }
+            className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors cursor-pointer"
           >
             <ShieldAlert size={14} /> Emergency 112
-          </a>
-          <a
-            href="tel:14416"
-            className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-full bg-blue-50 text-[#2563EB] border border-blue-100 hover:bg-blue-100 transition-colors"
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setConfirmCall({
+                number: '14416',
+                name: 'Tele-MANAS (14416)',
+                description:
+                  "Tele-MANAS is India's 24/7 free, confidential mental health and psychological support helpline operated by the Ministry of Health & Family Welfare.",
+                variant: 'helpline',
+              })
+            }
+            className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
           >
             <Phone size={14} /> Tele-MANAS 14416
-          </a>
+          </button>
         </div>
       </motion.div>
 
@@ -954,6 +978,106 @@ export function NearbyCare() {
           <p className="text-xs text-[#64748B] px-2 pt-2">Drag the blue dot if your location is a bit off.</p>
         </section>
       </div>
+
+      {/* ── Call Confirmation Modal ────────────────────────────────────── */}
+      <AnimatePresence>
+        {confirmCall && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setConfirmCall(null)}
+              className="fixed inset-0 bg-black/45 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 z-10 space-y-4"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="confirm-call-title"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                      confirmCall.variant === 'emergency'
+                        ? 'bg-red-50 text-red-600 border border-red-200'
+                        : 'bg-blue-50 text-[#2563EB] border border-blue-200'
+                    }`}
+                  >
+                    {confirmCall.variant === 'emergency' ? (
+                      <ShieldAlert size={22} />
+                    ) : (
+                      <Phone size={20} />
+                    )}
+                  </div>
+                  <div>
+                    <h3 id="confirm-call-title" className="text-base sm:text-lg font-black text-[#1A202C]">
+                      Confirm Call
+                    </h3>
+                    <p className="text-xs font-bold text-slate-400">
+                      {confirmCall.name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setConfirmCall(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Number Highlight Box */}
+              <div
+                className={`p-4 rounded-2xl border text-center space-y-1 ${
+                  confirmCall.variant === 'emergency'
+                    ? 'bg-red-50/70 border-red-200 text-red-950'
+                    : 'bg-blue-50/70 border-blue-200 text-blue-950'
+                }`}
+              >
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  Phone Number
+                </div>
+                <div className="text-3xl font-black tracking-wider tabular-nums">
+                  {confirmCall.number}
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">
+                {confirmCall.description}
+              </p>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmCall(null)}
+                  className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-[#64748B] hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <a
+                  href={`tel:${confirmCall.number}`}
+                  onClick={() => setConfirmCall(null)}
+                  className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold text-white shadow-md flex items-center gap-2 transition-all cursor-pointer ${
+                    confirmCall.variant === 'emergency'
+                      ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20'
+                      : 'bg-[#2563EB] hover:bg-[#1D4ED8] shadow-blue-500/20'
+                  }`}
+                >
+                  <Phone size={15} />
+                  <span>Call {confirmCall.number}</span>
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
