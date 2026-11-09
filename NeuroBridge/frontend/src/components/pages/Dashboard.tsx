@@ -10,8 +10,6 @@ import { DashboardSidebar } from '../dashboard/DashboardSidebar';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { DashboardStatusCards } from '../dashboard/DashboardStatusCards';
 import { LearningProgressCard } from '../dashboard/LearningProgressCard';
-import { CoursesWidget } from '../dashboard/CoursesWidget';
-import { AINotebookWidget } from '../dashboard/AINotebookWidget';
 import { CommunityWidget } from '../dashboard/CommunityWidget';
 import { AccessibilityQuickActions } from '../dashboard/AccessibilityQuickActions';
 
@@ -248,24 +246,15 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
         isRetaking={isRetaking}
       />
 
-      {/* Row 2: Learning Progress (Wider Left) & Continue Learning (Right) */}
-      {/* Responsive layout: mobile shows Recommended Next Step first, Track Progress second */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <div className="order-2 lg:order-1 lg:col-span-7 flex flex-col">
-          <LearningProgressCard onNavigate={onNavigate} dashboardData={dashboardData} />
-        </div>
-        <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col">
-          <CoursesWidget onNavigate={onNavigate} />
-        </div>
+      {/* Row 2: Learning Progress — full width */}
+      <div className="w-full">
+        <LearningProgressCard onNavigate={onNavigate} dashboardData={dashboardData} />
       </div>
 
-      {/* Row 3: AI Notebook, Community & Accessibility Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
-        <AINotebookWidget onNavigate={onNavigate} />
+      {/* Row 3: Community & Accessibility Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         <CommunityWidget onNavigate={onNavigate} />
-        <div className="md:col-span-2 xl:col-span-1 flex flex-col">
-          <AccessibilityQuickActions onNavigate={onNavigate} />
-        </div>
+        <AccessibilityQuickActions onNavigate={onNavigate} />
       </div>
     </div>
   );

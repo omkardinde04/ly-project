@@ -4,10 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   TrendingUp,
-  Bot,
   Users,
   Settings,
-  BookOpen,
   MapPin,
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
@@ -66,18 +64,6 @@ export function DashboardSidebar({
       badge: learningStreak > 0 ? `🔥 ${learningStreak}d` : undefined,
     },
     {
-      id: 'courses',
-      label: 'Courses',
-      tooltipDescription: 'Explore and Learn',
-      icon: BookOpen,
-    },
-    {
-      id: 'notebook',
-      label: t.notebookLLM || 'AI Notebook',
-      tooltipDescription: 'AI Notebook Copilot',
-      icon: Bot,
-    },
-    {
       id: 'community',
       label: t.community || 'Community',
       tooltipDescription: 'Peer Study Community',
@@ -100,8 +86,6 @@ export function DashboardSidebar({
   const handleItemClick = (id: string) => {
     if (id === 'assessment') {
       navigate('/assessment');
-    } else if (id === 'courses') {
-      navigate('/dashboard/courses');
     } else if (location.pathname.startsWith('/dashboard/')) {
       navigate('/dashboard');
     }
