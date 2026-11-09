@@ -278,11 +278,17 @@ export function CommunityNetwork({ posts = [] }: { posts?: NetworkPost[] }) {
               onClick={() => setProfile(person)}
               className="flex w-full items-start gap-3 text-left cursor-pointer group"
             >
-              <div className="w-10 h-10 rounded-2xl flex items-center justify-center font-bold bg-blue-100 text-[#2563EB] shrink-0 border border-blue-200 overflow-hidden text-xs">
-                {person.profilePicture ? (
-                  <img src={person.profilePicture} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  initials(person.name)
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center font-bold bg-blue-100 text-[#2563EB] shrink-0 border border-blue-200 overflow-hidden text-xs relative">
+                <span>{initials(person.name)}</span>
+                {person.profilePicture && (
+                  <img
+                    src={person.profilePicture}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -395,11 +401,17 @@ function ProfileView({
       </button>
 
       <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
-        <div className="w-16 h-16 rounded-3xl bg-blue-100 border border-blue-200 flex items-center justify-center text-xl font-black text-[#2563EB] overflow-hidden">
-          {person.profilePicture ? (
-            <img src={person.profilePicture} alt="" className="w-full h-full object-cover" />
-          ) : (
-            initials(person.name)
+        <div className="w-16 h-16 rounded-3xl bg-blue-100 border border-blue-200 flex items-center justify-center text-xl font-black text-[#2563EB] overflow-hidden relative">
+          <span>{initials(person.name)}</span>
+          {person.profilePicture && (
+            <img
+              src={person.profilePicture}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
           )}
         </div>
         <div>

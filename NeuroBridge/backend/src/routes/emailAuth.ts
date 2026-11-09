@@ -645,11 +645,21 @@ emailAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res: 
 
 emailAuthRouter.patch('/me', AuthService.authenticateToken, async (req: any, res: Response) => {
   try {
-    const name = String(req.body?.name || '').trim();
-    if (!name || name.length > 80) return res.status(400).json({ error: 'Name must be between 1 and 80 characters' });
+    const updateData: any = {};
+    if (req.body?.name !== undefined) {
+      const name = String(req.body.name).trim();
+      if (!name || name.length > 80) return res.status(400).json({ error: 'Name must be between 1 and 80 characters' });
+      updateData.name = name;
+    }
+    if (req.body?.profile_picture !== undefined) {
+      updateData.profile_picture = String(req.body.profile_picture || '');
+    }
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'Nothing to update' });
+    }
     const user = await database.getUserById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    const updated = await UserModel.findByIdAndUpdate(req.user.userId, { name }, { new: true });
+    const updated = await UserModel.findByIdAndUpdate(req.user.userId, updateData, { new: true });
     if (!updated) return res.status(404).json({ error: 'User not found' });
     res.json({ id: String(updated._id), name: updated.name, email: updated.email, profile_picture: updated.profile_picture, assessment_completed: updated.assessment_completed, email_verified: updated.email_verified, created_at: updated.created_at });
   } catch (error) { console.error('Update profile error:', error); res.status(500).json({ error: 'Could not update profile' }); }

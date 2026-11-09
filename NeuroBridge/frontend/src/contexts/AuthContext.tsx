@@ -45,12 +45,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Load token and user data from localStorage on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem('auth_token');
-    const storedUser = localStorage.getItem('auth_user');
+    try {
+      const storedToken = localStorage.getItem('auth_token');
+      const storedUser = localStorage.getItem('auth_user');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (err) {
+      console.warn('Could not read user session from storage:', err);
     }
     
     setIsLoading(false);
@@ -58,18 +62,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Save token and user data to localStorage whenever they change
   useEffect(() => {
-    if (token) {
-      localStorage.setItem('auth_token', token);
-    } else {
-      localStorage.removeItem('auth_token');
+    try {
+      if (token) {
+        localStorage.setItem('auth_token', token);
+      } else {
+        localStorage.removeItem('auth_token');
+      }
+    } catch (err) {
+      console.warn('Could not persist auth_token to localStorage:', err);
     }
   }, [token]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('auth_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('auth_user');
+    try {
+      if (user) {
+        localStorage.setItem('auth_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('auth_user');
+      }
+    } catch (err) {
+      console.warn('Could not persist auth_user to localStorage (quota exceeded?):', err);
+      // In case quota is exceeded, strip out huge profile picture to preserve user session
+      try {
+        if (user) {
+          const safeUser = { ...user, profile_picture: undefined };
+          localStorage.setItem('auth_user', JSON.stringify(safeUser));
+        }
+      } catch (safeErr) {
+        console.warn('Could not persist fallback user to localStorage:', safeErr);
+      }
     }
   }, [user]);
 

@@ -39,6 +39,7 @@ export function Profile() {
 
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   // Local state for personal info
   const [personalInfo, setPersonalInfo] = useState({
@@ -94,12 +95,87 @@ export function Profile() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateUser({ profile_picture: reader.result as string });
+    if (!file) return;
+
+    // Reset input so re-selecting same file triggers onChange
+    e.target.value = '';
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, JPEG, WebP).');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+
+    const reader = new FileReader();
+    reader.onerror = () => {
+      console.error('Error reading avatar file');
+      setIsUploadingPhoto(false);
+    };
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => {
+        console.error('Error loading image into memory');
+        setIsUploadingPhoto(false);
       };
-      reader.readAsDataURL(file);
+      img.onload = () => {
+        try {
+          // Crop and scale to 256x256 square to guarantee small storage (< 25KB)
+          const size = 256;
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            setIsUploadingPhoto(false);
+            return;
+          }
+
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+
+          updateUser({ profile_picture: compressed });
+
+          if (token) {
+            fetch(`${API_BASE}/api/auth/email/me`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ profile_picture: compressed }),
+            }).catch((err) => {
+              console.warn('Could not persist avatar to server:', err);
+            });
+          }
+        } catch (err) {
+          console.error('Error processing avatar:', err);
+        } finally {
+          setIsUploadingPhoto(false);
+        }
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    updateUser({ profile_picture: '' });
+    if (token) {
+      fetch(`${API_BASE}/api/auth/email/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ profile_picture: '' }),
+      }).catch((err) => {
+        console.warn('Could not remove avatar on server:', err);
+      });
     }
   };
 
@@ -131,7 +207,9 @@ export function Profile() {
           {/* Avatar with Camera Upload Badge */}
           <div className="relative group shrink-0">
             <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center overflow-hidden border-2 border-blue-200 shadow-xs">
-              {user?.profile_picture ? (
+              {isUploadingPhoto ? (
+                <div className="animate-spin rounded-full h-7 w-7 border-3 border-blue-600 border-t-transparent" />
+              ) : user?.profile_picture ? (
                 <img
                   src={user.profile_picture}
                   alt={user.name}
@@ -147,7 +225,7 @@ export function Profile() {
             {user?.profile_picture && (
               <button
                 type="button"
-                onClick={() => updateUser({ profile_picture: undefined })}
+                onClick={handleRemovePhoto}
                 className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-white hover:bg-red-50 border border-red-200 text-red-500 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-colors z-10"
                 title="Remove photo"
               >

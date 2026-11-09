@@ -46,16 +46,18 @@ export function SidebarUserCard({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               aria-label={`Profile: ${displayName}`}
-              className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 text-[#2563EB] font-black text-xs flex items-center justify-center border border-blue-200/80 shadow-xs hover:border-[#2563EB] transition-colors overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+              className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 text-[#2563EB] font-black text-xs flex items-center justify-center border border-blue-200/80 shadow-xs hover:border-[#2563EB] transition-colors overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#2563EB] relative"
             >
-              {user?.profile_picture ? (
+              <span>{initials}</span>
+              {user?.profile_picture && (
                 <img
                   src={user.profile_picture}
                   alt={displayName}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
-              ) : (
-                <span>{initials}</span>
               )}
             </motion.button>
 
@@ -117,15 +119,17 @@ export function SidebarUserCard({
           onClick={onNavigateProfile}
           className="flex items-center gap-3 p-2.5 rounded-2xl bg-[#F8FAFC] border border-slate-100 hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-xs transition-all cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 text-[#2563EB] font-black text-sm flex items-center justify-center shrink-0 border border-blue-100 overflow-hidden shadow-xs">
-            {user?.profile_picture ? (
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 text-[#2563EB] font-black text-sm flex items-center justify-center shrink-0 border border-blue-100 overflow-hidden shadow-xs relative">
+            <span>{initials}</span>
+            {user?.profile_picture && (
               <img
                 src={user.profile_picture}
                 alt={displayName}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
-            ) : (
-              <span>{initials}</span>
             )}
           </div>
 
