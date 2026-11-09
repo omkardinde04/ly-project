@@ -29,6 +29,7 @@ export function Navbar({
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginPage = location.pathname === '/login';
+  const isAssessmentPage = location.pathname.startsWith('/assessment');
   const { isDarkMode } = useDyslexia();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -167,7 +168,7 @@ export function Navbar({
                   <Link
                     to="/login"
                     data-jarvis-id="nav-login"
-                    className={`hidden sm:inline-flex px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${focusRing} ${
+                    className={`${isAssessmentPage ? 'inline-flex' : 'hidden sm:inline-flex'} px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${focusRing} ${
                       isDarkMode
                         ? 'text-slate-200 hover:text-white hover:bg-slate-800'
                         : 'text-slate-700 hover:text-[#2563EB] hover:bg-slate-50'
@@ -175,14 +176,16 @@ export function Navbar({
                   >
                     Log in
                   </Link>
-                  <Link
-                    to="/assessment"
-                    data-jarvis-id="get-started"
-                    className={`px-3.5 sm:px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold whitespace-nowrap transition-all shadow-xs flex items-center gap-1.5 shrink-0 ${focusRing}`}
-                  >
-                    <span>Get Started</span>
-                    <ArrowRight size={13} />
-                  </Link>
+                  {!isAssessmentPage && (
+                    <Link
+                      to="/assessment"
+                      data-jarvis-id="get-started"
+                      className={`px-3.5 sm:px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold whitespace-nowrap transition-all shadow-xs flex items-center gap-1.5 shrink-0 ${focusRing}`}
+                    >
+                      <span>Get Started</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  )}
                 </div>
               )
             )}
