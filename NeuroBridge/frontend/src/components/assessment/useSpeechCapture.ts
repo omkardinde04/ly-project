@@ -66,6 +66,7 @@ export function useSpeechCapture({ maxMs = 15000, lang = 'en-US' }: { maxMs?: nu
   const firstSpeechAtRef = useRef<number | null>(null);
   const timerRef = useRef<number | null>(null);
   const mountedRef = useRef(true);
+  const networkRetryRef = useRef(0);
 
   // ── Pause "Hey Jarvis" while this question is on screen ──────────────────
   const { wakeWordEnabled, setWakeWordEnabled } = useAssistant();
@@ -130,6 +131,7 @@ export function useSpeechCapture({ maxMs = 15000, lang = 'en-US' }: { maxMs?: nu
     rec.maxAlternatives = 1;
 
     rec.onresult = (event: SpeechRecognitionLike) => {
+      networkRetryRef.current = 0;
       let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const piece = event.results[i][0]?.transcript ?? '';
@@ -144,6 +146,26 @@ export function useSpeechCapture({ maxMs = 15000, lang = 'en-US' }: { maxMs?: nu
       const code = String(event?.error || 'unknown');
       // Silence and our own restarts are normal
       if (code === 'no-speech' || code === 'aborted') return;
+      if (code === 'network') {
+        console.warn('SpeechRecognition network warning, retrying connection...');
+        if (wantListeningRef.current && networkRetryRef.current < 4) {
+          networkRetryRef.current += 1;
+          setTimeout(() => {
+            if (wantListeningRef.current && mountedRef.current) {
+              try {
+                rec.start();
+              } catch {
+                try {
+                  startRecognition();
+                } catch {
+                  /* ignore */
+                }
+              }
+            }
+          }, 350);
+          return;
+        }
+      }
       fail(code);
     };
 
@@ -170,6 +192,7 @@ export function useSpeechCapture({ maxMs = 15000, lang = 'en-US' }: { maxMs?: nu
     setTranscript('');
     setHeardSound(false);
     setElapsedMs(0);
+    networkRetryRef.current = 0;
     finalTextRef.current = '';
     firstSpeechAtRef.current = null;
     setStatus('starting');
