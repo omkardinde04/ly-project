@@ -19,10 +19,6 @@ import imgAnotherEntrance from '../../assets/assessment/locked-room-another-entr
 import imgWaitOutside from '../../assets/assessment/locked-room-wait-outside.webp';
 import imgAskNearby from '../../assets/assessment/locked-room-ask-nearby.webp';
 import imgCheckSchedule from '../../assets/assessment/locked-room-check-schedule.webp';
-import imgInformTeacher from '../../assets/assessment/enter-quickly-inform-teacher.webp';
-import imgCallSomeone from '../../assets/assessment/enter-quickly-call-someone.webp';
-import imgTryAnotherRoom from '../../assets/assessment/enter-quickly-try-another-room.webp';
-import imgAdjustPlan from '../../assets/assessment/enter-quickly-adjust-plan.webp';
 
 interface AssessmentTestProps {
   onComplete: (score: number, metrics: AssessmentMetrics) => void;
@@ -40,16 +36,6 @@ const Q7_SCENARIOS = [
         { id: 'ask_help', text: 'Ask a friend for help' },
         { id: 'another_way', text: 'Think of another way to show your work' }
       ]
-    },
-    {
-      id: 'submission_homework',
-      scenario: "The teacher says work must be submitted now.",
-      options: [
-        { id: 'submit_partial', text: 'Submit partially completed work' },
-        { id: 'request_time', text: 'Request extra time' },
-        { id: 'help_friend_later', text: 'Help friend and submit later' },
-        { id: 'suggest_after', text: 'Suggest showing it after class' }
-      ]
     }
   ],
   // Scenario 2 — Group Task
@@ -62,16 +48,6 @@ const Q7_SCENARIOS = [
         { id: 'ask_group', text: 'Ask another group' },
         { id: 'draw_digital', text: 'Draw digitally' },
         { id: 'combine_sheets', text: 'Combine smaller sheets' }
-      ]
-    },
-    {
-      id: 'group_time_over',
-      scenario: "Time is almost over.",
-      options: [
-        { id: 'finish_fast', text: 'Finish quickly with what you have' },
-        { id: 'simplify', text: 'Simplify the idea' },
-        { id: 'divide_work', text: 'Divide work among members' },
-        { id: 'present_verbal', text: 'Present verbally instead' }
       ]
     }
   ],
@@ -86,16 +62,6 @@ const Q7_SCENARIOS = [
         { id: 'sharpen', text: 'Sharpen the broken part' },
         { id: 'write_later', text: 'Write later' }
       ]
-    },
-    {
-      id: 'pencil_no_extra',
-      scenario: "No one has extra pencil.",
-      options: [
-        { id: 'share_friend', text: 'Share with a friend' },
-        { id: 'leftover_piece', text: 'Use leftover piece' },
-        { id: 'another_tool', text: 'Try another writing tool' },
-        { id: 'note_ideas', text: 'Note ideas and write later' }
-      ]
     }
   ],
   // Scenario 4 — Locked Room
@@ -108,16 +74,6 @@ const Q7_SCENARIOS = [
         { id: 'wait_outside', text: 'Wait outside', image: imgWaitOutside },
         { id: 'ask_nearby', text: 'Ask someone nearby', image: imgAskNearby },
         { id: 'check_schedule', text: 'Check schedule', image: imgCheckSchedule }
-      ]
-    },
-    {
-      id: 'locked_fast_enter',
-      scenario: "You must enter quickly.",
-      options: [
-        { id: 'inform_teacher', text: 'Inform teacher', image: imgInformTeacher },
-        { id: 'call_someone', text: 'Call someone', image: imgCallSomeone },
-        { id: 'try_another', text: 'Try another room', image: imgTryAnotherRoom },
-        { id: 'adjust_plan', text: 'Adjust your plan', image: imgAdjustPlan }
       ]
     }
   ]
