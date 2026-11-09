@@ -281,7 +281,7 @@ type VisualPhase = 'showing' | 'answering';
 function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => void }) {
   const TOTAL_QUESTIONS = 6;
   const TIME_PER_QUESTION = 15;
-  const TARGET_DISPLAY_MS = 1800;
+  const TARGET_DISPLAY_MS = 5000;
 
   const [questions] = useState<VisualQuestion[]>(() => generateVisualQuestions(TOTAL_QUESTIONS));
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -378,26 +378,49 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
         <p className="text-text-muted text-sm font-medium">Remember the word, then select its match.</p>
       </div>
 
-      {/* Briefly show the target before presenting its options. */}
+      {/* Show the target for 5 seconds before flashing options */}
       {phase === 'showing' && (
-        <div className="flex flex-col items-center justify-center py-8 gap-4" aria-live="polite">
-          <p className="text-xs uppercase tracking-widest text-text-muted font-bold">Remember this word</p>
-          <div className="inline-flex items-center justify-center px-10 py-5 rounded-3xl bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 shadow-inner">
-            <span className="text-4xl font-black text-blue-700 tracking-widest">{q.target}</span>
+        <motion.div
+          key={`showing-${currentIdx}`}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className="flex flex-col items-center justify-center py-6 gap-4"
+          aria-live="polite"
+        >
+          <p className="text-xs uppercase tracking-widest text-text-muted font-bold">Study this word carefully</p>
+          <div className="inline-flex items-center justify-center px-12 py-6 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-sm">
+            <span className="text-4xl sm:text-5xl font-black text-blue-700 tracking-widest">{q.target}</span>
           </div>
-        </div>
+
+          {/* 5-second countdown progress bar */}
+          <div className="w-48 h-2 bg-blue-100 rounded-full overflow-hidden mt-3 shadow-inner">
+            <motion.div
+              initial={{ width: '100%' }}
+              animate={{ width: '0%' }}
+              transition={{ duration: 5, ease: 'linear' }}
+              className="h-full bg-blue-500 rounded-full"
+            />
+          </div>
+          <span className="text-xs font-semibold text-text-muted">Options will appear in 5s</span>
+        </motion.div>
       )}
 
-      {/* Phase: Answering */}
+      {/* Phase: Answering — Flashes options after 5s */}
       {phase === 'answering' && (
-        <>
-          <p className="text-xs uppercase tracking-widest text-text-muted font-bold mb-3 mt-8">Which word did you see?</p>
-          <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mb-8 mt-10">
+        <motion.div
+          key={`answering-${currentIdx}`}
+          initial={{ opacity: 0, scale: 0.96, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          <p className="text-xs uppercase tracking-widest text-text-muted font-bold mb-3 mt-4">Which word did you see?</p>
+          <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mb-8 mt-6">
             {q.options.map((word, idx) => (
               <button
                 key={idx}
                 onClick={() => handleAnswer(word)}
-                className="py-4 px-6 rounded-2xl bg-gray-50 hover:bg-blue-50 border-2 border-border hover:border-blue-400 text-xl font-black text-text transition-all shadow-sm hover:scale-105"
+                className="py-4 px-6 rounded-2xl bg-gray-50 hover:bg-blue-50 active:scale-95 border-2 border-border hover:border-blue-400 text-xl font-black text-text transition-all shadow-sm hover:scale-105 cursor-pointer"
               >
                 {word}
               </button>
@@ -435,7 +458,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
               </div>
             </div>
           )}
-        </>
+        </motion.div>
       )}
     </div>
   );
