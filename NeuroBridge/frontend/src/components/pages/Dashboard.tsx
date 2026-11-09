@@ -57,20 +57,30 @@ export function Dashboard() {
     });
   };
 
-  // Auto-navigate to linkedin tab if returning from OAuth callback
+  // Auto-navigate to tab from query params, state, or OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
     if (params.get('communityPost')) {
       setActiveTab('community');
     } else if (params.get('linkedin_connected') || params.get('linkedin_error')) {
       setActiveTab('linkedin');
+    } else if (tabParam === 'progress' || tabParam === 'arena' || tabParam === 'games') {
+      setActiveTab('progress');
+    } else if (tabParam) {
+      setActiveTab(tabParam);
+    } else if (location.state?.tab) {
+      const stateTab = location.state.tab;
+      setActiveTab(stateTab === 'arena' || stateTab === 'games' ? 'progress' : stateTab);
     }
-  }, []);
+  }, [location.search, location.state]);
 
-  // Support dashboard sub-routes like /dashboard/courses
+  // Support dashboard sub-routes like /dashboard/courses, /dashboard/progress, /dashboard/arena
   useEffect(() => {
     if (location.pathname.startsWith('/dashboard/courses')) {
       setActiveTab('courses');
+    } else if (location.pathname.startsWith('/dashboard/progress') || location.pathname.startsWith('/dashboard/arena')) {
+      setActiveTab('progress');
     }
   }, [location.pathname]);
 

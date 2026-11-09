@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation, type Translation } from '../../utils/translations';
@@ -59,8 +59,18 @@ interface ReportGeneratorProps {
 
 export function ReportGenerator({ score, metrics, onRetake, onContinue }: ReportGeneratorProps) {
   const { language, markTestCompleted, cognitiveProfile, isDarkMode, reduceMotion } = useDyslexia();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const navigate = useNavigate();
   const t = getTranslation(language);
+
+  const handlePracticeNavigate = (_targetPath = '/dashboard?tab=progress') => {
+    const arenaUrl = '/dashboard?tab=progress';
+    if (!user || !token) {
+      navigate('/login', { state: { createAccount: true, redirect: arenaUrl } });
+    } else {
+      navigate(arenaUrl);
+    }
+  };
 
   useEffect(() => {
     markTestCompleted(score);
@@ -399,17 +409,30 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
                     <Lightbulb size={14} className="shrink-0 mt-0.5" style={{ color: BAND_INFO[s.band].color }} />
                     <span>{s.tip}</span>
                   </p>
-                  <Link
-                    to={s.practice.to}
-                    className="shrink-0 inline-flex items-center gap-1 text-xs font-extrabold text-[#2563EB] hover:underline"
+                  <button
+                    type="button"
+                    onClick={() => handlePracticeNavigate(s.practice.to)}
+                    className="shrink-0 inline-flex items-center gap-1.5 text-xs font-extrabold text-[#2563EB] hover:text-[#1D4ED8] hover:underline cursor-pointer"
                   >
-                    {s.practice.label}
+                    <span>{s.practice.label}</span>
                     <ArrowRight size={13} />
-                  </Link>
+                  </button>
                 </div>
               </li>
             ))}
           </ol>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span className="text-xs font-bold text-[#64748B]">Train these skills in the Reading Game Arena</span>
+            <button
+              type="button"
+              onClick={() => handlePracticeNavigate('/dashboard?tab=progress')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white text-xs font-extrabold shadow-xs transition-all cursor-pointer"
+            >
+              <span>Enter Game Arena</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
         </motion.section>
       </div>
 

@@ -28,7 +28,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Sounds',
     what: 'Hearing and joining the sounds in a word.',
     tip: 'Clap each sound in a word, then say it fast.',
-    practice: { label: 'Play sound games', to: '/learn' },
+    practice: { label: 'Play sound games', to: '/dashboard?tab=progress' },
   },
   {
     id: 'visual',
@@ -36,7 +36,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Seeing',
     what: 'Noticing small differences in letters and pictures.',
     tip: 'Use the reading ruler in the Chrome helper to keep your place.',
-    practice: { label: 'Play spot-the-difference', to: '/learn' },
+    practice: { label: 'Play spot-the-difference', to: '/dashboard?tab=progress' },
   },
   {
     id: 'workingMemory',
@@ -44,7 +44,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Memory',
     what: 'Holding a few things in your head at once.',
     tip: 'Learn in small chunks of 3 or 4 things.',
-    practice: { label: 'Play memory games', to: '/learn' },
+    practice: { label: 'Play memory games', to: '/dashboard?tab=progress' },
   },
   {
     id: 'processingSpeed',
@@ -52,7 +52,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Speed',
     what: 'How quickly you spot patterns.',
     tip: 'Practise 5 minutes a day. Short and often works best.',
-    practice: { label: 'Play pattern games', to: '/learn' },
+    practice: { label: 'Play pattern games', to: '/dashboard?tab=progress' },
   },
   {
     id: 'orthographic',
@@ -60,7 +60,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Words',
     what: 'Knowing a word by its shape and spelling.',
     tip: 'Read the same short text twice. It gets easier.',
-    practice: { label: 'Play word games', to: '/learn' },
+    practice: { label: 'Play word games', to: '/dashboard?tab=progress' },
   },
   {
     id: 'executive',
@@ -68,7 +68,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Focus',
     what: 'Planning steps and staying on task.',
     tip: 'Break a task into steps and tick each one off.',
-    practice: { label: 'Try a short course', to: '/courses' },
+    practice: { label: 'Practice in Game Arena', to: '/dashboard?tab=progress' },
   },
 ];
 

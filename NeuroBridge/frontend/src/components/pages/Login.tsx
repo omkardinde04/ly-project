@@ -91,7 +91,7 @@ export function Login() {
 
     if (token) {
       login(token);
-      const redirect = params.get('redirect') || '/dashboard';
+      const redirect = location.state?.redirect || params.get('redirect') || '/dashboard';
       navigate(redirect);
     }
   }, [location.search, login, navigate]);
@@ -128,7 +128,8 @@ export function Login() {
 
       if (data.success) {
         await login(data.token);
-        navigate(data.redirect || '/dashboard');
+        const destination = location.state?.redirect || data.redirect || '/dashboard';
+        navigate(destination);
       } else {
         if (data.needsVerification) {
           setError(data.error + ' Click "Resend Verification" below if you need a new link.');
