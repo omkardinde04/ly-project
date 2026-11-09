@@ -10,7 +10,7 @@ export const communityRouter = Router();
 const currentUser = (req: any) => String(req.user.userId);
 
 function publicUser(user: any) {
-  return { id: String(user._id), name: user.name, email: user.email, profilePicture: user.profile_picture, classification: user.classification };
+  return { id: String(user._id), name: user.name, profilePicture: user.profile_picture, classification: user.classification };
 }
 
 function publicPost(post: any, author: any, userId: string, commentCount = 0) {
@@ -153,6 +153,15 @@ communityRouter.post('/connect/:targetId', AuthService.authenticateToken, async 
     const action = req.body?.action || 'request';
     if (action === 'accept' && connection?.recipientId === requesterId) connection.status = 'accepted';
     else if (action === 'decline' && connection?.recipientId === requesterId) connection.status = 'declined';
+    else if (action === 'disconnect' && connection) {
+      await Connection.deleteOne({ _id: connection._id });
+      return res.json({ status: 'none', target: publicUser(target) });
+    }
+    else if (action === 'request' && connection?.status === 'declined') {
+      connection.requesterId = requesterId;
+      connection.recipientId = recipientId;
+      connection.status = 'pending';
+    }
     else if (!connection) connection = new Connection({ requesterId, recipientId, status: 'pending' });
     else return res.status(409).json({ error: 'Connection already exists' });
     await connection.save();
