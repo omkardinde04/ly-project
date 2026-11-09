@@ -136,8 +136,10 @@ export const partAQuestions: AssessmentQuestion[] = [
     type: 'mission_control',
     instruction: 'Mission Control: Memorize and execute multiple instructions in order.',
     options: [
-      { id: 'done', text: 'Start Mission', weight: 0 }
+      { id: 'correct', text: 'Correct', weight: 0 },
+      { id: 'wrong', text: 'Wrong', weight: 3 }
     ],
+    correctAnswer: 0,
     dimension: 'workingMemory',
     difficulty: 'hard',
   },

@@ -587,7 +587,8 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <MissionControlTask
                   onComplete={(logs) => {
-                    handleAnswer(0);
+                    const isAllCorrect = (logs.sequence_errors === 0 && logs.wrong_key_count === 0 && logs.extra_click_count === 0) || (logs as any).isCorrect === true;
+                    handleAnswer(isAllCorrect ? 0 : 1);
                     setTimeout(() => handleNext(currentQuestion), 100);
                   }}
                 />
