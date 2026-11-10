@@ -48,7 +48,13 @@ async function initializeMLAdaptiveParams(userId, cognitiveProfile) {
 // Configure Google OAuth Strategy
 const googleClientID = process.env.GOOGLE_CLIENT_ID ?? '';
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? '';
-const googleCallbackURL = process.env.GOOGLE_REDIRECT_URI ?? 'http://localhost:4000/api/auth/google/callback';
+const getGoogleCallbackURL = () => {
+    if (process.env.GOOGLE_REDIRECT_URI)
+        return process.env.GOOGLE_REDIRECT_URI;
+    if (process.env.VERCEL_URL)
+        return `https://${process.env.VERCEL_URL}/api/auth/google/callback`;
+    return 'http://localhost:4000/api/auth/google/callback';
+};
 if (!googleClientID || !googleClientSecret) {
     console.warn('⚠️  GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing in .env. Google Login will not work.');
 }
@@ -56,7 +62,7 @@ else {
     passport_1.default.use(new passport_google_oauth20_1.Strategy({
         clientID: googleClientID,
         clientSecret: googleClientSecret,
-        callbackURL: googleCallbackURL
+        callbackURL: getGoogleCallbackURL()
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             // Extract user information from Google profile
@@ -110,25 +116,41 @@ passport_1.default.deserializeUser(async (id, done) => {
     }
 });
 // Google OAuth routes
-exports.googleAuthRouter.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
-exports.googleAuthRouter.get('/callback', passport_1.default.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5147'}?error=Authentication failed` }), async (req, res) => {
-    try {
-        const user = req.user;
-        if (!user) {
-            return res.status(401).json({ error: 'Authentication failed' });
+exports.googleAuthRouter.get('/google', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.status(500).json({
+            error: 'Google OAuth is not configured on this deployment. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel Environment Variables.'
+        });
+    }
+    passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res, next);
+});
+exports.googleAuthRouter.get('/callback', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.status(500).json({ error: 'Google OAuth not configured' });
+    }
+    const host = req.get('host');
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    const defaultFrontend = host ? `${protocol}://${host}` : 'http://localhost:5147';
+    const failureRedirect = `${process.env.FRONTEND_URL || defaultFrontend}?error=Authentication failed`;
+    passport_1.default.authenticate('google', { failureRedirect })(req, res, async () => {
+        try {
+            const user = req.user;
+            if (!user) {
+                return res.status(401).json({ error: 'Authentication failed' });
+            }
+            // Generate JWT token
+            const token = auth_1.AuthService.generateToken(user);
+            // Determine redirect based on assessment completion
+            const redirectUrl = user.assessment_completed ? '/dashboard' : '/assessment';
+            // Redirect to frontend auth handler with token and redirect URL
+            const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
+            res.redirect(`${frontendUrl}/auth-redirect?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectUrl)}`);
         }
-        // Generate JWT token
-        const token = auth_1.AuthService.generateToken(user);
-        // Determine redirect based on assessment completion
-        const redirectUrl = user.assessment_completed ? '/dashboard' : '/assessment';
-        // Redirect to frontend auth handler with token and redirect URL
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5147';
-        res.redirect(`${frontendUrl}/auth-redirect?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectUrl)}`);
-    }
-    catch (error) {
-        console.error('Google auth callback error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+        catch (error) {
+            console.error('Google auth callback error:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
 });
 // Get current user info (protected route)
 exports.googleAuthRouter.get('/me', auth_1.AuthService.authenticateToken, async (req, res) => {

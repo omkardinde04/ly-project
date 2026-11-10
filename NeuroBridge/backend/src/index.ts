@@ -38,12 +38,42 @@ import mongoose from 'mongoose';
 
 const app = express();
 
+// Trust proxy for Vercel / reverse proxy deployments
+app.set('trust proxy', 1);
+
+// Database connection helper for serverless & local
+let isDbConnected = false;
+export const connectToDatabase = async () => {
+  if (isDbConnected || mongoose.connection.readyState >= 1) {
+    isDbConnected = true;
+    return;
+  }
+  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/neurobridge';
+  try {
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+    isDbConnected = true;
+    console.log(`✅ Connected to MongoDB at ${mongoUri}`);
+  } catch (error: any) {
+    console.error('❌ MongoDB connection error:', error.message);
+  }
+};
+
+// Ensure database is connected for every request
+app.use(async (_req, _res, next) => {
+  await connectToDatabase();
+  next();
+});
+
 // Session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  cookie: {
+    secure: process.env.NODE_ENV === 'production' && !process.env.DEV_MODE,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
 
 // Passport middleware
@@ -80,20 +110,21 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Connect to MongoDB and start server
+// Start standalone server locally; on Vercel the app is invoked serverless
 const startServer = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/neurobridge';
-    await mongoose.connect(mongoUri);
-    console.log(`✅ Connected to MongoDB at ${mongoUri}`);
-    
+    await connectToDatabase();
     app.listen(PORT, () => {
       console.log(`✅ Backend server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error('❌ Failed to connect to MongoDB:', error);
-    process.exit(1);
+    console.error('❌ Failed to start server:', error);
   }
 };
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
+export { app };

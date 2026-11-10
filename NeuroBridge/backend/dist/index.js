@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.app = exports.connectToDatabase = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../.env') });
@@ -36,12 +37,42 @@ console.log(`  LinkedIn ID : ${linkedinId ? '✅ Loaded' : '❌ NOT FOUND'}`);
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 const mongoose_1 = __importDefault(require("mongoose"));
 const app = (0, express_1.default)();
+exports.app = app;
+// Trust proxy for Vercel / reverse proxy deployments
+app.set('trust proxy', 1);
+// Database connection helper for serverless & local
+let isDbConnected = false;
+const connectToDatabase = async () => {
+    if (isDbConnected || mongoose_1.default.connection.readyState >= 1) {
+        isDbConnected = true;
+        return;
+    }
+    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/neurobridge';
+    try {
+        await mongoose_1.default.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+        isDbConnected = true;
+        console.log(`✅ Connected to MongoDB at ${mongoUri}`);
+    }
+    catch (error) {
+        console.error('❌ MongoDB connection error:', error.message);
+    }
+};
+exports.connectToDatabase = connectToDatabase;
+// Ensure database is connected for every request
+app.use(async (_req, _res, next) => {
+    await (0, exports.connectToDatabase)();
+    next();
+});
 // Session middleware
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    cookie: {
+        secure: process.env.NODE_ENV === 'production' && !process.env.DEV_MODE,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 // Passport middleware
 app.use(passport_1.default.initialize());
@@ -72,19 +103,19 @@ app.get('/', (_req, res) => {
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-// Connect to MongoDB and start server
+// Start standalone server locally; on Vercel the app is invoked serverless
 const startServer = async () => {
     try {
-        const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/neurobridge';
-        await mongoose_1.default.connect(mongoUri);
-        console.log(`✅ Connected to MongoDB at ${mongoUri}`);
+        await (0, exports.connectToDatabase)();
         app.listen(PORT, () => {
             console.log(`✅ Backend server running on http://localhost:${PORT}`);
         });
     }
     catch (error) {
-        console.error('❌ Failed to connect to MongoDB:', error);
-        process.exit(1);
+        console.error('❌ Failed to start server:', error);
     }
 };
-startServer();
+if (!process.env.VERCEL) {
+    startServer();
+}
+exports.default = app;
