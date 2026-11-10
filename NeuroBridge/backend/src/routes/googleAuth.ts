@@ -57,11 +57,6 @@ async function initializeMLAdaptiveParams(userId: string, cognitiveProfile: any)
 // Configure Google OAuth Strategy
 const googleClientID = process.env.GOOGLE_CLIENT_ID ?? '';
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? '';
-const getGoogleCallbackURL = () => {
-  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}/api/auth/google/callback`;
-  return 'http://localhost:4000/api/auth/google/callback';
-};
 
 if (!googleClientID || !googleClientSecret) {
   console.warn('⚠️  GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing in .env. Google Login will not work.');
@@ -69,7 +64,7 @@ if (!googleClientID || !googleClientSecret) {
   passport.use(new GoogleStrategy({
     clientID: googleClientID,
     clientSecret: googleClientSecret,
-    callbackURL: getGoogleCallbackURL()
+    callbackURL: process.env.GOOGLE_REDIRECT_URI || '/api/auth/google/callback'
   }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
     try {
       // Extract user information from Google profile
