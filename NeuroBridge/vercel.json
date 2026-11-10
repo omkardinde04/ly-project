@@ -3,35 +3,11 @@
   "services": {
     "backend": {
       "root": "backend",
-      "framework": "express",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "mlmodel",
-          "format": "url",
-          "env": "ML_SERVICE_URL"
-        },
-        {
-          "type": "service",
-          "service": "rag_brain",
-          "format": "url",
-          "env": "RAG_BRAIN_URL"
-        }
-      ]
+      "framework": "express"
     },
     "frontend": {
       "root": "frontend",
       "framework": "vite"
-    },
-    "mlmodel": {
-      "root": "ml model",
-      "framework": "flask",
-      "entrypoint": "ml_service.py"
-    },
-    "rag_brain": {
-      "root": "rag_brain",
-      "framework": "fastapi",
-      "entrypoint": "main.py"
     }
   },
   "rewrites": [
@@ -49,4 +25,3 @@
     }
   ]
 }
-
