@@ -6,7 +6,6 @@ import path from 'path';
 import os from 'os';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
-const pdfParse = require('pdf-parse');
 
 export const llmRouter = Router();
 
@@ -21,10 +20,17 @@ async function extractText(file: Express.Multer.File): Promise<string> {
   const name = file.originalname.toLowerCase();
 
   if (name.endsWith('.pdf')) {
-    const data = await pdfParse(file.buffer);
-    const text = data.text?.trim();
-    if (!text) throw new Error('Could not read text from PDF. Try a text-based PDF.');
-    return text;
+    try {
+      // Lazy-load pdf-parse only when parsing a PDF to avoid crashing serverless startup
+      const pdfParse = require('pdf-parse');
+      const data = await pdfParse(file.buffer);
+      const text = data.text?.trim();
+      if (!text) throw new Error('Could not read text from PDF. Try a text-based PDF.');
+      return text;
+    } catch (err: any) {
+      console.error('[PDF Parse Error]:', err.message);
+      throw new Error('PDF parsing failed: ' + err.message);
+    }
   }
 
   if (name.endsWith('.docx') || name.endsWith('.doc')) {

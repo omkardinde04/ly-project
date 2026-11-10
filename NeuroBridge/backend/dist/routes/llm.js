@@ -12,7 +12,6 @@ const path_1 = __importDefault(require("path"));
 const os_1 = __importDefault(require("os"));
 const generative_ai_1 = require("@google/generative-ai");
 const server_1 = require("@google/generative-ai/server");
-const pdfParse = require('pdf-parse');
 exports.llmRouter = (0, express_1.Router)();
 // ─── Multer — store file in memory ────────────────────────────────────────────
 const upload = (0, multer_1.default)({
@@ -23,11 +22,19 @@ const upload = (0, multer_1.default)({
 async function extractText(file) {
     const name = file.originalname.toLowerCase();
     if (name.endsWith('.pdf')) {
-        const data = await pdfParse(file.buffer);
-        const text = data.text?.trim();
-        if (!text)
-            throw new Error('Could not read text from PDF. Try a text-based PDF.');
-        return text;
+        try {
+            // Lazy-load pdf-parse only when parsing a PDF to avoid crashing serverless startup
+            const pdfParse = require('pdf-parse');
+            const data = await pdfParse(file.buffer);
+            const text = data.text?.trim();
+            if (!text)
+                throw new Error('Could not read text from PDF. Try a text-based PDF.');
+            return text;
+        }
+        catch (err) {
+            console.error('[PDF Parse Error]:', err.message);
+            throw new Error('PDF parsing failed: ' + err.message);
+        }
     }
     if (name.endsWith('.docx') || name.endsWith('.doc')) {
         const result = await mammoth_1.default.extractRawText({ buffer: file.buffer });
