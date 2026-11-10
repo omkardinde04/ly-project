@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation, type Translation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
 import { useAuth } from '../../contexts/AuthContext';
+import { ProgressGame } from '../dashboard/ProgressGame';
 import { SkillRadar, BandDonut } from './ReportCharts';
 import { DARK, LIGHT } from './chartPalette';
+import { getAssessmentSeverity } from '../../utils/assessmentScoring';
 import {
   BAND_INFO,
   BAND_ORDER,
@@ -39,6 +40,8 @@ import {
   AlignJustify,
   Loader2,
   PieChart,
+  Gamepad2,
+  X,
 } from 'lucide-react';
 
 interface AssessmentMetrics {
@@ -52,38 +55,35 @@ interface AssessmentMetrics {
 
 interface ReportGeneratorProps {
   score: number;
+  partAPerformance: number;
+  partBPerformance: number;
   metrics?: AssessmentMetrics;
   onRetake: () => void;
   onContinue: () => void;
 }
 
-export function ReportGenerator({ score, metrics, onRetake, onContinue }: ReportGeneratorProps) {
-  const { language, markTestCompleted, cognitiveProfile, isDarkMode, reduceMotion } = useDyslexia();
-  const { user, token } = useAuth();
-  const navigate = useNavigate();
+type GuestGame = {
+  skillId: 'sound' | 'focus' | 'memory' | 'speed';
+  skillName: string;
+  construct: string;
+};
+
+const guestGames: Record<string, GuestGame> = {
+  phonological: { skillId: 'sound', skillName: 'Sound match', construct: 'Hear and compare word sounds' },
+  visual: { skillId: 'focus', skillName: 'Spot the letters', construct: 'Notice visual details' },
+  workingMemory: { skillId: 'memory', skillName: 'Sequence memory', construct: 'Remember and repeat a sequence' },
+  processingSpeed: { skillId: 'speed', skillName: 'Pattern match', construct: 'Compare two patterns' },
+  orthographic: { skillId: 'focus', skillName: 'Spot the letters', construct: 'Notice letter differences' },
+  executive: { skillId: 'memory', skillName: 'Sequence memory', construct: 'Remember and repeat a sequence' },
+};
+
+export function ReportGenerator({ score, partAPerformance, partBPerformance, metrics, onRetake, onContinue }: ReportGeneratorProps) {
+  const { language, cognitiveProfile, isDarkMode, reduceMotion } = useDyslexia();
+  const { user } = useAuth();
   const t = getTranslation(language);
+  const [practiceGame, setPracticeGame] = useState<GuestGame | null>(null);
 
-  const handlePracticeNavigate = (_targetPath = '/dashboard?tab=progress') => {
-    const arenaUrl = '/dashboard?tab=progress';
-    if (!user || !token) {
-      navigate('/login', { state: { createAccount: true, redirect: arenaUrl } });
-    } else {
-      navigate(arenaUrl);
-    }
-  };
-
-  useEffect(() => {
-    markTestCompleted(score);
-  }, [score]);
-
-  const getLevel = (score: number): DyslexiaLevel => {
-    if (score < 45) return 'none';
-    if (score <= 60) return 'mild';
-    if (score <= 80) return 'moderate';
-    return 'severe';
-  };
-
-  const level = getLevel(score);
+  const level = getAssessmentSeverity(score);
 
   const getLevelText = (level: DyslexiaLevel): string => {
     const levelMap: Record<DyslexiaLevel, keyof Translation> = {
@@ -111,38 +111,38 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
   const getRecommendations = (level: DyslexiaLevel) => {
     const recommendations = {
       none: {
-        fontSize: 'Standard font scale is comfortable for you',
-        contrast: 'Normal contrast works well',
-        audio: 'Optional audio narration available on demand',
-        spacing: 'Standard line & letter spacing',
+        fontSize: 'Try the standard text size; adjust it whenever you prefer',
+        contrast: 'Start with normal contrast; change it if reading feels tiring',
+        audio: 'Try audio narration when it is useful',
+        spacing: 'Start with standard spacing; adjust for comfort',
       },
       mild: {
-        fontSize: 'Slightly larger text scale (110%) recommended',
-        contrast: 'Soft background contrast reduces reading fatigue',
-        audio: 'Audio summaries assist comprehension of longer texts',
-        spacing: 'Increased line spacing (1.8x)',
+        fontSize: 'Try slightly larger text (about 110%)',
+        contrast: 'Try a softer background if it feels more comfortable',
+        audio: 'Try audio summaries for longer text',
+        spacing: 'Try a little more line spacing',
       },
       moderate: {
-        fontSize: 'Larger text scale (120%) suggested',
-        contrast: 'High contrast and focused reading guide recommended',
-        audio: 'Regular speech-to-text narration recommended',
-        spacing: 'Comfortable wide spacing (2.0x)',
+        fontSize: 'Try larger text (about 120%)',
+        contrast: 'Try higher contrast or a reading guide',
+        audio: 'Try speech narration alongside text',
+        spacing: 'Try wider line spacing',
       },
       severe: {
-        fontSize: 'Extra large font scale with OpenDyslexic active',
-        contrast: 'High sensory contrast essential',
-        audio: 'Audio-first multisensory interface recommended',
-        spacing: 'Maximum letter and line spacing for optimal clarity',
+        fontSize: 'Try larger text or the OpenDyslexic font',
+        contrast: 'Try high contrast if it improves readability',
+        audio: 'Try listening while following the text',
+        spacing: 'Try wider letter and line spacing',
       },
     };
     return recommendations[level];
   };
 
   const getLearningStyle = () => {
-    if (score > 60) {
+    if (score >= 60) {
       return {
-        primary: 'Visual-Auditory Multisensory',
-        description: 'You learn best through visuals paired with speech explanations and diagrams.',
+        primary: 'Try visual and spoken supports',
+        description: 'You could try pairing diagrams or examples with spoken explanations.',
         tips: [
           'Use interactive mind maps & diagrams',
           'Listen to TTS audio summaries',
@@ -150,10 +150,10 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           'Leverage JARVIS AI speech narration',
         ],
       };
-    } else if (score > 45) {
+    } else if (score >= 30) {
       return {
-        primary: 'Multimodal Learner',
-        description: 'You benefit from combining reading, listening, and hands-on practice.',
+        primary: 'Try mixing learning formats',
+        description: 'You could try combining short reading, listening, and hands-on practice.',
         tips: [
           'Combine text with speech audio',
           'Use color-coded topic notes',
@@ -163,8 +163,8 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
       };
     } else {
       return {
-        primary: 'Flexible Reader',
-        description: 'You adapt comfortably across standard reading and auditory formats.',
+        primary: 'Choose the format that feels comfortable',
+        description: 'Try standard text, audio, or visual supports and use whichever helps you most.',
         tips: [
           'Standard text layout works smoothly',
           'Supplement with visual aids when useful',
@@ -178,7 +178,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
   const learningStyle = getLearningStyle();
   const recommendations = getRecommendations(level);
 
-  const reportText = `Your dyslexia calibration level is ${getLevelText(level)}. Score: ${score}. Learning style: ${learningStyle.primary}. ${learningStyle.description}`;
+  const reportText = `Your support indicator is ${getLevelText(level)}. The indicator score is ${score} out of 100; higher scores mean more observed difficulty signals. This is a learning aid, not a medical diagnosis.`;
 
   // ── Real per-skill results (Part A answers + Part B tasks) ────────────────
   const skills = useMemo(() => computeSkills(metrics, cognitiveProfile), [metrics, cognitiveProfile]);
@@ -214,6 +214,8 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         levelLabel: String(getLevelText(level)),
         levelColor: LEVEL_HEX[level],
         score,
+        partAPerformance,
+        partBPerformance,
         skills,
         focus,
         levels,
@@ -308,44 +310,47 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         </p>
       )}
 
-      {/* 2. Summary tiles */}
-      <motion.div {...enter(0)} className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className={`${card} !p-5 flex items-center gap-4`}>
-          <div className="w-11 h-11 rounded-2xl bg-purple-50 text-[#7C3AED] border border-purple-100 flex items-center justify-center shrink-0">
-            <Brain size={20} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-black text-[#64748B] uppercase tracking-wider">Your level</p>
-            <span className={`inline-block mt-1 px-3 py-1 rounded-xl font-black text-sm border ${getLevelColor(level)}`}>
-              {getLevelText(level)}
-            </span>
-          </div>
-        </div>
-        <div className={`${card} !p-5 flex items-center gap-4`}>
-          <div className="w-11 h-11 rounded-2xl bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center shrink-0">
-            <BarChart3 size={20} />
-          </div>
+      {/* 2. Score summary */}
+      <motion.section
+        {...enter(0)}
+        className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+        aria-labelledby="score-summary"
+      >
+        <div className="grid gap-6 bg-gradient-to-br from-blue-50 via-white to-purple-50 p-5 sm:p-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(20rem,1.1fr)] lg:items-center">
           <div>
-            <p className="text-[11px] font-black text-[#64748B] uppercase tracking-wider">Performance index</p>
-            <p className="font-black text-[#2563EB] leading-none mt-1" style={{ fontSize: '1.75rem' }}>
-              {score}
-              <span className="text-sm text-[#94A3B8] font-bold"> / 100</span>
-            </p>
+            <div className="flex items-center gap-2 text-sm font-extrabold text-[#475569]">
+              <Brain size={18} className="text-[#7C3AED]" />
+              <h2 id="score-summary">Your support indicator</h2>
+            </div>
+            <div className="mt-3 flex flex-wrap items-end gap-x-3 gap-y-2">
+              <span className="text-6xl font-black leading-none tracking-tight text-[#1E293B] tabular-nums">{score}</span>
+              <span className="pb-1 text-base font-bold text-[#64748B]">/ 100</span>
+              <span className={`mb-1 rounded-xl border px-3 py-1.5 text-sm font-black ${getLevelColor(level)}`}>
+                {getLevelText(level)}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/80 bg-white/80 p-4 sm:p-5">
+            <div
+              className="h-3 overflow-hidden rounded-full bg-slate-200"
+              role="meter"
+              aria-label="Support indicator score"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={score}
+            >
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-amber-400 to-purple-600 transition-all"
+                style={{ width: `${score}%` }}
+              />
+            </div>
           </div>
         </div>
-        <div className={`${card} !p-5 flex items-center gap-4`}>
-          <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
-            <Target size={20} />
-          </div>
-          <div>
-            <p className="text-[11px] font-black text-[#64748B] uppercase tracking-wider">Areas to grow</p>
-            <p className="font-black text-amber-600 leading-none mt-1" style={{ fontSize: '1.75rem' }}>
-              {growCount}
-              <span className="text-sm text-[#94A3B8] font-bold"> of {skills.length}</span>
-            </p>
-          </div>
-        </div>
-      </motion.div>
+        <p className="border-t border-slate-100 px-5 py-4 text-[11px] italic text-[#64748B] sm:px-8">
+          *This is a learning-support estimate, not a medical diagnosis.
+        </p>
+      </motion.section>
 
       {/* 3. Radar + focus areas */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -411,10 +416,10 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
                   </p>
                   <button
                     type="button"
-                    onClick={() => handlePracticeNavigate(s.practice.to)}
+                    onClick={() => setPracticeGame(guestGames[s.id])}
                     className="shrink-0 inline-flex items-center gap-1.5 text-xs font-extrabold text-[#2563EB] hover:text-[#1D4ED8] hover:underline cursor-pointer"
                   >
-                    <span>{s.practice.label}</span>
+                    <span>Try a practice game</span>
                     <ArrowRight size={13} />
                   </button>
                 </div>
@@ -423,14 +428,14 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           </ol>
 
           <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span className="text-xs font-bold text-[#64748B]">Train these skills in the Reading Game Arena</span>
+            <span className="text-xs font-bold text-[#64748B]">Try a short game now—no account needed. Guest scores are not saved.</span>
             <button
               type="button"
-              onClick={() => handlePracticeNavigate('/dashboard?tab=progress')}
+              onClick={() => setPracticeGame(guestGames.phonological)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white text-xs font-extrabold shadow-xs transition-all cursor-pointer"
             >
-              <span>Enter Game Arena</span>
-              <ArrowRight size={14} />
+              <Gamepad2 size={14} />
+              <span>Play a quick game</span>
             </button>
           </div>
         </motion.section>
@@ -535,7 +540,7 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         </motion.section>
 
         <motion.section {...enter(0.35)} className={card}>
-          {cardTitle(<Sparkles size={16} />, t.learningStyle || 'Cognitive Learning Style', 'bg-purple-50 text-[#8B5CF6] border-purple-100')}
+          {cardTitle(<Sparkles size={16} />, 'Support ideas to try', 'bg-purple-50 text-[#8B5CF6] border-purple-100')}
           <p className="inline-block px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-100 font-black text-sm text-[#7C3AED]">
             {learningStyle.primary}
           </p>
@@ -585,8 +590,8 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
         </a>
       </motion.div>
 
-      <p className="text-center text-[11px] font-semibold text-[#64748B]">
-        This is a screening to help you learn, not a medical diagnosis. A teacher or specialist can do a full check.
+      <p className="text-center text-[11px] italic text-[#64748B]">
+        *This is a learning-support estimate, not a medical diagnosis.
       </p>
 
       {/* 8. Actions */}
@@ -609,6 +614,34 @@ export function ReportGenerator({ score, metrics, onRetake, onContinue }: Report
           <ArrowRight size={15} />
         </button>
       </div>
+      {practiceGame && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/70 p-3 backdrop-blur-sm sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${practiceGame.skillName} practice game`}
+        >
+          <div className="relative my-auto w-full max-w-3xl rounded-3xl bg-white p-3 shadow-2xl sm:p-6">
+            <button
+              type="button"
+              onClick={() => setPracticeGame(null)}
+              className="absolute right-4 top-4 z-10 rounded-full border border-slate-200 bg-white p-2 text-slate-600 shadow-sm hover:bg-slate-50"
+              aria-label="Close practice game"
+            >
+              <X size={18} />
+            </button>
+            <ProgressGame
+              key={practiceGame.skillId}
+              {...practiceGame}
+              rating={800}
+              language={language}
+              showRating={false}
+              onComplete={() => {}}
+              onExit={() => setPracticeGame(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -22,6 +22,11 @@ import { getTranslation } from '../../utils/translations';
 import { AudioControl } from '../ui/AudioControl';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { API_BASE } from '../../config/api';
+import {
+  calculateIndicatorScore,
+  getAssessmentClassification,
+  type CognitiveProfile,
+} from '../../utils/assessmentScoring';
 
 export function AssessmentPage() {
   const { language, completeCognitiveTasks } = useDyslexia();
@@ -29,6 +34,8 @@ export function AssessmentPage() {
   const navigate = useNavigate();
   const t = getTranslation(language);
   const [testState, setTestState] = useState<'intro' | 'partA' | 'partB' | 'report'>('intro');
+  const [partAPerformance, setPartAPerformance] = useState(0);
+  const [partBPerformance, setPartBPerformance] = useState(0);
   const [finalScore, setFinalScore] = useState<number>(0);
   const [assessmentMetrics, setAssessmentMetrics] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -37,31 +44,34 @@ export function AssessmentPage() {
     setTestState('partA');
   };
 
-  const handlePartAComplete = (score: number, metrics: any) => {
-    setFinalScore(score);
+  const handlePartAComplete = (performanceScore: number, metrics: any) => {
+    setPartAPerformance(performanceScore);
     setAssessmentMetrics(metrics);
     setTestState('partB');
   };
 
-  const handlePartBComplete = async (profile: any) => {
-    completeCognitiveTasks(profile);
+  const handlePartBComplete = async (profile: CognitiveProfile) => {
+    const indicatorScore = calculateIndicatorScore(partAPerformance, profile);
+    setPartBPerformance(
+      Math.round(Object.values(profile).reduce((total, value) => total + value, 0) / Object.keys(profile).length),
+    );
+    setFinalScore(indicatorScore);
+    completeCognitiveTasks(profile, indicatorScore);
     setTestState('report');
 
     // Save assessment completion to database
     if (user && token) {
-      await saveAssessmentResults(finalScore, assessmentMetrics);
+      await saveAssessmentResults(indicatorScore, {
+        ...assessmentMetrics,
+        scoringVersion: 2,
+        partAPerformance,
+        cognitiveProfile: profile,
+      });
     }
   };
 
   const saveAssessmentResults = async (score: number, metrics: any) => {
-    let assessmentType = 'No Dyslexia Indicators';
-    if (score >= 70) {
-      assessmentType = 'Severe Dyslexia Indicators';
-    } else if (score >= 40) {
-      assessmentType = 'Moderate Dyslexia Indicators';
-    } else if (score >= 20) {
-      assessmentType = 'Mild Dyslexia Indicators';
-    }
+    const assessmentType = getAssessmentClassification(score);
 
     const tempAssessment = {
       score,
@@ -127,6 +137,8 @@ export function AssessmentPage() {
     return (
       <ReportGenerator
         score={finalScore}
+        partAPerformance={partAPerformance}
+        partBPerformance={partBPerformance}
         metrics={assessmentMetrics}
         onRetake={handleRetake}
         onContinue={handleContinue}
@@ -167,7 +179,7 @@ export function AssessmentPage() {
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center">
               <ClipboardEdit size={20} />
             </div>
-            <h3 className="font-extrabold text-sm text-[#1A202C]">15 Quick Prompts</h3>
+            <h3 className="font-extrabold text-sm text-[#1A202C]">10 Quick Prompts</h3>
             <p className="text-xs text-[#64748B] font-medium leading-relaxed">
               Interactive phonics and visual questions tailored to your pace.
             </p>
@@ -179,7 +191,7 @@ export function AssessmentPage() {
             </div>
             <h3 className="font-extrabold text-sm text-[#1A202C]">5–10 Minutes</h3>
             <p className="text-xs text-[#64748B] font-medium leading-relaxed">
-              Take your time with zero pressure—there are no wrong answers.
+              Take your time with zero pressure. Answer as best you can; accuracy informs your support indicator.
             </p>
           </div>
 

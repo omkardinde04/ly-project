@@ -191,7 +191,7 @@ export function useDashboardData(): DashboardData {
     setError(null);
     try {
       if (token) {
-        const res = await fetch(`${API_BASE}/api/progress`, {
+        const res = await fetch(`${API_BASE}/api/game-zone`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {

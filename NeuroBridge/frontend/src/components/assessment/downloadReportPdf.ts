@@ -24,6 +24,8 @@ export interface ReportPdfInput {
   levelLabel: string;
   levelColor: string;
   score: number;
+  partAPerformance: number;
+  partBPerformance: number;
   skills: SkillResult[];
   focus: SkillResult[];
   levels: number[]; // skills per band, in BAND_ORDER
@@ -118,7 +120,7 @@ export async function downloadReportPdf(input: ReportPdfInput): Promise<void> {
   const tileW = (W - M * 2 - 8) / 3;
   const tiles: { label: string; value: string; color: RGB }[] = [
     { label: 'Your level', value: input.levelLabel, color: hex(input.levelColor) },
-    { label: 'Performance index', value: `${input.score} / 100`, color: BLUE },
+    { label: 'Support indicator', value: `${input.score} / 100`, color: BLUE },
     {
       label: 'Areas to grow',
       value: String(input.skills.filter((s) => s.score < TARGET).length),
@@ -140,13 +142,16 @@ export async function downloadReportPdf(input: ReportPdfInput): Promise<void> {
     ink(t.color);
     doc.text(t.value, x + 6, tileY + 18, { maxWidth: tileW - 9 });
   });
+  font(7);
+  ink(MUTED);
+  doc.text('*This is a learning-support estimate, not a medical diagnosis.', M, 65, { maxWidth: W - M * 2 });
 
   // ── Radar + focus areas ──────────────────────────────────────────────────
   const radarSvg = renderToStaticMarkup(
     createElement(SkillRadar, { skills: input.skills, palette: LIGHT, size: 360, forExport: true }),
   );
   const radarPng = await svgToPng(radarSvg, 360, Math.round(360 * 0.86));
-  const radarY = 68;
+  const radarY = 74;
   sectionTitle('Your skills at a glance', M, radarY);
   doc.addImage(radarPng, 'PNG', M - 2, radarY + 3, 92, 92 * 0.86, 'radar', 'FAST');
   font(8);
@@ -317,7 +322,7 @@ export async function downloadReportPdf(input: ReportPdfInput): Promise<void> {
   });
 
   y += 6;
-  sectionTitle(`How you learn best: ${input.learningStyle.primary}`, M, y);
+  sectionTitle(`Support ideas to try: ${input.learningStyle.primary}`, M, y);
   font(9.5);
   ink(MUTED);
   const desc = doc.splitTextToSize(input.learningStyle.description, W - M * 2);

@@ -184,7 +184,14 @@ googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, asy
   try {
     const { assessment_score, classification, assessment_metrics } = req.body;
     
-    if (!assessment_score || !classification) {
+    if (
+      typeof assessment_score !== 'number' ||
+      !Number.isFinite(assessment_score) ||
+      assessment_score < 0 ||
+      assessment_score > 100 ||
+      typeof classification !== 'string' ||
+      !classification.trim()
+    ) {
       return res.status(400).json({ error: 'Assessment score and classification are required' });
     }
 

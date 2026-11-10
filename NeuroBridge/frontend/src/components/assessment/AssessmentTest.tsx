@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SkipForward, ArrowDown, ArrowRight } from 'lucide-react';
+import { ArrowDown, ArrowRight } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { partAQuestions } from './assessmentQuestions';
 import { speakText } from '../../utils/textToSpeech';
@@ -15,13 +15,14 @@ import { ReadingAssessmentQ1 } from './ReadingAssessmentQ1';
 import { ObjectNamingTask } from './ObjectNamingTask';
 import { HandRaisingTask } from './HandRaisingTask';
 import { LeftRightGameTask } from './LeftRightGameTask';
+import { calculatePartAPerformance } from '../../utils/assessmentScoring';
 import imgAnotherEntrance from '../../assets/assessment/locked-room-another-entrance.webp';
 import imgWaitOutside from '../../assets/assessment/locked-room-wait-outside.webp';
 import imgAskNearby from '../../assets/assessment/locked-room-ask-nearby.webp';
 import imgCheckSchedule from '../../assets/assessment/locked-room-check-schedule.webp';
 
 interface AssessmentTestProps {
-  onComplete: (score: number, metrics: AssessmentMetrics) => void;
+  onComplete: (performanceScore: number, metrics: AssessmentMetrics) => void;
 }
 
 const Q7_SCENARIOS = [
@@ -103,6 +104,7 @@ interface QuestionMetric {
   isCorrect: boolean;
   optionChanges: number;
   audioReplays: number;
+  performanceScore?: number;
 }
 
 function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | string[]; onComplete: (trackCount: number) => void }) {
@@ -275,6 +277,9 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showBrainGamesIntro, setShowBrainGamesIntro] = useState(false);
   const [answers, setAnswers] = useState<number[]>(Array(partAQuestions.length).fill(-1));
+  const [performanceScores, setPerformanceScores] = useState<(number | undefined)[]>(
+    Array(partAQuestions.length).fill(undefined),
+  );
   const [startTime] = useState(Date.now());
   const [optionChanges, setOptionChanges] = useState<number[]>(Array(partAQuestions.length).fill(0));
   const [audioReplays, setAudioReplays] = useState<number[]>(Array(partAQuestions.length).fill(0));
@@ -315,11 +320,18 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
     });
   };
 
-  const handleAnswer = (optionIndex: number) => {
+  const handleAnswer = (optionIndex: number, performanceScore?: number) => {
     const previousAnswer = answers[currentQuestion];
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = optionIndex;
     setAnswers(newAnswers);
+    if (performanceScore !== undefined) {
+      setPerformanceScores(current => {
+        const next = [...current];
+        next[currentQuestion] = performanceScore;
+        return next;
+      });
+    }
     setJustCompleted(true);
     if (previousAnswer !== -1 && previousAnswer !== optionIndex) {
       setOptionChanges(prev => {
@@ -345,9 +357,11 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             ? q5ReadingTimeRef.current
             : 10,
         selectedOption: answer,
-        isCorrect: answer === (partAQuestions[index] as any).correctAnswer,
+        isCorrect:
+          (performanceScores[index] ?? (answer === partAQuestions[index].correctAnswer ? 100 : 0)) === 100,
         optionChanges: optionChanges[index] || 0,
         audioReplays: audioReplays[index] || 0,
+        ...(performanceScores[index] === undefined ? {} : { performanceScore: performanceScores[index] }),
       }));
 
       const confusionCount = optionChanges.reduce((s, c) => s + (c || 0), 0);
@@ -364,22 +378,8 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         readingTimeSec: q5ReadingTimeRef.current > 0 ? q5ReadingTimeRef.current : undefined,
       };
 
-      // Score based on frequency weights (higher weight = more difficulty indicators)
-      // Max weight per question = 3; total possible = 15 * 3 = 45
-      const totalPossibleScore = partAQuestions.length * 3;
-      const userWeightTotal = answers.reduce((acc, answer, index) => {
-        const weight = partAQuestions[index].options[answer]?.weight ?? 0;
-        return acc + weight;
-      }, 0);
-      // Invert: lower frequency (lower weight) = higher performance score
-      const score = Math.round(((totalPossibleScore - userWeightTotal) / totalPossibleScore) * 100);
-
-      onComplete(score, metrics);
+      onComplete(calculatePartAPerformance(questionMetrics), metrics);
     }
-  };
-
-  const handleForceNext = () => {
-    handleNext(currentQuestion);
   };
 
   const handlePrevious = () => {
@@ -544,7 +544,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 <MissionControlTask
                   onComplete={(logs) => {
                     const isAllCorrect = (logs.sequence_errors === 0 && logs.wrong_key_count === 0 && logs.extra_click_count === 0) || (logs as any).isCorrect === true;
-                    handleAnswer(isAllCorrect ? 0 : 1);
+                    handleAnswer(isAllCorrect ? 0 : 1, logs.completion_rate);
                     setTimeout(() => handleNext(currentQuestion), 100);
                   }}
                 />
@@ -657,20 +657,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               </button>
 
               <p className={`text-xs text-[#64748B] font-medium hidden sm:block ${isAnswered && justCompleted ? 'invisible' : ''}`}>
-                🌟 Take your time · No wrong answers
+                🌟 Take your time · Answer as best you can
               </p>
 
               <div className="relative flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleForceNext}
-                  title="Skip this question for testing"
-                  className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-full font-medium transition-colors text-sm border border-orange-200 text-orange-600 hover:bg-orange-50 bg-white"
-                >
-                  <SkipForward className="h-4 w-4" aria-hidden="true" />
-                  <span>Force next</span>
-                </button>
-
                 <AnimatePresence>
                   {isAnswered && justCompleted && (
                     <motion.div

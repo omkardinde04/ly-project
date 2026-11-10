@@ -28,7 +28,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Sounds',
     what: 'Hearing and joining the sounds in a word.',
     tip: 'Clap each sound in a word, then say it fast.',
-    practice: { label: 'Play sound games', to: '/dashboard?tab=progress' },
+    practice: { label: 'Play sound games', to: '/dashboard?tab=game-zone' },
   },
   {
     id: 'visual',
@@ -36,7 +36,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Seeing',
     what: 'Noticing small differences in letters and pictures.',
     tip: 'Use the reading ruler in the Chrome helper to keep your place.',
-    practice: { label: 'Play spot-the-difference', to: '/dashboard?tab=progress' },
+    practice: { label: 'Play spot-the-difference', to: '/dashboard?tab=game-zone' },
   },
   {
     id: 'workingMemory',
@@ -44,7 +44,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Memory',
     what: 'Holding a few things in your head at once.',
     tip: 'Learn in small chunks of 3 or 4 things.',
-    practice: { label: 'Play memory games', to: '/dashboard?tab=progress' },
+    practice: { label: 'Play memory games', to: '/dashboard?tab=game-zone' },
   },
   {
     id: 'processingSpeed',
@@ -52,7 +52,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Speed',
     what: 'How quickly you spot patterns.',
     tip: 'Practise 5 minutes a day. Short and often works best.',
-    practice: { label: 'Play pattern games', to: '/dashboard?tab=progress' },
+    practice: { label: 'Play pattern games', to: '/dashboard?tab=game-zone' },
   },
   {
     id: 'orthographic',
@@ -60,7 +60,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Words',
     what: 'Knowing a word by its shape and spelling.',
     tip: 'Read the same short text twice. It gets easier.',
-    practice: { label: 'Play word games', to: '/dashboard?tab=progress' },
+    practice: { label: 'Play word games', to: '/dashboard?tab=game-zone' },
   },
   {
     id: 'executive',
@@ -68,7 +68,7 @@ export const SKILLS: SkillMeta[] = [
     short: 'Focus',
     what: 'Planning steps and staying on task.',
     tip: 'Break a task into steps and tick each one off.',
-    practice: { label: 'Practice in Game Arena', to: '/dashboard?tab=progress' },
+    practice: { label: 'Practice in Game Arena', to: '/dashboard?tab=game-zone' },
   },
 ];
 
@@ -93,6 +93,7 @@ export interface SkillResult extends SkillMeta {
 export interface QuestionMetricLike {
   questionId: number;
   selectedOption: number;
+  performanceScore?: number;
   optionChanges?: number;
   audioReplays?: number;
 }
@@ -113,17 +114,34 @@ const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 
 export function computeSkills(metrics: MetricsLike | undefined, profile: CognitiveProfileLike): SkillResult[] {
   const sums: Partial<Record<SkillId, { total: number; count: number }>> = {};
-  for (const qm of metrics?.questionMetrics ?? []) {
-    const q = partAQuestions.find((x) => x.id === qm.questionId);
-    if (!q || qm.selectedOption == null || qm.selectedOption < 0) continue;
-    // Only items that can go right or wrong say something about a skill
-    // (a single "Start" button always has weight 0 and would look perfect).
-    const weights = new Set(q.options.map((o) => o.weight ?? 0));
-    if (weights.size < 2) continue;
-    const option = q.options[qm.selectedOption];
-    if (!option || typeof option.weight !== 'number') continue;
-    const value = ((3 - Math.min(3, Math.max(0, option.weight))) / 3) * 100;
-    const slot = (sums[q.dimension] ??= { total: 0, count: 0 });
+  const scoredQuestions = partAQuestions.filter(
+    (question) => question.type === 'frequency' || question.correctAnswer !== undefined,
+  );
+  for (const question of scoredQuestions) {
+    const response = metrics?.questionMetrics?.find((metric) => metric.questionId === question.id);
+    let value = 0;
+    if (
+      typeof response?.performanceScore === 'number' &&
+      Number.isFinite(response.performanceScore) &&
+      response.performanceScore >= 0 &&
+      response.performanceScore <= 100
+    ) {
+      value = response.performanceScore;
+    } else if (
+      response &&
+      Number.isInteger(response.selectedOption) &&
+      response.selectedOption >= 0 &&
+      response.selectedOption < question.options.length
+    ) {
+      if (question.type === 'frequency') {
+        const weight = question.options[response.selectedOption].weight;
+        value = typeof weight === 'number' ? ((3 - Math.min(3, Math.max(0, weight))) / 3) * 100 : 0;
+      } else {
+        value = response.selectedOption === question.correctAnswer ? 100 : 0;
+      }
+    }
+
+    const slot = (sums[question.dimension] ??= { total: 0, count: 0 });
     slot.total += value;
     slot.count += 1;
   }

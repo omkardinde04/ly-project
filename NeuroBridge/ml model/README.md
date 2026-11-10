@@ -6,6 +6,27 @@ to make reading easier — without the user ever having to configure anything ma
 
 ---
 
+## Adaptive question model
+
+The learning arena uses a separate, online adaptive model in
+`backend/src/services/adaptiveQuestionModel.ts`; it does not depend on the synthetic
+training data or the Flask service described below. Each skill keeps a learner ability
+estimate. After an answer, a logistic item-response update raises that estimate for a
+correct answer or lowers it for an incorrect one, then selects a question near the
+updated level.
+
+The question bank currently has 16 questions per skill. Solo practice adapts after
+each answer and avoids previously seen questions until the pool runs out. Peer battles
+use a shared question for both players and wait until both answer before selecting the
+next difficulty, so neither player receives an easier or different question. Answers
+and scores stay hidden during a test; missed questions can be reviewed afterwards,
+optionally.
+
+This is a calibrated statistical model, not a neural network: the app does not yet
+have enough real, labeled learner data to train one responsibly.
+
+---
+
 ## How It Works (Plain English)
 
 ```

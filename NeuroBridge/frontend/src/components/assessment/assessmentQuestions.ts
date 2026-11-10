@@ -72,7 +72,7 @@ const homeApplianceVariants = [
 
 const selectedAppliance = homeApplianceVariants[Math.floor(Math.random() * homeApplianceVariants.length)];
 
-// Part A: 15 frequency-based self-assessment questions with inline SVG illustrations
+// Part A: observed reading and cognitive tasks
 export const partAQuestions: AssessmentQuestion[] = [
   {
     id: 2,
@@ -107,6 +107,7 @@ export const partAQuestions: AssessmentQuestion[] = [
       { id: 'correct', text: 'Correct', weight: 0 },
       { id: 'wrong', text: 'Wrong', weight: 3 }
     ],
+    correctAnswer: 0,
     dimension: 'visual',
     difficulty: 'medium',
   },
@@ -118,6 +119,7 @@ export const partAQuestions: AssessmentQuestion[] = [
       { id: 'correct', text: 'Correct', weight: 0 },
       { id: 'wrong', text: 'Wrong', weight: 3 }
     ],
+    correctAnswer: 0,
     dimension: 'visual',
     difficulty: 'easy',
   },

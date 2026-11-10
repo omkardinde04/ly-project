@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SkipForward } from 'lucide-react';
 import { getSpeechService } from '../../services/speechService';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useSpeechCapture, micStatusText } from './useSpeechCapture';
 import { MicButton, LevelBars, TimeBar, MicErrorBox } from './MicControls';
+import { calculatePercentCorrect } from '../../utils/assessmentScoring';
 
 interface CognitiveTaskProps {
   onComplete: (scores: { phonological: number; visual: number; workingMemory: number; processingSpeed: number; orthographic: number; executive: number }) => void;
@@ -48,10 +48,6 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
     }, 600);
   };
 
-  const handleForceNext = () => {
-    handleTaskComplete(tasks[currentTask].id, 0);
-  };
-
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 animate-in fade-in duration-300">
       {/* Progress Bar */}
@@ -59,16 +55,6 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-text">Cognitive Tasks</h2>
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleForceNext}
-              disabled={isLoading}
-              title="Skip this task for testing"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-700 transition-colors hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <SkipForward size={14} aria-hidden="true" />
-              Force next
-            </button>
             <span className="text-sm font-semibold text-blue-600">
               Task {currentTask + 1} of {tasks.length}
             </span>
@@ -193,7 +179,7 @@ function PhonologicalTask({ onComplete }: { onComplete: (score: number) => void 
         setSelectedAnswer(null);
         if (isCorrect) setCorrect(newCorrect);
       } else {
-        onComplete(Math.round((newCorrect / wordSets.length) * 100));
+        onComplete(calculatePercentCorrect(newCorrect, wordSets.length));
       }
     }, 900);
   };
@@ -304,7 +290,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
       setPhase('showing');
       setShowSkipConfirm(false);
     } else {
-      onComplete(Math.round((newCorrect / TOTAL_QUESTIONS) * 100));
+      onComplete(calculatePercentCorrect(newCorrect, TOTAL_QUESTIONS));
     }
   }, [currentIdx, TOTAL_QUESTIONS, onComplete]);
 
@@ -353,7 +339,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
       setTimeLeft(TIME_PER_QUESTION);
       setPhase('showing');
     } else {
-      onComplete(Math.round((correctCount / TOTAL_QUESTIONS) * 100));
+      onComplete(calculatePercentCorrect(correctCount, TOTAL_QUESTIONS));
     }
   };
 
@@ -375,7 +361,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
       <div className="flex flex-col items-center mb-6">
         <div className="text-4xl mb-3">👁️</div>
         <h3 className="text-2xl font-bold text-text mb-1">Visual Attention</h3>
-        <p className="text-text-muted text-sm font-medium">Remember the word, then select its match.</p>
+        <p className="text-text-muted text-sm font-medium">Remember the word, then select its match. Skipped or timed-out answers count as incorrect.</p>
       </div>
 
       {/* Show the target for 5 seconds before flashing options */}
@@ -532,7 +518,7 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
   const submitAnswer = (sel: string[]) => {
     // Exact correct matches only (no penalty for unselected)
     const correctCount = sel.filter(e => targetItems.includes(e)).length;
-    const roundPct = correctCount / SHOW_COUNT;
+    const roundPct = calculatePercentCorrect(correctCount, SHOW_COUNT);
     const newTotal = totalScore + roundPct;
 
     setPhase('result');
@@ -541,7 +527,7 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
         setTotalScore(newTotal);
         setRound(prev => prev + 1);
       } else {
-        onComplete(Math.round((newTotal / ROUND_COUNT) * 100));
+        onComplete(Math.round(newTotal / ROUND_COUNT));
       }
     }, 1500);
   };
@@ -711,8 +697,7 @@ function ProcessingSpeedTask({ onComplete }: { onComplete: (score: number) => vo
   const [loaded, setLoaded] = useState(false);
   const [pairs, setPairs] = useState<{ a: Pattern; b: Pattern; isSame: boolean }[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [responses, setResponses] = useState<{ correct: boolean; time: number }[]>([]);
-  const startRef = useRef(Date.now());
+  const [responses, setResponses] = useState<{ correct: boolean }[]>([]);
 
   // Preload / pre-generate all patterns before starting
   useEffect(() => {
@@ -727,19 +712,15 @@ function ProcessingSpeedTask({ onComplete }: { onComplete: (score: number) => vo
   }, []);
 
   const handleResponse = (userSaidSame: boolean) => {
-    const time = (Date.now() - startRef.current) / 1000;
     const correct = userSaidSame === pairs[currentIdx].isSame;
-    const newResponses = [...responses, { correct, time }];
+    const newResponses = [...responses, { correct }];
 
     if (currentIdx < TOTAL - 1) {
       setResponses(newResponses);
       setCurrentIdx(prev => prev + 1);
-      startRef.current = Date.now();
     } else {
-      const accuracy = newResponses.filter(r => r.correct).length / TOTAL;
-      const avgTime = newResponses.reduce((s, r) => s + r.time, 0) / TOTAL;
-      const speedBonus = Math.max(0, 30 - avgTime * 3) / 30 * 30;
-      onComplete(Math.round(accuracy * 70 + speedBonus));
+      const correctCount = newResponses.filter(response => response.correct).length;
+      onComplete(calculatePercentCorrect(correctCount, TOTAL));
     }
   };
 
@@ -842,7 +823,7 @@ function OrthographicTask({ onComplete }: { onComplete: (score: number) => void 
         if (isCorrect) setCorrect(newCorrect);
         startRef.current = Date.now();
       } else {
-        onComplete(Math.round((newCorrect / HOMOPHONE_QUESTIONS.length) * 100));
+        onComplete(calculatePercentCorrect(newCorrect, HOMOPHONE_QUESTIONS.length));
       }
     }, 900);
   };
@@ -961,7 +942,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
       if (currentIdx < READING_WORDS.length - 1) {
         setCurrentIdx(currentIdx + 1);
       } else {
-        onComplete(Math.round((correctRef.current / READING_WORDS.length) * 100));
+        onComplete(calculatePercentCorrect(correctRef.current, READING_WORDS.length));
       }
     },
     [currentIdx, reset, onComplete],

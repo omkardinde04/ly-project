@@ -417,7 +417,7 @@ const ROWS: [string, string, string][] = [
   ['Skip word', 'शब्द छोड़ें', 'शब्द वगळा'],
   ['Type the word…', 'शब्द लिखें…', 'शब्द लिहा…'],
   ['Check', 'जाँचें', 'तपासा'],
-  ['My Progress', 'मेरी प्रगति', 'माझी प्रगती'],
+  ['Game Zone', 'गेम ज़ोन', 'गेम झोन'],
 ];
 
 export const siteHindi: Record<string, string> = Object.fromEntries(ROWS.map(([en, hi]) => [en, hi]));

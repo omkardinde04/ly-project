@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
-  TrendingUp,
+  Gamepad2,
   Users,
   Settings,
   MapPin,
@@ -58,9 +58,9 @@ export function DashboardSidebar({
     },
     {
       id: 'progress',
-      label: t.navProgress || 'Track Progress',
-      tooltipDescription: learningStreak > 0 ? `Progress · ${learningStreak} day streak` : 'Track Learning Progress',
-      icon: TrendingUp,
+      label: t.navGameZone || 'Game Zone',
+      tooltipDescription: learningStreak > 0 ? `Game Zone · ${learningStreak} day streak` : 'Practice games and challenge peers',
+      icon: Gamepad2,
       badge: learningStreak > 0 ? `🔥 ${learningStreak}d` : undefined,
     },
     {

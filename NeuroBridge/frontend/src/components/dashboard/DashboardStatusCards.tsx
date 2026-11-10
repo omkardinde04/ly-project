@@ -4,6 +4,7 @@ import { Award, Sliders, CheckCircle2, RotateCcw, Volume2, Type, Eye, AlertCircl
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getTranslation } from '../../utils/translations';
+import { getAssessmentSeverity } from '../../utils/assessmentScoring';
 
 interface DashboardStatusCardsProps {
   onNavigate: (tab: string) => void;
@@ -13,30 +14,26 @@ interface DashboardStatusCardsProps {
 
 export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetaking }: DashboardStatusCardsProps) {
   const { user } = useAuth();
-  const { dyslexiaLevel, testScore, language, isDyslexiaMode, highContrast, reduceMotion } = useDyslexia();
+  const { dyslexiaLevel, testScore, assessmentScoringVersion, language, isDyslexiaMode, highContrast, reduceMotion } = useDyslexia();
   const t = getTranslation(language);
 
-  // Score value from context or user profile
-  const rawScore = testScore ?? (typeof user?.assessment_score === 'number' ? user.assessment_score : null);
+  const hasCurrentScoring =
+    assessmentScoringVersion === 2 ||
+    Boolean(user?.classification?.toLowerCase().includes('support indicators'));
+  const rawScore = hasCurrentScoring
+    ? testScore ?? (typeof user?.assessment_score === 'number' ? user.assessment_score : null)
+    : null;
   const isAssessmentCompleted = Boolean(user?.assessment_completed || rawScore !== null);
+  const needsScoringUpdate = isAssessmentCompleted && !hasCurrentScoring;
   const displayScore = rawScore !== null ? Math.min(100, Math.max(0, Math.round(rawScore))) : 0;
 
   // Determine effective dyslexia level dynamically
   const getEffectiveLevel = (): DyslexiaLevel => {
-    if (user?.classification) {
-      const cls = user.classification.toLowerCase();
-      if (cls.includes('severe')) return 'severe';
-      if (cls.includes('moderate')) return 'moderate';
-      if (cls.includes('mild')) return 'mild';
-      if (cls.includes('no dyslexia') || cls.includes('none') || cls.includes('standard')) return 'none';
+    if (hasCurrentScoring && rawScore !== null) {
+      return getAssessmentSeverity(displayScore);
     }
+    if (needsScoringUpdate) return 'none';
     if (dyslexiaLevel && dyslexiaLevel !== 'none') return dyslexiaLevel;
-    if (isAssessmentCompleted && rawScore !== null) {
-      if (displayScore >= 80) return 'severe';
-      if (displayScore >= 60) return 'moderate';
-      if (displayScore >= 45) return 'mild';
-      return 'none';
-    }
     return dyslexiaLevel || 'none';
   };
 
@@ -44,22 +41,22 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
 
   const scoreRadius = 28;
   const circumference = 2 * Math.PI * scoreRadius;
-  const strokeDashoffset = isAssessmentCompleted ? circumference - (displayScore / 100) * circumference : circumference;
+  const strokeDashoffset = hasCurrentScoring ? circumference - (displayScore / 100) * circumference : circumference;
 
   const getLevelDetails = (level: DyslexiaLevel) => {
     switch (level) {
       case 'none':
         return {
-          title: t.standard || 'Standard Profile',
+          title: t.levelNone || 'Low support indicators',
           badge: 'Calm & Optimal',
           badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
           iconClass: 'bg-emerald-50 text-emerald-600 border-emerald-100',
           glowClass: 'bg-emerald-50/70',
-          desc: 'Standard visual layout & typography active.',
+          desc: 'Use the reading and display settings that feel comfortable for you.',
         };
       case 'mild':
         return {
-          title: t.levelMild || 'Mild Dyslexia',
+          title: t.levelMild || 'Mild support indicators',
           badge: 'Assisted Mode',
           badgeClass: 'bg-blue-50 text-[#2563EB] border-blue-200',
           iconClass: 'bg-blue-50 text-[#2563EB] border-blue-100',
@@ -68,7 +65,7 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
         };
       case 'moderate':
         return {
-          title: t.levelModerate || 'Moderate Dyslexia',
+          title: t.levelModerate || 'Moderate support indicators',
           badge: 'Structured Support',
           badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
           iconClass: 'bg-amber-50 text-amber-600 border-amber-100',
@@ -77,7 +74,7 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
         };
       case 'severe':
         return {
-          title: t.levelSevere || 'Severe Dyslexia',
+          title: t.levelSevere || 'High support indicators',
           badge: 'Maximum Support',
           badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
           iconClass: 'bg-purple-50 text-[#8B5CF6] border-purple-100',
@@ -87,7 +84,14 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
     }
   };
 
-  const levelInfo = getLevelDetails(effectiveLevel);
+  const levelInfo = needsScoringUpdate
+    ? {
+        ...getLevelDetails('none'),
+        title: 'Retake to update indicator',
+        badge: 'Update needed',
+        desc: 'Your saved result uses the previous scoring method. Retake the assessment for an updated indicator.',
+      }
+    : getLevelDetails(effectiveLevel);
 
   // Active accessibility tags count
   const activeFeatures = [
@@ -99,7 +103,7 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
-      {/* Card 1: Dyslexia Level with Severity Theming */}
+      {/* Card 1: Screening support indicator */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -119,7 +123,7 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
           </div>
 
           <div className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            {t.yourLevel || 'Your Dyslexia Level'}
+            {t.yourLevel || 'Support indicator'}
           </div>
           <h3 className="text-xl font-black text-[#1A202C] mb-1.5">{levelInfo.title}</h3>
           <p className="text-xs text-[#64748B] leading-relaxed">
@@ -132,12 +136,12 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
           <span className="text-xs font-bold text-[#64748B]">Profile State</span>
           <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold px-2.5 py-1 rounded-xl border ${levelInfo.badgeClass}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-            Active
+            {needsScoringUpdate ? 'Update needed' : 'Active'}
           </span>
         </div>
       </motion.div>
 
-      {/* Card 2: Performance Index */}
+      {/* Card 2: Support indicator score */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -167,16 +171,23 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
           <div className="flex items-center justify-between gap-2">
             <div>
               <div className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-                Performance Index
+                Support Indicator
               </div>
 
-              {isAssessmentCompleted ? (
+              {hasCurrentScoring && rawScore !== null ? (
                 <>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-3xl font-black text-[#1A202C]">{displayScore}</span>
                     <span className="text-sm font-bold text-[#94A3B8]">/ 100</span>
                   </div>
-                  <p className="text-xs text-[#64748B] mt-0.5 font-medium">Cognitive readiness index</p>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-medium">Higher scores mean more observed difficulty signals.</p>
+                </>
+              ) : needsScoringUpdate ? (
+                <>
+                  <div className="text-base font-bold text-amber-700 flex items-center gap-1.5 mt-1">
+                    <AlertCircle size={16} /> Update needed
+                  </div>
+                  <p className="text-xs text-[#64748B] mt-0.5">Retake to replace the old scoring result.</p>
                 </>
               ) : (
                 <>
@@ -189,7 +200,7 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
             </div>
 
             {/* Circular Progress Gauge */}
-            {isAssessmentCompleted ? (
+            {hasCurrentScoring && rawScore !== null ? (
               <div className="relative w-16 h-16 flex items-center justify-center shrink-0">
                 <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 70 70">
                   <circle
@@ -234,11 +245,15 @@ export function DashboardStatusCards({ onNavigate, onRetakeAssessment, isRetakin
           <span className="inline-flex items-center text-xs font-extrabold text-[#2563EB] bg-blue-50 border border-blue-200/80 px-2.5 py-1 rounded-xl">
             {!isAssessmentCompleted
               ? 'Not Calibrated'
-              : displayScore >= 80
-              ? 'Proficient'
+              : needsScoringUpdate
+              ? 'Retake to update'
               : displayScore >= 60
-              ? 'Developing'
-              : 'Foundational'}
+              ? 'High support'
+              : displayScore >= 40
+              ? 'Moderate support'
+              : displayScore >= 20
+              ? 'Mild support'
+              : 'Low support'}
           </span>
         </div>
       </motion.div>

@@ -209,7 +209,7 @@ export function ProgressTracking() {
   useEffect(() => {
     if (!token) return;
     const requestVersion = progressRequestVersion.current;
-    fetch(`${API_BASE}/api/progress`, {
+    fetch(`${API_BASE}/api/game-zone`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => (r.ok ? r.json() : null))
@@ -405,7 +405,7 @@ export function ProgressTracking() {
     }));
 
     if (token) {
-      fetch(`${API_BASE}/api/progress/games`, {
+      fetch(`${API_BASE}/api/game-zone/games`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -21,6 +21,7 @@ import { courseRouter } from './routes/courses';
 import { courseCreatorRouter } from './routes/courseCreator';
 import { adminRouter } from './routes/admin';
 import { statsRouter } from './routes/stats';
+import { adaptivePracticeRouter } from './routes/adaptivePractice';
 
 const PORT = process.env.PORT || 4000;
 const geminiKey = process.env.GEMINI_API_KEY;
@@ -61,6 +62,9 @@ app.use('/api/llm', llmRouter);
 app.use('/api/linkedin', linkedinRouter);
 app.use('/api/brain', brainRouter);
 app.use('/api/progress', progressRouter);
+app.use('/api/game-zone', progressRouter);
+app.use('/api/progress/adaptive', adaptivePracticeRouter);
+app.use('/api/game-zone/adaptive', adaptivePracticeRouter);
 app.use('/api/resume', resumeRouter);
 app.use('/api/community', communityRouter);
 app.use('/api/courses', courseRouter);

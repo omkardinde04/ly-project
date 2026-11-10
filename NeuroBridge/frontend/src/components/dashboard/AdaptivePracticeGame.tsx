@@ -46,7 +46,7 @@ export function AdaptivePracticeGame({ skillId, skillName, rating, token, langua
     setStarting(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/api/progress/adaptive/start`, {
+      const response = await fetch(`${API_BASE}/api/game-zone/adaptive/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ skill: skillId }),
@@ -67,7 +67,7 @@ export function AdaptivePracticeGame({ skillId, skillName, rating, token, langua
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/api/progress/adaptive/${run.runId}/answer`, {
+      const response = await fetch(`${API_BASE}/api/game-zone/adaptive/${run.runId}/answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ answer: selected, questionIndex: run.question.index }),

@@ -63,7 +63,7 @@ export function Dashboard() {
       setActiveTab('community');
     } else if (params.get('linkedin_connected') || params.get('linkedin_error')) {
       setActiveTab('linkedin');
-    } else if (tabParam === 'progress' || tabParam === 'arena' || tabParam === 'games') {
+    } else if (tabParam === 'game-zone' || tabParam === 'gamezone' || tabParam === 'progress' || tabParam === 'arena' || tabParam === 'games') {
       setActiveTab('progress');
     } else if (tabParam) {
       setActiveTab(tabParam);
@@ -73,11 +73,11 @@ export function Dashboard() {
     }
   }, [location.search, location.state]);
 
-  // Support dashboard sub-routes like /dashboard/courses, /dashboard/progress, /dashboard/arena
+  // Support dashboard sub-routes and legacy progress/arena routes.
   useEffect(() => {
     if (location.pathname.startsWith('/dashboard/courses')) {
       setActiveTab('courses');
-    } else if (location.pathname.startsWith('/dashboard/progress') || location.pathname.startsWith('/dashboard/arena')) {
+    } else if (location.pathname.startsWith('/dashboard/game-zone') || location.pathname.startsWith('/dashboard/progress') || location.pathname.startsWith('/dashboard/arena')) {
       setActiveTab('progress');
     }
   }, [location.pathname]);

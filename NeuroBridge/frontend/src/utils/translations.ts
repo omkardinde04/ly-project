@@ -119,7 +119,7 @@ export interface Translation {
   navHome: string;
   navLearning: string;
   navQuizzes: string;
-  navProgress: string;
+  navGameZone: string;
   navSettings: string;
   
   // Accessibility
@@ -224,7 +224,7 @@ const translations: Record<Language, Translation> = {
     
     // Report
     reportTitle: 'Your Personalized Accessibility Report',
-    yourLevel: 'Your Dyslexia Level',
+    yourLevel: 'Support indicator',
     recommendedSettings: 'Recommended UI Settings',
     learningStyle: 'Learning Style Insights',
     recommendations: 'Recommendations',
@@ -234,10 +234,10 @@ const translations: Record<Language, Translation> = {
     goToDashboard: 'Go to Dashboard',
     
     // Dyslexia Levels
-    levelNone: 'Likely non-dyslexic',
-    levelMild: 'Mild dyslexia indicators',
-    levelModerate: 'Moderate dyslexia',
-    levelSevere: 'Severe dyslexia',
+    levelNone: 'Low support indicators',
+    levelMild: 'Mild support indicators',
+    levelModerate: 'Moderate support indicators',
+    levelSevere: 'High support indicators',
     
     // Dashboard
     welcomeBack: 'Welcome Back!',
@@ -250,7 +250,7 @@ const translations: Record<Language, Translation> = {
     navHome: 'Home',
     navLearning: 'Learning',
     navQuizzes: 'Tests & Quizzes',
-    navProgress: 'Progress',
+    navGameZone: 'Game Zone',
     navSettings: 'Settings',
     
     // Accessibility
@@ -337,7 +337,7 @@ const translations: Record<Language, Translation> = {
     
     // Report
     reportTitle: 'आपकी वैयक्तिकृत पहुंच रिपोर्ट',
-    yourLevel: 'आपका डिस्लेक्सिया स्तर',
+    yourLevel: 'सहायता संकेतक',
     recommendedSettings: 'अनुशंसित UI सेटिंग्स',
     learningStyle: 'सीखने की शैली अंतर्दृष्टि',
     recommendations: 'सिफारिशें',
@@ -347,10 +347,10 @@ const translations: Record<Language, Translation> = {
     goToDashboard: 'डैशबोर्ड पर जाएं',
     
     // Dyslexia Levels
-    levelNone: 'संभावित रूप से गैर-डिस्लेक्सिक',
-    levelMild: 'हल्के डिस्लेक्सिया संकेतक',
-    levelModerate: 'मध्यम डिस्लेक्सिया',
-    levelSevere: 'गंभीर डिस्लेक्सिया',
+    levelNone: 'कम सहायता संकेत',
+    levelMild: 'हल्के सहायता संकेत',
+    levelModerate: 'मध्यम सहायता संकेत',
+    levelSevere: 'अधिक सहायता संकेत',
     
     // Dashboard
     welcomeBack: 'वापसी पर स्वागत है!',
@@ -363,7 +363,7 @@ const translations: Record<Language, Translation> = {
     navHome: 'होम',
     navLearning: 'सीखना',
     navQuizzes: 'प्रश्नोत्तरी',
-    navProgress: 'प्रगति',
+    navGameZone: 'गेम ज़ोन',
     navSettings: 'सेटिंग्स',
     
     // Accessibility
@@ -450,7 +450,7 @@ const translations: Record<Language, Translation> = {
     
     // Report
     reportTitle: 'तुमचा वैयक्तिकृत ॲक्सेसिबिलिटी अहवाल',
-    yourLevel: 'तुमची डिसलेक्सिया पातळी',
+    yourLevel: 'सहाय्य सूचक',
     recommendedSettings: 'शिफारस केलेले UI सेटिंग्ज',
     learningStyle: 'शिकण्याच्या शैलीची अंतर्दृष्टि',
     recommendations: 'शिफारसी',
@@ -460,10 +460,10 @@ const translations: Record<Language, Translation> = {
     goToDashboard: 'डॅशबोर्डवर जा',
     
     // Dyslexia Levels
-    levelNone: 'संभाव्यतः नॉन-डिसलेक्सिक',
-    levelMild: 'सौम्य डिसलेक्सिया सूचक',
-    levelModerate: 'मध्यम डिसलेक्सिया',
-    levelSevere: 'तीव्र डिसलेक्सिया',
+    levelNone: 'कमी सहाय्य संकेत',
+    levelMild: 'सौम्य सहाय्य संकेत',
+    levelModerate: 'मध्यम सहाय्य संकेत',
+    levelSevere: 'अधिक सहाय्य संकेत',
     
     // Dashboard
     welcomeBack: 'स्वागत आहे!',
@@ -476,7 +476,7 @@ const translations: Record<Language, Translation> = {
     navHome: 'मुख्यपृष्ठ',
     navLearning: 'शिक्षण',
     navQuizzes: 'प्रश्नमंजुषा',
-    navProgress: 'प्रगती',
+    navGameZone: 'गेम झोन',
     navSettings: 'सेटिंग्ज',
     
     // Accessibility

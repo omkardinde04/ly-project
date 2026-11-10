@@ -4,6 +4,14 @@ import { AuthService } from '../auth';
 import LearningProgress, { LearningSkill } from '../models/LearningProgress';
 import Matchmaking from '../models/Matchmaking';
 import Battle, { IBattle } from '../models/Battle';
+import AdaptiveLearner from '../models/AdaptiveLearner';
+import { getAdaptiveLearner, markAdaptiveQuestionSeen, recordAdaptiveAnswer } from '../services/adaptiveLearnerService';
+import {
+  AdaptiveSkill,
+  BATTLE_QUESTION_COUNT,
+  selectAdaptiveQuestion,
+  updateAbility,
+} from '../services/adaptiveQuestionModel';
 
 export const progressRouter = Router();
 const skills: LearningSkill[] = ['sound', 'focus', 'memory', 'speed'];
@@ -46,59 +54,17 @@ function achievements(progress: any) {
   return [...unlocked];
 }
 
-type BattleQuestion = [string, string[], number, number, LearningSkill];
-const battleQuestionPool: BattleQuestion[] = [
-  ['Which word starts with the same sound as SUN?', ['Moon', 'Sock', 'Tree', 'Fish'], 1, 1, 'sound'],
-  ['Which word ends with the same sound as CAT?', ['Cup', 'Map', 'Dog', 'Sun'], 1, 1, 'sound'],
-  ['Which word rhymes with LIGHT?', ['Late', 'Night', 'Lot', 'Lift'], 1, 2, 'sound'],
-  ['Which word starts with the same sound as BELL?', ['Ball', 'Moon', 'Fish', 'Tree'], 0, 2, 'sound'],
-  ['Which word rhymes with DAY?', ['Die', 'Toy', 'Say', 'Do'], 2, 3, 'sound'],
-  ['Which word starts with the same sound as FISH?', ['Fan', 'Goat', 'Ship', 'Tree'], 0, 3, 'sound'],
-  ['Which word rhymes with BOOK?', ['Back', 'Look', 'Bike', 'Bake'], 1, 4, 'sound'],
-  ['Which word starts with the same sound as STAR?', ['Stone', 'Car', 'Rain', 'Door'], 0, 4, 'sound'],
-  ['Which shape has four equal sides?', ['Triangle', 'Square', 'Circle', 'Oval'], 1, 1, 'focus'],
-  ['Which letter comes third alphabetically?', ['b', 'd', 'p', 'q'], 1, 1, 'focus'],
-  ['Which symbol is different from the others?', ['+', 'x', 'o', '-'], 2, 2, 'focus'],
-  ['Which word is written backwards?', ['TOP', 'SUN', 'RAT', 'GOD'], 3, 2, 'focus'],
-  ['Which pair is exactly the same?', ['READ / REED', 'FOCUS / FOCUS', 'BRAIN / BRIAN', 'NOTE / NOT'], 1, 3, 'focus'],
-  ['Which sequence is in alphabetical order?', ['DOG, CAT, BIRD', 'APPLE, BERRY, CHERRY', 'ZOO, ANT, BEE', 'SUN, MOON, STAR'], 1, 3, 'focus'],
-  ['Which word contains two letter pairs?', ['BOOKKEEPER', 'CAT', 'SUN', 'FISH'], 0, 4, 'focus'],
-  ['Which option has the most letters?', ['MAP', 'READ', 'UNDERSTAND', 'BOOK'], 2, 4, 'focus'],
-  ['Remember: A, 3, B. What came after A?', ['B', '3', 'A', '2'], 1, 1, 'memory'],
-  ['Remember: red, blue, green. What was first?', ['Green', 'Blue', 'Red', 'Yellow'], 2, 1, 'memory'],
-  ['What number comes next: 2, 4, 6, ...?', ['7', '8', '9', '10'], 1, 2, 'memory'],
-  ['What letter comes before D?', ['B', 'C', 'E', 'F'], 1, 2, 'memory'],
-  ['Which sequence matches: sun, book, tree?', ['sun, tree, book', 'book, sun, tree', 'sun, book, tree', 'tree, book, sun'], 2, 3, 'memory'],
-  ['What is missing: 5, 10, __, 20?', ['12', '14', '15', '18'], 2, 3, 'memory'],
-  ['Which pattern follows A1, B2, C3?', ['D4', 'D3', 'E4', 'C4'], 0, 4, 'memory'],
-  ['Which came third: first, second, third, fourth?', ['First', 'Second', 'Third', 'Fourth'], 2, 4, 'memory'],
-  ['Which answer is fastest to read?', ['slow', 'quick', 'steady', 'later'], 1, 1, 'speed'],
-  ['Which number is largest?', ['3', '8', '5', '1'], 1, 1, 'speed'],
-  ['Which word does not belong?', ['Run', 'Walk', 'Jump', 'Blue'], 3, 2, 'speed'],
-  ['What is 7 + 5?', ['10', '11', '12', '13'], 2, 2, 'speed'],
-  ['What is 3 x 4?', ['7', '10', '12', '14'], 2, 3, 'speed'],
-  ['Which fraction is greatest?', ['1/4', '1/2', '1/8', '1/10'], 1, 3, 'speed'],
-  ['What is 18 - 9?', ['7', '8', '9', '10'], 2, 4, 'speed'],
-  ['What is 6 x 7?', ['36', '40', '42', '48'], 2, 4, 'speed'],
-];
-
-function shuffled<T>(items: T[]) { return items.slice().sort(() => Math.random() - 0.5); }
-function createBattleQuestions() {
-  const selected: BattleQuestion[] = [];
-  for (const skill of skills) {
-    const pool = shuffled(battleQuestionPool.filter(question => question[4] === skill));
-    const byDifficulty = [1, 2, 3, 4].map(level => pool.find(question => question[3] === level)!);
-    selected.push(...byDifficulty, pool.find(question => !byDifficulty.includes(question))!);
-  }
-  return shuffled(selected).sort((a, b) => a[3] - b[3]).map(([prompt, options, answer]) => ({ prompt, options, answer }));
-}
-
 function publicBattle(battle: IBattle, currentUser: string) {
   const player = battle.players.find(item => item.userId === currentUser)!;
   const opponent = battle.players.find(item => item.userId !== currentUser)!;
+  const currentQuestionIndex = Math.min(...battle.players.map(item => item.index));
+  const waitingForOpponent = player.index > currentQuestionIndex;
   return {
-    matchId: battle.matchId, skill: battle.skill, status: battle.status, startedAt: battle.startedAt, endsAt: new Date(battle.startedAt.getTime() + 120000),
-    question: battle.status === 'active' && player.index < battle.questions.length ? { index: player.index, total: battle.questions.length, prompt: battle.questions[player.index].prompt, options: battle.questions[player.index].options } : null,
+    matchId: battle.matchId, skill: battle.skill, status: battle.status, total: battle.questionLimit, startedAt: battle.startedAt, endsAt: new Date(battle.startedAt.getTime() + 120000),
+    question: battle.status === 'active' && !waitingForOpponent && currentQuestionIndex < battle.questions.length
+      ? { index: currentQuestionIndex, total: battle.questionLimit, prompt: battle.questions[currentQuestionIndex].prompt, options: battle.questions[currentQuestionIndex].options }
+      : null,
+    waitingForOpponent,
     you: { name: player.displayName, rating: player.rating, correct: battle.status === 'complete' ? player.correct : null, index: player.index, finishedAt: player.finishedAt },
     opponent: { name: opponent.displayName, rating: opponent.rating, correct: battle.status === 'complete' ? opponent.correct : null, index: opponent.index, finishedAt: opponent.finishedAt },
     result: battle.status === 'complete' ? { winnerId: battle.players.find(item => item.ratingChange === 25)?.userId || null, yourRating: player.rating, opponentRating: opponent.rating, yourRatingChange: player.ratingChange || 0, opponentRatingChange: opponent.ratingChange || 0 } : null,
@@ -108,7 +74,7 @@ function publicBattle(battle: IBattle, currentUser: string) {
 async function completeBattle(battle: IBattle) {
   if (battle.status === 'complete') return battle;
   const timeExpired = Date.now() >= battle.startedAt.getTime() + 120000;
-  const bothFinished = battle.players.every(player => player.index >= battle.questions.length);
+  const bothFinished = battle.players.every(player => player.index >= battle.questionLimit);
   if (!timeExpired && !bothFinished) return battle;
   const [first, second] = battle.players;
   if (first.correct !== second.correct) {
@@ -195,7 +161,7 @@ progressRouter.post('/games', AuthService.authenticateToken, async (req: any, re
 });
 
 progressRouter.post('/daily/complete', AuthService.authenticateToken, async (req: any, res: Response) => {
-  res.status(400).json({ error: 'Complete the game through POST /api/progress/games' });
+  res.status(400).json({ error: 'Complete the game through POST /api/game-zone/games' });
 });
 
 progressRouter.post('/matchmaking/queue', AuthService.authenticateToken, async (req: any, res: Response) => {
@@ -258,18 +224,47 @@ progressRouter.get('/matchmaking/:queueId', AuthService.authenticateToken, async
 });
 
 progressRouter.post('/matchmaking/:queueId/accept', AuthService.authenticateToken, async (req: any, res: Response) => {
-  const entry = await Matchmaking.findOne({ _id: req.params.queueId, userId: userId(req), status: 'invited' });
-  if (!entry || !entry.invitedBy) return res.status(404).json({ error: 'Invitation not found or already handled' });
-  const inviter = await Matchmaking.findOne({ userId: entry.invitedBy, skill: entry.skill, mode: entry.mode, status: 'pending_acceptance', invitationId: entry._id.toString() });
-  if (!inviter) return res.status(409).json({ error: 'The invitation is no longer available' });
-  const matchId = new mongoose.Types.ObjectId().toString();
-  await Matchmaking.findByIdAndUpdate(entry._id, { status: 'matched', matchId, opponentId: inviter.userId, opponentRating: inviter.rating });
-  await Matchmaking.findByIdAndUpdate(inviter._id, { status: 'matched', matchId, opponentId: entry.userId, opponentRating: entry.rating });
-  await Battle.create({ matchId, skill: entry.skill, questions: createBattleQuestions(), players: [
-    { userId: entry.userId, displayName: entry.displayName || 'Student', rating: entry.rating },
-    { userId: inviter.userId, displayName: inviter.displayName || 'Student', rating: inviter.rating },
-  ], startedAt: new Date(Date.now() + 3500) });
-  res.json({ status: 'matched', matchId, opponent: { name: inviter.displayName || 'Student', rating: inviter.rating } });
+  try {
+    const entry = await Matchmaking.findOne({ _id: req.params.queueId, userId: userId(req), status: 'invited' });
+    if (!entry || !entry.invitedBy) return res.status(404).json({ error: 'Invitation not found or already handled' });
+    const inviter = await Matchmaking.findOne({ userId: entry.invitedBy, skill: entry.skill, mode: entry.mode, status: 'pending_acceptance', invitationId: entry._id.toString() });
+    if (!inviter) return res.status(409).json({ error: 'The invitation is no longer available' });
+    const matchId = new mongoose.Types.ObjectId().toString();
+    const [firstLearner, secondLearner] = await Promise.all([
+      getAdaptiveLearner(entry.userId, entry.skill as AdaptiveSkill),
+      getAdaptiveLearner(inviter.userId, inviter.skill as AdaptiveSkill),
+    ]);
+    const excludedQuestionIds = new Set([
+      ...firstLearner.seenQuestionIds,
+      ...secondLearner.seenQuestionIds,
+    ]);
+    const firstQuestion = selectAdaptiveQuestion(
+      entry.skill as AdaptiveSkill,
+      (firstLearner.ability + secondLearner.ability) / 2,
+      excludedQuestionIds,
+    );
+    await Matchmaking.findByIdAndUpdate(entry._id, { status: 'matched', matchId, opponentId: inviter.userId, opponentRating: inviter.rating });
+    await Matchmaking.findByIdAndUpdate(inviter._id, { status: 'matched', matchId, opponentId: entry.userId, opponentRating: entry.rating });
+    await Battle.create({
+      matchId,
+      skill: entry.skill,
+      questionLimit: BATTLE_QUESTION_COUNT,
+      questions: [firstQuestion],
+      players: [
+        { userId: entry.userId, displayName: entry.displayName || 'Student', rating: entry.rating, ability: firstLearner.ability, responses: [] },
+        { userId: inviter.userId, displayName: inviter.displayName || 'Student', rating: inviter.rating, ability: secondLearner.ability, responses: [] },
+      ],
+      startedAt: new Date(Date.now() + 3500),
+    });
+    await Promise.all([
+      markAdaptiveQuestionSeen(entry.userId, entry.skill as AdaptiveSkill, firstQuestion.id),
+      markAdaptiveQuestionSeen(inviter.userId, entry.skill as AdaptiveSkill, firstQuestion.id),
+    ]);
+    res.json({ status: 'matched', matchId, opponent: { name: inviter.displayName || 'Student', rating: inviter.rating } });
+  } catch (error) {
+    console.error('Accept matchmaking invitation error:', error);
+    res.status(500).json({ error: 'Could not start the battle' });
+  }
 });
 
 progressRouter.get('/battle/:matchId', AuthService.authenticateToken, async (req: any, res: Response) => {
@@ -281,17 +276,86 @@ progressRouter.get('/battle/:matchId', AuthService.authenticateToken, async (req
 });
 
 progressRouter.post('/battle/:matchId/answer', AuthService.authenticateToken, async (req: any, res: Response) => {
-  const battle = await Battle.findOne({ matchId: req.params.matchId });
-  if (!battle || !battle.players.some(player => player.userId === userId(req))) return res.status(404).json({ error: 'Battle not found' });
-  if (battle.status === 'countdown' && Date.now() >= battle.startedAt.getTime()) battle.status = 'active';
-  const player = battle.players.find(item => item.userId === userId(req))!;
-  const question = battle.questions[player.index];
-  if (battle.status !== 'active' || !question || !Number.isInteger(req.body.answer)) return res.status(400).json({ error: 'The battle is not accepting that answer' });
-  if (req.body.answer === question.answer) player.correct += 1;
-  player.index += 1;
-  await battle.save();
-  const updatedBattle = await completeBattle(battle);
-  res.json(publicBattle(updatedBattle, userId(req)));
+  try {
+    const currentUser = userId(req);
+    const { answer, questionIndex } = req.body || {};
+    if (
+      !Number.isInteger(answer) || answer < 0 || answer > 3 ||
+      (questionIndex !== undefined && (!Number.isInteger(questionIndex) || questionIndex < 0))
+    ) {
+      return res.status(400).json({ error: 'Choose a valid answer option' });
+    }
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const battle = await Battle.findOne({ matchId: req.params.matchId });
+      if (!battle || !battle.players.some(player => player.userId === currentUser)) {
+        return res.status(404).json({ error: 'Battle not found' });
+      }
+      if (battle.status === 'countdown' && Date.now() >= battle.startedAt.getTime()) battle.status = 'active';
+
+      const player = battle.players.find(item => item.userId === currentUser)!;
+      const currentQuestionIndex = Math.min(...battle.players.map(item => item.index));
+      if (questionIndex !== undefined && questionIndex < player.index) {
+        return res.json(publicBattle(battle, currentUser));
+      }
+      if (questionIndex !== undefined && questionIndex !== currentQuestionIndex) {
+        return res.status(409).json({ error: 'The current question has changed; refresh the battle' });
+      }
+      const question = battle.questions[currentQuestionIndex];
+      if (battle.status !== 'active' || !question || currentQuestionIndex >= battle.questionLimit) {
+        return res.status(400).json({ error: 'The battle is not accepting that answer' });
+      }
+      if (player.index > currentQuestionIndex) {
+        return res.json(publicBattle(battle, currentUser));
+      }
+      if (player.index !== currentQuestionIndex) {
+        return res.status(409).json({ error: 'Wait for the other player to finish the current question' });
+      }
+
+      const correct = answer === question.answer;
+      player.responses.push({ questionId: question.id, selectedOption: answer, correct });
+      if (correct) player.correct += 1;
+      player.ability = updateAbility(player.ability || 2.5, correct, question.difficulty);
+      player.index += 1;
+
+      const bothAnswered = battle.players.every(item => item.index > currentQuestionIndex);
+      if (bothAnswered && player.index < battle.questionLimit) {
+        const learnerHistory = await AdaptiveLearner.find({
+          userId: { $in: battle.players.map(item => item.userId) },
+          skill: battle.skill,
+        });
+        const seenQuestionIds = new Set(learnerHistory.flatMap(item => item.seenQuestionIds));
+        const currentBattleQuestionIds = new Set(battle.questions.map(item => item.id));
+        const averageAbility = battle.players.reduce((sum, item) => sum + item.ability, 0) / battle.players.length;
+        const nextQuestion = selectAdaptiveQuestion(
+          battle.skill as AdaptiveSkill,
+          averageAbility,
+          seenQuestionIds,
+          currentBattleQuestionIds,
+        );
+        battle.questions.push(nextQuestion);
+        await Promise.all(battle.players.map(item =>
+          markAdaptiveQuestionSeen(item.userId, battle.skill as AdaptiveSkill, nextQuestion.id),
+        ));
+      }
+
+      try {
+        await battle.save();
+      } catch (error) {
+        if (error instanceof mongoose.Error.VersionError && attempt < 3) continue;
+        throw error;
+      }
+
+      await recordAdaptiveAnswer(currentUser, battle.skill as AdaptiveSkill, question.id, question.difficulty, correct);
+      const updatedBattle = await completeBattle(battle);
+      return res.json(publicBattle(updatedBattle, currentUser));
+    }
+
+    return res.status(409).json({ error: 'The other answer is being saved; please try again' });
+  } catch (error) {
+    console.error('Battle answer error:', error);
+    return res.status(500).json({ error: 'Could not save your battle answer' });
+  }
 });
 
 progressRouter.post('/matchmaking/:queueId/decline', AuthService.authenticateToken, async (req: any, res: Response) => {
