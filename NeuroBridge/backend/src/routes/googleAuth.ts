@@ -54,58 +54,64 @@ async function initializeMLAdaptiveParams(userId: string, cognitiveProfile: any)
   }
 }
 
-// Configure Google OAuth Strategy
-const googleClientID = process.env.GOOGLE_CLIENT_ID ?? '';
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? '';
+// ── Helper: Ensure Google OAuth Strategy is configured ──────────────────────
+function ensureGoogleStrategy(): boolean {
+  const clientID = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientID || !clientSecret) return false;
 
-if (!googleClientID || !googleClientSecret) {
-  console.warn('⚠️  GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing in .env. Google Login will not work.');
-} else {
-  passport.use(new GoogleStrategy({
-    clientID: googleClientID,
-    clientSecret: googleClientSecret,
-    callbackURL: process.env.GOOGLE_REDIRECT_URI || '/api/auth/google/callback'
-  }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
-    try {
-      // Extract user information from Google profile
-      const googleId = profile.id;
-      const email = profile.emails?.[0]?.value;
-      const name = profile.displayName;
-      const profilePicture = profile.photos?.[0]?.value;
+  const existing = (passport as any)._strategies?.['google'];
+  if (!existing) {
+    passport.use(new GoogleStrategy({
+      clientID,
+      clientSecret,
+      callbackURL: process.env.GOOGLE_REDIRECT_URI || '/api/auth/google/callback'
+    }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+      try {
+        // Extract user information from Google profile
+        const googleId = profile.id;
+        const email = profile.emails?.[0]?.value;
+        const name = profile.displayName;
+        const profilePicture = profile.photos?.[0]?.value;
 
-      if (!email) {
-        return done(new Error('Email is required from Google profile'), undefined);
-      }
-
-      // Check if user exists in database
-      let user = await database.findUserByGoogleId(googleId);
-      
-      if (!user) {
-        // Check if user exists with same email (maybe registered with different method)
-        const existingUser = await database.findUserByEmail(email);
-        
-        if (existingUser && existingUser.id) {
-          // User exists with email but not Google ID - link Google ID to existing account
-          user = await database.updateUserWithGoogle(existingUser.id, googleId, profilePicture || '');
-        } else {
-          // Create new user automatically (email is verified via Google)
-          user = await database.createUser({
-            google_id: googleId,
-            name,
-            email,
-            profile_picture: profilePicture || '',
-            assessment_completed: false,
-            email_verified: true
-          });
+        if (!email) {
+          return done(new Error('Email is required from Google profile'), undefined);
         }
-      }
 
-      return done(null, user);
-    } catch (error) {
-      return done(error, undefined);
-    }
-  }));
+        // Check if user exists in database
+        let user = await database.findUserByGoogleId(googleId);
+        
+        if (!user) {
+          // Check if user exists with same email (maybe registered with different method)
+          const existingUser = await database.findUserByEmail(email);
+          
+          if (existingUser && existingUser.id) {
+            // User exists with email but not Google ID - link Google ID to existing account
+            user = await database.updateUserWithGoogle(existingUser.id, googleId, profilePicture || '');
+          } else {
+            // Create new user automatically (email is verified via Google)
+            user = await database.createUser({
+              google_id: googleId,
+              name,
+              email,
+              profile_picture: profilePicture || '',
+              assessment_completed: false,
+              email_verified: true
+            });
+          }
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error, undefined);
+      }
+    }));
+  }
+  return true;
 }
+
+// Attempt immediate registration on boot
+ensureGoogleStrategy();
 
 // Serialize user for session
 passport.serializeUser((user: any, done) => {
@@ -124,16 +130,23 @@ passport.deserializeUser(async (id: number, done) => {
 
 // Google OAuth routes
 googleAuthRouter.get('/google', (req: Request, res: Response, next) => {
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  const isReady = ensureGoogleStrategy();
+  if (!isReady) {
     return res.status(500).json({
       error: 'Google OAuth is not configured on this deployment. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel Environment Variables.'
     });
   }
-  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res, next);
+  try {
+    passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res, next);
+  } catch (err: any) {
+    console.error('Passport authenticate error:', err);
+    res.status(500).json({ error: err?.message || 'Authentication error' });
+  }
 });
 
 googleAuthRouter.get('/callback', (req: Request, res: Response, next) => {
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  const isReady = ensureGoogleStrategy();
+  if (!isReady) {
     return res.status(500).json({ error: 'Google OAuth not configured' });
   }
 
@@ -142,29 +155,34 @@ googleAuthRouter.get('/callback', (req: Request, res: Response, next) => {
   const defaultFrontend = host ? `${protocol}://${host}` : 'http://localhost:5147';
   const failureRedirect = `${process.env.FRONTEND_URL || defaultFrontend}?error=Authentication failed`;
 
-  passport.authenticate('google', { failureRedirect })(req, res, async () => {
-    try {
-      const user = req.user as any;
-      
-      if (!user) {
-        return res.status(401).json({ error: 'Authentication failed' });
+  try {
+    passport.authenticate('google', { failureRedirect })(req, res, async () => {
+      try {
+        const user = req.user as any;
+        
+        if (!user) {
+          return res.status(401).json({ error: 'Authentication failed' });
+        }
+
+        // Generate JWT token
+        const token = AuthService.generateToken(user);
+
+        // Determine redirect based on assessment completion
+        const redirectUrl = user.assessment_completed ? '/dashboard' : '/assessment';
+
+        // Redirect to frontend auth handler with token and redirect URL
+        const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
+        res.redirect(`${frontendUrl}/auth-redirect?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectUrl)}`);
+        
+      } catch (error: any) {
+        console.error('Google auth callback error:', error);
+        res.status(500).json({ error: 'Internal server error: ' + error.message });
       }
-
-      // Generate JWT token
-      const token = AuthService.generateToken(user);
-
-      // Determine redirect based on assessment completion
-      const redirectUrl = user.assessment_completed ? '/dashboard' : '/assessment';
-
-      // Redirect to frontend auth handler with token and redirect URL
-      const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
-      res.redirect(`${frontendUrl}/auth-redirect?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectUrl)}`);
-      
-    } catch (error) {
-      console.error('Google auth callback error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+    });
+  } catch (err: any) {
+    console.error('Passport callback error:', err);
+    res.status(500).json({ error: err?.message || 'Callback error' });
+  }
 });
 
 // Get current user info (protected route)

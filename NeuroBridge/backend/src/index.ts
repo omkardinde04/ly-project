@@ -48,9 +48,14 @@ export const connectToDatabase = async () => {
     isDbConnected = true;
     return;
   }
+  // In Vercel, if MONGO_URI is not provided, do not block or try localhost
+  if (process.env.VERCEL && !process.env.MONGO_URI) {
+    console.warn('⚠️  MONGO_URI is not set in Vercel environment variables.');
+    return;
+  }
   const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/neurobridge';
   try {
-    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 });
     isDbConnected = true;
     console.log(`✅ Connected to MongoDB at ${mongoUri}`);
   } catch (error: any) {
@@ -58,9 +63,13 @@ export const connectToDatabase = async () => {
   }
 };
 
-// Ensure database is connected for every request
+// Ensure database is connected for every request without crashing
 app.use(async (_req, _res, next) => {
-  await connectToDatabase();
+  try {
+    await connectToDatabase();
+  } catch (err: any) {
+    console.error('Database connection middleware error:', err.message);
+  }
   next();
 });
 
@@ -103,11 +112,29 @@ app.use('/api/admin', adminRouter);
 app.use('/api/stats', statsRouter);
 
 app.get('/', (_req, res) => {
-  res.json({ status: 'ok', service: 'NeuroBridge backend', health: '/health' });
+  res.json({ status: 'ok', service: 'NeuroBridge backend', health: '/api/health' });
 });
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'NeuroBridge backend',
+    timestamp: new Date().toISOString(),
+    dbState: mongoose.connection.readyState,
+    googleConfigured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+  });
+});
+
+// Global Error Handler to catch any unhandled route or middleware error
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('💥 Unhandled backend error:', err);
+  res.status(500).json({
+    error: err?.message || 'Internal Server Error'
+  });
 });
 
 // Start standalone server locally; on Vercel the app is invoked serverless

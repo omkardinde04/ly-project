@@ -45,55 +45,60 @@ async function initializeMLAdaptiveParams(userId, cognitiveProfile) {
         return null;
     }
 }
-// Configure Google OAuth Strategy
-const googleClientID = process.env.GOOGLE_CLIENT_ID ?? '';
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? '';
-if (!googleClientID || !googleClientSecret) {
-    console.warn('⚠️  GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing in .env. Google Login will not work.');
-}
-else {
-    passport_1.default.use(new passport_google_oauth20_1.Strategy({
-        clientID: googleClientID,
-        clientSecret: googleClientSecret,
-        callbackURL: process.env.GOOGLE_REDIRECT_URI || '/api/auth/google/callback'
-    }, async (accessToken, refreshToken, profile, done) => {
-        try {
-            // Extract user information from Google profile
-            const googleId = profile.id;
-            const email = profile.emails?.[0]?.value;
-            const name = profile.displayName;
-            const profilePicture = profile.photos?.[0]?.value;
-            if (!email) {
-                return done(new Error('Email is required from Google profile'), undefined);
-            }
-            // Check if user exists in database
-            let user = await database_1.default.findUserByGoogleId(googleId);
-            if (!user) {
-                // Check if user exists with same email (maybe registered with different method)
-                const existingUser = await database_1.default.findUserByEmail(email);
-                if (existingUser && existingUser.id) {
-                    // User exists with email but not Google ID - link Google ID to existing account
-                    user = await database_1.default.updateUserWithGoogle(existingUser.id, googleId, profilePicture || '');
+// ── Helper: Ensure Google OAuth Strategy is configured ──────────────────────
+function ensureGoogleStrategy() {
+    const clientID = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    if (!clientID || !clientSecret)
+        return false;
+    const existing = passport_1.default._strategies?.['google'];
+    if (!existing) {
+        passport_1.default.use(new passport_google_oauth20_1.Strategy({
+            clientID,
+            clientSecret,
+            callbackURL: process.env.GOOGLE_REDIRECT_URI || '/api/auth/google/callback'
+        }, async (accessToken, refreshToken, profile, done) => {
+            try {
+                // Extract user information from Google profile
+                const googleId = profile.id;
+                const email = profile.emails?.[0]?.value;
+                const name = profile.displayName;
+                const profilePicture = profile.photos?.[0]?.value;
+                if (!email) {
+                    return done(new Error('Email is required from Google profile'), undefined);
                 }
-                else {
-                    // Create new user automatically (email is verified via Google)
-                    user = await database_1.default.createUser({
-                        google_id: googleId,
-                        name,
-                        email,
-                        profile_picture: profilePicture || '',
-                        assessment_completed: false,
-                        email_verified: true
-                    });
+                // Check if user exists in database
+                let user = await database_1.default.findUserByGoogleId(googleId);
+                if (!user) {
+                    // Check if user exists with same email (maybe registered with different method)
+                    const existingUser = await database_1.default.findUserByEmail(email);
+                    if (existingUser && existingUser.id) {
+                        // User exists with email but not Google ID - link Google ID to existing account
+                        user = await database_1.default.updateUserWithGoogle(existingUser.id, googleId, profilePicture || '');
+                    }
+                    else {
+                        // Create new user automatically (email is verified via Google)
+                        user = await database_1.default.createUser({
+                            google_id: googleId,
+                            name,
+                            email,
+                            profile_picture: profilePicture || '',
+                            assessment_completed: false,
+                            email_verified: true
+                        });
+                    }
                 }
+                return done(null, user);
             }
-            return done(null, user);
-        }
-        catch (error) {
-            return done(error, undefined);
-        }
-    }));
+            catch (error) {
+                return done(error, undefined);
+            }
+        }));
+    }
+    return true;
 }
+// Attempt immediate registration on boot
+ensureGoogleStrategy();
 // Serialize user for session
 passport_1.default.serializeUser((user, done) => {
     done(null, user.id);
@@ -110,40 +115,54 @@ passport_1.default.deserializeUser(async (id, done) => {
 });
 // Google OAuth routes
 exports.googleAuthRouter.get('/google', (req, res, next) => {
-    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    const isReady = ensureGoogleStrategy();
+    if (!isReady) {
         return res.status(500).json({
             error: 'Google OAuth is not configured on this deployment. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel Environment Variables.'
         });
     }
-    passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res, next);
+    try {
+        passport_1.default.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })(req, res, next);
+    }
+    catch (err) {
+        console.error('Passport authenticate error:', err);
+        res.status(500).json({ error: err?.message || 'Authentication error' });
+    }
 });
 exports.googleAuthRouter.get('/callback', (req, res, next) => {
-    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    const isReady = ensureGoogleStrategy();
+    if (!isReady) {
         return res.status(500).json({ error: 'Google OAuth not configured' });
     }
     const host = req.get('host');
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
     const defaultFrontend = host ? `${protocol}://${host}` : 'http://localhost:5147';
     const failureRedirect = `${process.env.FRONTEND_URL || defaultFrontend}?error=Authentication failed`;
-    passport_1.default.authenticate('google', { failureRedirect })(req, res, async () => {
-        try {
-            const user = req.user;
-            if (!user) {
-                return res.status(401).json({ error: 'Authentication failed' });
+    try {
+        passport_1.default.authenticate('google', { failureRedirect })(req, res, async () => {
+            try {
+                const user = req.user;
+                if (!user) {
+                    return res.status(401).json({ error: 'Authentication failed' });
+                }
+                // Generate JWT token
+                const token = auth_1.AuthService.generateToken(user);
+                // Determine redirect based on assessment completion
+                const redirectUrl = user.assessment_completed ? '/dashboard' : '/assessment';
+                // Redirect to frontend auth handler with token and redirect URL
+                const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
+                res.redirect(`${frontendUrl}/auth-redirect?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectUrl)}`);
             }
-            // Generate JWT token
-            const token = auth_1.AuthService.generateToken(user);
-            // Determine redirect based on assessment completion
-            const redirectUrl = user.assessment_completed ? '/dashboard' : '/assessment';
-            // Redirect to frontend auth handler with token and redirect URL
-            const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
-            res.redirect(`${frontendUrl}/auth-redirect?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectUrl)}`);
-        }
-        catch (error) {
-            console.error('Google auth callback error:', error);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    });
+            catch (error) {
+                console.error('Google auth callback error:', error);
+                res.status(500).json({ error: 'Internal server error: ' + error.message });
+            }
+        });
+    }
+    catch (err) {
+        console.error('Passport callback error:', err);
+        res.status(500).json({ error: err?.message || 'Callback error' });
+    }
 });
 // Get current user info (protected route)
 exports.googleAuthRouter.get('/me', auth_1.AuthService.authenticateToken, async (req, res) => {
