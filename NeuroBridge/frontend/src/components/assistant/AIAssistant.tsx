@@ -34,6 +34,7 @@ import { useAssistant } from '../../contexts/AssistantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSpeechService } from '../../services/speechService';
 import type { Language } from '../../types/assistant';
+import { MarkdownMessage } from './MarkdownMessage';
 
 interface AIAssistantProps {
   autoStart?: boolean;
@@ -401,13 +402,13 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
 
                       <div className="max-w-[82%] space-y-1">
                         <div
-                          className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] font-medium leading-relaxed whitespace-pre-wrap shadow-2xs ${
+                          className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] font-medium leading-relaxed shadow-2xs ${
                             isAssistant
                               ? 'bg-white border border-blue-100/90 text-[#1A202C] rounded-tl-xs'
                               : 'bg-[#2563EB] text-white rounded-tr-xs'
                           }`}
                         >
-                          {msg.text}
+                          <MarkdownMessage content={msg.text} isAssistant={isAssistant} />
                         </div>
 
                         {isAssistant && (
