@@ -126,5 +126,9 @@ if (!process.env.VERCEL) {
   startServer();
 }
 
+// Export app for both ES modules and CommonJS Vercel serverless handlers
+module.exports = app;
+module.exports.default = app;
+module.exports.app = app;
 export default app;
 export { app };
