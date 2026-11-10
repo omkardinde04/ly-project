@@ -314,3 +314,4 @@ export function MarkdownMessage({ content, isAssistant = true }: MarkdownMessage
     </div>
   );
 }
+
