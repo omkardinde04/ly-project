@@ -66,6 +66,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechService = useRef(getSpeechService()).current;
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -179,14 +180,14 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
   };
 
 
-  // Quick Action Suggestions
+  // Quick Action & AI Chat Suggestions
   const quickSuggestions = [
-    { label: 'Read this page out loud', icon: BookOpen },
+    { label: 'Explain dyslexia simply', icon: Sparkles },
+    { label: 'How can I study faster?', icon: BookOpen },
     { label: 'Summarize this page', icon: FileText },
-    { label: 'What can I do here?', icon: HelpCircle },
-    { label: 'Toggle Dyslexia font', icon: Type },
+    { label: 'Read this page out loud', icon: Volume2 },
     { label: 'Take me to Dashboard', icon: LayoutDashboard },
-    { label: 'Show Opportunities & Jobs', icon: Briefcase },
+    { label: 'Toggle Dyslexia font', icon: Type },
   ];
 
   return (
@@ -263,11 +264,11 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                     <div className="flex items-center gap-1.5">
                       <span className="font-black text-xs sm:text-sm tracking-tight">JARVIS</span>
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-400/20 text-emerald-100 border border-emerald-300/30">
-                        <Radio size={8} className="text-emerald-300 animate-pulse" /> Siri-Style Voice
+                        <Radio size={8} className="text-emerald-300 animate-pulse" /> AI Assistant
                       </span>
                     </div>
-                    <p className="text-[10px] text-white/80 font-medium truncate max-w-[200px]">
-                      Say "Hey Jarvis" or "Read this page"
+                    <p className="text-[10px] text-white/80 font-medium truncate max-w-[220px]">
+                      Ask anything or give a command (like ChatGPT)
                     </p>
                   </div>
                 </div>
@@ -410,13 +411,30 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                         </div>
 
                         {isAssistant && (
-                          <div className="flex items-center gap-2 pl-1">
+                          <div className="flex items-center gap-3 pl-1">
                             <button
                               type="button"
                               onClick={() => speakFeedback(msg.text, language)}
                               className="text-[10px] font-bold text-[#64748B] hover:text-[#2563EB] flex items-center gap-1 transition-colors cursor-pointer"
                             >
                               <Volume2 size={11} /> Read
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(msg.text);
+                                setCopiedMsgId(msg.id);
+                                setTimeout(() => setCopiedMsgId(null), 2000);
+                              }}
+                              className="text-[10px] font-bold text-[#64748B] hover:text-[#2563EB] flex items-center gap-1 transition-colors cursor-pointer"
+                            >
+                              {copiedMsgId === msg.id ? (
+                                <span className="text-emerald-600 font-bold flex items-center gap-1">
+                                  <Check size={11} /> Copied
+                                </span>
+                              ) : (
+                                <span>Copy</span>
+                              )}
                             </button>
                           </div>
                         )}
@@ -522,7 +540,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
                         handleUserSubmit(userInput);
                       }
                     }}
-                    placeholder="Ask JARVIS (e.g. 'Read this page' or 'Summarize')..."
+                    placeholder="Ask anything or give a command (like ChatGPT)..."
                     className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 bg-[#F8FAFC] focus:bg-white text-xs text-[#1A202C] placeholder-[#94A3B8] font-medium outline-none transition-all"
                     disabled={isListening || isSpeaking || agentStatus === 'thinking' || agentStatus === 'executing'}
                   />

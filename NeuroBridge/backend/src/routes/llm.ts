@@ -135,20 +135,55 @@ async function getOllamaEmbedding(text: string): Promise<number[]> {
   return data.embedding;
 }
 
-async function askOllama(prompt: string): Promise<string> {
-  let res;
+async function askAI(prompt: string): Promise<string> {
+  // 1. Try local Ollama if available
   try {
-    res = await fetch('http://localhost:11434/api/generate', {
+    const res = await fetch('http://localhost:11434/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama3', prompt, stream: false })
+      body: JSON.stringify({ model: 'llama3', prompt, stream: false }),
+      signal: AbortSignal.timeout(1500),
     });
-  } catch (err) {
-    throw new Error("Cannot connect to Ollama. Is the Ollama app running on your Mac? (Run 'ollama run llama3' in a new terminal)");
+    if (res.ok) {
+      const data = (await res.json()) as { response: string };
+      if (data.response) return data.response;
+    }
+  } catch {}
+
+  // 2. Try Gemini if configured
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (apiKey) {
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      if (text) return text;
+    } catch {}
   }
-  if (!res.ok) throw new Error("Ollama generation failed. Did you pull the llama3 model?");
-  const data = await res.json() as { response: string };
-  return data.response;
+
+  // 3. High-performance fallback: Pollinations AI (free OpenAI-compatible LLM)
+  try {
+    const res = await fetch('https://text.pollinations.ai/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'openai',
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.trim()) return text.trim();
+    }
+  } catch {}
+
+  throw new Error('Could not connect to AI services. Please try again.');
+}
+
+async function askOllama(prompt: string): Promise<string> {
+  return askAI(prompt);
 }
 
 async function callOllamaRAG(text: string, prompt: string): Promise<string> {
@@ -314,3 +349,129 @@ Return ONLY the raw JSON array, nothing else.`,
     true
   )
 );
+
+// ─── Jarvis Conversational Agent Endpoint (ChatGPT-style multi-turn chat) ─────
+llmRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { messages = [], context = {} } = req.body || {};
+    const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')?.content || '';
+    if (!lastUserMsg) {
+      res.status(400).json({ error: 'No user message provided.' });
+      return;
+    }
+
+    const systemPrompt = `You are JARVIS, an intelligent, empathetic, and knowledgeable AI assistant inside NeuroBridge, an educational platform for neurodivergent and dyslexic learners.
+You behave like ChatGPT / Claude: capable of answering ANY question — science, mathematics, coding, history, writing essays, explaining complex concepts simply, giving study advice, and engaging in natural conversation.
+
+DYSLEXIA-FRIENDLY RESPONSE STYLE:
+- Write in clean, structured Markdown.
+- Use bullet points, bold key terms, and short, readable paragraphs.
+- Keep vocabulary clear and supportive (Grade 6-8 reading level unless advanced detail is requested).
+- Be encouraging and warm.
+
+WEBSITE CONTEXT:
+- Active Page: "${context.pageTitle || 'NeuroBridge'}" (${context.currentRoute || '/'})
+- Learner Name: "${context.userName || 'Learner'}"
+- Language: "${context.language || 'en'}"
+${context.pageContent ? `- Active Screen Content: "${String(context.pageContent).slice(0, 1200)}"` : ''}
+
+WEBSITE ACTIONS:
+If the user explicitly asks you to navigate or perform an on-screen function, append an action tag on its own line at the very end of your response:
+[ACTION:navigate_home] -> Go to home
+[ACTION:open_dashboard] -> Go to dashboard
+[ACTION:open_learn] -> Go to learning hub
+[ACTION:open_opportunities] -> Go to opportunities & jobs
+[ACTION:open_community] -> Go to community discussions
+[ACTION:open_assessment] -> Go to dyslexia assessment
+[ACTION:open_nearby] -> Go to nearby care & support
+[ACTION:toggle_dyslexia_font] -> Toggle OpenDyslexic font
+[ACTION:toggle_high_contrast] -> Toggle high contrast mode
+[ACTION:read_page] -> Read the current page aloud
+[ACTION:stop_reading] -> Stop reading
+Only include an action tag when the user explicitly requests navigation or an on-screen feature. For general questions, explain normally without action tags.`;
+
+    const chatHistory = [
+      { role: 'system', content: systemPrompt },
+      ...messages.slice(-8).map((m: any) => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: String(m.content || ''),
+      })),
+    ];
+
+    let reply = '';
+
+    // 1. Try Gemini if configured
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const geminiMessages = chatHistory
+          .filter((m) => m.role !== 'system')
+          .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+          .join('\n\n');
+        const fullPrompt = `${systemPrompt}\n\n${geminiMessages}\n\nAssistant:`;
+        const result = await model.generateContent(fullPrompt);
+        reply = result.response.text();
+      } catch (geminiErr: any) {
+        console.warn('[LLM/chat] Gemini API failed:', geminiErr?.message || geminiErr);
+      }
+    }
+
+    // 2. Try Pollinations AI (High-speed OpenAI-compatible LLM)
+    if (!reply) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+        const pollRes = await fetch('https://text.pollinations.ai/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: chatHistory,
+            model: 'openai',
+            seed: 42,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (pollRes.ok) {
+          reply = await pollRes.text();
+        }
+      } catch (pollErr: any) {
+        console.warn('[LLM/chat] Pollinations AI failed:', pollErr?.message);
+      }
+    }
+
+    // 3. Fallback to Ollama if local instance exists
+    if (!reply) {
+      try {
+        const finalPrompt = `${systemPrompt}\n\nUser: ${lastUserMsg}\n\nAssistant:`;
+        reply = await askAI(finalPrompt);
+      } catch (ollamaErr: any) {
+        console.warn('[LLM/chat] Ollama failed:', ollamaErr?.message);
+      }
+    }
+
+    // 4. Guaranteed Friendly Response if all networks fail
+    if (!reply) {
+      reply = `I'm here to help you learn and explore! You asked: "${lastUserMsg}". Feel free to ask me to explain concepts, help with study techniques, or guide you around NeuroBridge.`;
+    }
+
+    // Extract action tag if present
+    let action: string | null = null;
+    const actionMatch = reply.match(/\[ACTION:([a-zA-Z0-9_]+)\]/);
+    if (actionMatch) {
+      action = actionMatch[1];
+      reply = reply.replace(/\[ACTION:[a-zA-Z0-9_]+\]/g, '').trim();
+    }
+
+    res.json({
+      text: reply.trim(),
+      action,
+      spokenResponse: reply.trim().slice(0, 260),
+    });
+  } catch (error: any) {
+    console.error('[LLM/chat] Unexpected error:', error);
+    res.status(500).json({ error: error?.message || 'Chat service error' });
+  }
+});

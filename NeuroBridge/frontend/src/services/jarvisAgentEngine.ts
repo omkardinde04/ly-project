@@ -1,4 +1,4 @@
-// Jarvis Agent Engine - Siri-Style Conversational Intelligence & Website Action Agent
+// Jarvis Agent Engine - ChatGPT-Style Conversational Intelligence & Website Action Agent
 // Provides fast, natural, screen-aware conversational AI with structured page interaction
 
 import type {
@@ -7,15 +7,12 @@ import type {
   JarvisActionType,
 } from '../types/jarvisAgent';
 import { GLOBAL_ACTIONS } from './jarvisActionRegistry';
+import { API_BASE } from '../config/api';
 
 export class JarvisAgentEngine {
-  private ollamaEndpoint: string = '/api/ollama/generate';
-  private modelName: string = 'llama3';
-  private isOllamaAvailable: boolean | null = null;
-  private lastOllamaCheck: number = 0;
-
   /**
    * Main entrypoint to determine user intent from input and website context
+   * Uses real LLM (ChatGPT-style) with instant command fast-path and dual fallbacks
    */
   public async processInput(
     userInput: string,
@@ -25,159 +22,289 @@ export class JarvisAgentEngine {
     if (!cleanInput) {
       return {
         type: 'conversation',
-        displayText: "I didn't catch that. How can I help you?",
-        spokenResponse: "I didn't catch that. How can I help you?",
+        displayText: "I'm ready! How can I help you learn or explore today?",
+        spokenResponse: "I'm ready! How can I help you learn or explore today?",
       };
     }
 
-    // 1. Check if Ollama is reachable with fast failover (800ms timeout)
-    const canUseOllama = await this.checkOllamaHealth();
-    if (canUseOllama) {
-      try {
-        const llmResult = await this.queryLlama3(cleanInput, context);
-        if (llmResult) {
-          return this.validateAndNormalizeIntent(llmResult, cleanInput, context);
-        }
-      } catch (err) {
-        console.warn('[JarvisAgentEngine] Ollama query failed, using Siri engine:', err);
-      }
+    // 1. Fast-Path: Direct High-Confidence Website Commands (0ms latency)
+    const directCmd = this.getDirectCommand(cleanInput, context);
+    if (directCmd) {
+      return directCmd;
     }
 
-    // 2. High-speed Siri-Style Conversational Intelligence Engine
+    // 2. Real LLM Intelligence: Backend /api/llm/chat (Gemini + Pollinations)
+    try {
+      const llmResult = await this.queryLLM(cleanInput, context);
+      if (llmResult) {
+        return llmResult;
+      }
+    } catch (err) {
+      console.warn('[JarvisAgentEngine] Backend LLM failed, using client AI fallback:', err);
+    }
+
+    // 3. Client-Side LLM Fallback (Pollinations AI: free OpenAI-compatible endpoint)
+    try {
+      const clientFallback = await this.queryClientAI(cleanInput, context);
+      if (clientFallback) {
+        return clientFallback;
+      }
+    } catch (err) {
+      console.warn('[JarvisAgentEngine] Client AI query failed:', err);
+    }
+
+    // 4. Offline Heuristic Fallback
     return this.siriConversationalEngine(cleanInput, context);
   }
 
   /**
-   * Fast check to see if Ollama is running locally without hanging user commands
+   * Fast-path immediate commands for core site actions
    */
-  private async checkOllamaHealth(): Promise<boolean> {
-    const now = Date.now();
-    // Cache availability for 30 seconds
-    if (this.isOllamaAvailable !== null && now - this.lastOllamaCheck < 30000) {
-      return this.isOllamaAvailable;
+  private getDirectCommand(input: string, context: JarvisContext): StructuredIntent | null {
+    const text = input.toLowerCase().trim();
+
+    // Spotlight / Page Reading commands
+    if (this.matchesAny(text, ['read this page', 'read page', 'read aloud', 'start reading', 'read out loud', 'वाचून दाखव'])) {
+      return {
+        type: 'action',
+        action: 'read_page',
+        displayText: 'Reading the current page aloud with word spotlight...',
+        spokenResponse: 'Starting page reading now.',
+      };
+    }
+    if (this.matchesAny(text, ['pause reading', 'pause audio', 'pause reader', 'थांबव'])) {
+      return {
+        type: 'action',
+        action: 'pause_reading',
+        displayText: 'Paused reading.',
+        spokenResponse: 'Paused.',
+      };
+    }
+    if (this.matchesAny(text, ['resume reading', 'continue reading', 'unpause', 'पुढे वाच'])) {
+      return {
+        type: 'action',
+        action: 'resume_reading',
+        displayText: 'Resuming reading.',
+        spokenResponse: 'Resuming reading.',
+      };
+    }
+    if (this.matchesAny(text, ['stop reading', 'stop audio', 'stop reader', 'वाचणे बंद कर'])) {
+      return {
+        type: 'action',
+        action: 'stop_reading',
+        displayText: 'Stopped reading.',
+        spokenResponse: 'Stopped reading.',
+      };
     }
 
-    try {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 600); // 600ms ping
-      const res = await fetch(this.ollamaEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: this.modelName, prompt: 'ping', stream: false }),
-        signal: controller.signal,
-      });
-      clearTimeout(id);
-      this.isOllamaAvailable = res.ok;
-      this.lastOllamaCheck = now;
-      return res.ok;
-    } catch {
-      this.isOllamaAvailable = false;
-      this.lastOllamaCheck = now;
-      return false;
+    // Dyslexia & Visual Accessibility Tools
+    if (this.matchesAny(text, ['toggle dyslexia font', 'opendyslexic font', 'change font', 'dyslexia font', 'फॉन्ट बदल'])) {
+      return {
+        type: 'action',
+        action: 'toggle_dyslexia_font',
+        displayText: 'Toggled OpenDyslexic readable font.',
+        spokenResponse: 'Adjusted font for reading ease.',
+      };
     }
+    if (this.matchesAny(text, ['high contrast', 'toggle high contrast', 'contrast mode'])) {
+      return {
+        type: 'action',
+        action: 'toggle_high_contrast',
+        displayText: 'Toggled high contrast mode.',
+        spokenResponse: 'Toggled contrast mode.',
+      };
+    }
+    if (this.matchesAny(text, ['bigger text', 'larger text', 'increase text size', 'make text bigger', 'मोठा फॉन्ट'])) {
+      return {
+        type: 'action',
+        action: 'increase_text_size',
+        displayText: 'Increased text size.',
+        spokenResponse: 'Making text larger.',
+      };
+    }
+    if (this.matchesAny(text, ['smaller text', 'decrease text size', 'make text smaller', 'लहान फॉन्ट'])) {
+      return {
+        type: 'action',
+        action: 'decrease_text_size',
+        displayText: 'Decreased text size.',
+        spokenResponse: 'Making text smaller.',
+      };
+    }
+
+    // Direct Navigation
+    if (text === 'go home' || text === 'go to home' || text === 'open home') {
+      return {
+        type: 'action',
+        action: 'navigate_home',
+        displayText: 'Navigating to Home',
+        spokenResponse: 'Taking you to the home page.',
+      };
+    }
+    if (text === 'go to dashboard' || text === 'open dashboard' || text === 'my dashboard' || text === 'dashboard') {
+      return {
+        type: 'action',
+        action: 'open_dashboard',
+        displayText: 'Navigating to Dashboard',
+        spokenResponse: 'Opening your student dashboard.',
+      };
+    }
+    if (text === 'take assessment' || text === 'go to assessment' || text === 'start assessment' || text === 'assessment') {
+      return {
+        type: 'action',
+        action: 'open_assessment',
+        displayText: 'Navigating to Assessment',
+        spokenResponse: 'Opening the cognitive assessment.',
+      };
+    }
+    if (text === 'show jobs' || text === 'open opportunities' || text === 'go to opportunities' || text === 'careers') {
+      return {
+        type: 'action',
+        action: 'open_opportunities',
+        displayText: 'Navigating to Opportunities & Jobs',
+        spokenResponse: 'Opening career opportunities.',
+      };
+    }
+    if (text === 'open community' || text === 'go to community' || text === 'community hub') {
+      return {
+        type: 'action',
+        action: 'open_community',
+        displayText: 'Navigating to Community Hub',
+        spokenResponse: 'Opening community discussions.',
+      };
+    }
+    if (text === 'nearby care' || text === 'hospitals near me' || text === 'open nearby care') {
+      return {
+        type: 'action',
+        action: 'open_nearby',
+        displayText: 'Navigating to Nearby Care',
+        spokenResponse: 'Opening nearby care and support.',
+      };
+    }
+
+    return null;
   }
 
   /**
-   * Queries Llama 3 when available with context and structured format
+   * Queries our backend /api/llm/chat endpoint powered by Gemini + Pollinations
    */
-  private async queryLlama3(
+  private async queryLLM(
     userInput: string,
     context: JarvisContext
-  ): Promise<any | null> {
-    const actionsList = Object.values(GLOBAL_ACTIONS)
-      .map((a) => `- ${a.id}: ${a.description} (synonyms: ${a.synonyms?.join(', ') || 'none'})`)
-      .join('\n');
-
-    const prompt = `You are JARVIS, a warm and intelligent Siri-like voice assistant inside the NeuroBridge website.
-CURRENT CONTEXT:
-- Route: "${context.currentRoute}"
-- Page Title: "${context.pageTitle}"
-- User: "${context.userName || 'Student'}"
-- Language: "${context.language}"
-
-AVAILABLE ACTIONS:
-${actionsList}
-
-USER: "${userInput}"
-
-Respond ONLY with valid JSON:
-{
-  "type": "action" | "conversation" | "confirmation_required",
-  "action": "<action_id_or_null>",
-  "parameters": {},
-  "spokenResponse": "<concise 1-sentence warm natural spoken response>",
-  "displayText": "<display response text>"
-}`;
+  ): Promise<StructuredIntent | null> {
+    const history = (context.recentHistory || []).map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    }));
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1200);
-
-    const response = await fetch(this.ollamaEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: this.modelName,
-        prompt,
-        format: 'json',
-        stream: false,
-        options: { temperature: 0.3 },
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-    if (!response.ok) return null;
-
-    const data = await response.json();
-    if (!data.response) return null;
+    const timeout = setTimeout(() => controller.abort(), 14000);
 
     try {
-      return JSON.parse(data.response);
+      const res = await fetch(`${API_BASE}/api/llm/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            ...history,
+            { role: 'user', content: userInput },
+          ],
+          context: {
+            currentRoute: context.currentRoute,
+            pageTitle: context.pageTitle,
+            pageContent: context.pageContent,
+            userName: context.userName,
+            language: context.language,
+          },
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+      if (!res.ok) return null;
+
+      const data = await res.json();
+      if (!data || !data.text) return null;
+
+      if (data.action && GLOBAL_ACTIONS[data.action]) {
+        return {
+          type: 'action',
+          action: data.action as JarvisActionType,
+          displayText: data.text,
+          spokenResponse: data.spokenResponse || data.text.slice(0, 240),
+        };
+      }
+
+      return {
+        type: 'conversation',
+        displayText: data.text,
+        spokenResponse: data.spokenResponse || data.text.slice(0, 240),
+      };
     } catch {
-      const cleaned = data.response.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleaned);
+      clearTimeout(timeout);
+      return null;
     }
   }
 
   /**
-   * Validates and sanitizes parsed intent
+   * High-Performance Client-Side LLM Fallback (Pollinations AI)
+   * Ensures Jarvis behaves like ChatGPT even if local backend is offline!
    */
-  private validateAndNormalizeIntent(
-    raw: any,
+  private async queryClientAI(
     userInput: string,
     context: JarvisContext
-  ): StructuredIntent {
-    const type: JarvisActionType =
-      raw.type === 'action' || raw.type === 'conversation' || raw.type === 'confirmation_required'
-        ? raw.type
-        : 'conversation';
+  ): Promise<StructuredIntent | null> {
+    const systemPrompt = `You are JARVIS, an intelligent, empathetic, and friendly AI assistant inside NeuroBridge, an educational platform for neurodivergent and dyslexic learners.
+You act like ChatGPT: capable of answering ANY question — science, mathematics, coding, history, writing, explaining complex concepts simply, giving study advice, and having natural conversations.
 
-    let action = raw.action;
+DYSLEXIA-FRIENDLY RESPONSE STYLE:
+- Write in clean, structured Markdown.
+- Use bullet points, bold key terms, and short, readable paragraphs.
+- Keep vocabulary clear and supportive.
+- Be encouraging and warm.
 
-    if (action && !GLOBAL_ACTIONS[action]) {
-      const matched = Object.keys(GLOBAL_ACTIONS).find(
-        (key) => key === action || action.includes(key)
-      );
-      action = matched || undefined;
+WEBSITE CONTEXT:
+- Active Page: "${context.pageTitle || 'NeuroBridge'}" (${context.currentRoute || '/'})
+- Learner Name: "${context.userName || 'Learner'}"
+${context.pageContent ? `- Active Screen Content: "${String(context.pageContent).slice(0, 1000)}"` : ''}`;
+
+    const history = (context.recentHistory || []).slice(-6).map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    }));
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const res = await fetch('https://text.pollinations.ai/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...history,
+            { role: 'user', content: userInput },
+          ],
+          model: 'openai',
+          seed: 42,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+      if (!res.ok) return null;
+      const text = await res.text();
+      if (!text || !text.trim()) return null;
+
+      return {
+        type: 'conversation',
+        displayText: text.trim(),
+        spokenResponse: text.trim().slice(0, 240),
+      };
+    } catch {
+      clearTimeout(timeout);
+      return null;
     }
-
-    if (type === 'action' && !action) {
-      return this.siriConversationalEngine(userInput, context);
-    }
-
-    const spokenResponse =
-      raw.spokenResponse ||
-      (type === 'action' && action
-        ? `Opening ${GLOBAL_ACTIONS[action]?.name || 'requested page'}.`
-        : raw.displayText || "I'm on it.");
-
-    return {
-      type: action ? type : 'conversation',
-      action,
-      parameters: raw.parameters || {},
-      spokenResponse,
-      displayText: raw.displayText || spokenResponse,
-    };
   }
 
   /**
