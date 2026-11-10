@@ -9,13 +9,14 @@ import AdaptiveParams from '../models/AdaptiveParams';
 
 export const googleAuthRouter = Router();
 
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5001';
+const getMlServiceUrl = () => (process.env.ML_SERVICE_URL || 'http://localhost:5001').replace(/\/+$/, '');
 
 // ── Helper: Initialize ML adaptive parameters after assessment ──────────────
 async function initializeMLAdaptiveParams(userId: string, cognitiveProfile: any) {
   try {
+    const mlUrl = getMlServiceUrl();
     // Check if ML service is available
-    const healthResponse = await axios.get(`${ML_SERVICE_URL}/health`, { timeout: 2000 });
+    const healthResponse = await axios.get(`${mlUrl}/health`, { timeout: 2000 });
     if (healthResponse.data?.status !== 'ok') {
       console.warn('⚠️  ML service not healthy, skipping initialization');
       return null;
@@ -23,7 +24,7 @@ async function initializeMLAdaptiveParams(userId: string, cognitiveProfile: any)
 
     // Call ML service to get initial parameters
     const mlResponse = await axios.post(
-      `${ML_SERVICE_URL}/init-params`,
+      `${mlUrl}/init-params`,
       { cognitiveProfile },
       { timeout: 5000 }
     );

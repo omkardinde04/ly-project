@@ -6,7 +6,7 @@ import FormData from 'form-data';
 export const brainRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-const RAG_BRAIN_URL = process.env.RAG_BRAIN_URL || 'http://localhost:8000';
+const getRagBrainUrl = () => (process.env.RAG_BRAIN_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 // Proxy upload to Python RAG service
 brainRouter.post('/upload', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
@@ -22,7 +22,7 @@ brainRouter.post('/upload', upload.single('file'), async (req: Request, res: Res
       contentType: req.file.mimetype,
     });
 
-    const response = await axios.post(`${RAG_BRAIN_URL}/upload`, form, {
+    const response = await axios.post(`${getRagBrainUrl()}/upload`, form, {
       headers: { ...form.getHeaders() },
     });
 
@@ -42,7 +42,7 @@ brainRouter.post('/query', async (req: Request, res: Response): Promise<void> =>
   }
 
   try {
-    const response = await axios.post(`${RAG_BRAIN_URL}/query`, { query, k });
+    const response = await axios.post(`${getRagBrainUrl()}/query`, { query, k });
     res.json(response.data);
   } catch (error: any) {
     console.error('[Brain Proxy Query]', error.message);
@@ -53,7 +53,7 @@ brainRouter.post('/query', async (req: Request, res: Response): Promise<void> =>
 // Status check
 brainRouter.get('/status', async (_req, res) => {
   try {
-    const response = await axios.get(`${RAG_BRAIN_URL}/status`);
+    const response = await axios.get(`${getRagBrainUrl()}/status`);
     res.json(response.data);
   } catch {
     res.json({ status: 'offline' });
