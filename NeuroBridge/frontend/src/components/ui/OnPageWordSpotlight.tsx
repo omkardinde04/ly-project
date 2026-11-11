@@ -54,7 +54,7 @@ export function OnPageWordSpotlight() {
               }}
             >
               <span
-                className={`text-slate-950 font-black tracking-normal select-none leading-none ${
+                className={`nb-spotlight-word font-black tracking-normal select-none leading-none ${
                   isDyslexiaMode ? 'font-dyslexic' : ''
                 }`}
                 style={{

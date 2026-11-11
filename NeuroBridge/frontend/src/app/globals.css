@@ -3250,3 +3250,11 @@ body.dyslexia-mode:not(.fun-mode) * {
   --font-sans: var(--font-body);
   --font-heading: var(--font-heading);
 }
+
+/* Listen / read-aloud spotlight: the box is always white, so the word inside
+   must stay dark in every theme (dark mode turns .text-slate-950 light). */
+.nb-spotlight-word,
+body.dark-mode .nb-spotlight-word {
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+}
