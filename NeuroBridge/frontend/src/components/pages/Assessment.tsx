@@ -60,15 +60,14 @@ export function AssessmentPage() {
     completeCognitiveTasks(profile, indicatorScore);
     setTestState('report');
 
-    // Save assessment completion to database
-    if (user && token) {
-      await saveAssessmentResults(indicatorScore, {
-        ...assessmentMetrics,
-        scoringVersion: 2,
-        partAPerformance,
-        cognitiveProfile: profile,
-      });
-    }
+    // Always keep the result: saved to the account when logged in, otherwise
+    // kept in this browser and linked to the account at the next login
+    await saveAssessmentResults(indicatorScore, {
+      ...assessmentMetrics,
+      scoringVersion: 2,
+      partAPerformance,
+      cognitiveProfile: profile,
+    });
   };
 
   const saveAssessmentResults = async (score: number, metrics: any) => {

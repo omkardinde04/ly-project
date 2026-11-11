@@ -19,7 +19,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (token: string) => Promise<void>;
+  /** Loads the profile (linking a pre-login test) and returns it, or null on failure */
+  login: (token: string) => Promise<User | null>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -94,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user]);
 
-  const login = async (newToken: string): Promise<void> => {
+  const login = async (newToken: string): Promise<User | null> => {
     setToken(newToken);
     setIsLoading(true);
 
@@ -135,6 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           body: JSON.stringify({
             assessment_score: assessmentData.score,
             classification: assessmentData.classification,
+            assessment_metrics: assessmentData.metrics ? JSON.stringify(assessmentData.metrics) : undefined,
           }),
         });
 
@@ -146,9 +148,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       setUser(userData);
+      return userData;
     } catch (error) {
       console.error('Error loading user profile:', error);
       logout(); // Clear token if user data fetch fails
+      return null;
     } finally {
       setIsLoading(false);
     }

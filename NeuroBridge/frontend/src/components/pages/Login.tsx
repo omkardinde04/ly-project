@@ -127,8 +127,11 @@ export function Login() {
       const data = await response.json();
 
       if (data.success) {
-        await login(data.token);
-        const destination = location.state?.redirect || data.redirect || '/dashboard';
+        const loaded = await login(data.token);
+        const destination =
+          location.state?.redirect ||
+          (loaded ? (loaded.assessment_completed ? '/dashboard' : '/assessment') : data.redirect) ||
+          '/dashboard';
         navigate(destination);
       } else {
         if (data.needsVerification) {

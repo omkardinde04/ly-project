@@ -15,13 +15,13 @@ export const AuthRedirect: React.FC = () => {
     if (token) {
       const processLogin = async () => {
         // Login with the token (awaits user profile fetch)
-        await login(token);
-        
+        const loaded = await login(token);
+
         // Clear URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Redirect to appropriate page
-        navigate(redirectPath);
+
+        // Use the loaded account (a test taken before login may have just been linked)
+        navigate(loaded ? (loaded.assessment_completed ? '/dashboard' : '/assessment') : redirectPath);
       };
       
       processLogin();
