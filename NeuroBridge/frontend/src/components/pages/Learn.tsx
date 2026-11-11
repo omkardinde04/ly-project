@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { FeatureAccessCTA } from '../ui/FeatureAccessCTA';
 
 const fade = (delay = 0) => ({
   initial: { opacity: 0, y: 18 },
@@ -159,6 +160,9 @@ export function Learn() {
         </div>
       </motion.div>
 
+      <motion.div {...fade(0.2)}>
+        <FeatureAccessCTA featureName="lessons and games" />
+      </motion.div>
     </div>
   );
 }

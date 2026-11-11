@@ -18,6 +18,7 @@ import { Dashboard } from './components/pages/Dashboard';
 import { Learn } from './components/pages/Learn';
 import { OpportunitiesPage } from './components/pages/OpportunitiesPage';
 import { CommunityPage } from './components/pages/CommunityPage';
+import { CommunityPreview } from './components/pages/CommunityPreview';
 import { AboutPage } from './components/pages/AboutPage';
 import { ChromeExtensionPage } from './components/pages/ChromeExtensionPage';
 import { ForgotPassword } from './components/pages/ForgotPassword';
@@ -161,14 +162,8 @@ function AppContent() {
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/learn" 
-              element={
-                <ProtectedRoute requireAssessment={true}>
-                  <Learn />
-                </ProtectedRoute>
-              } 
-            />
+            {/* Information page about lessons & games: open to everyone */}
+            <Route path="/learn" element={<Learn />} />
             <Route 
               path="/opportunities" 
               element={
@@ -213,7 +208,7 @@ function AppContent() {
             <Route 
               path="/community" 
               element={
-                <ProtectedRoute requireAssessment={true}>
+                <ProtectedRoute requireAssessment={true} fallback={<CommunityPreview />}>
                   <CommunityPage />
                 </ProtectedRoute>
               } 

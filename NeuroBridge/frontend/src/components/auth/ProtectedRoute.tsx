@@ -5,11 +5,14 @@ import { useAuth } from '../../contexts/AuthContext';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAssessment?: boolean;
+  /** Shown instead of redirecting when the visitor can't use the page yet */
+  fallback?: React.ReactNode;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requireAssessment = false 
+  requireAssessment = false,
+  fallback,
 }) => {
   const { user, token, isLoading } = useAuth();
   const location = useLocation();
@@ -26,6 +29,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         </div>
       </div>
     );
+  }
+
+  // Public overview instead of a redirect, when the page provides one
+  if (fallback !== undefined && (!user || !token || (requireAssessment && !user.assessment_completed))) {
+    return <>{fallback}</>;
   }
 
   // Redirect to login if not authenticated
