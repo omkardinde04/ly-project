@@ -18,6 +18,9 @@ export interface ReadAloudMetrics {
   total_time_ms: number;
   words_read?: number;
   words_total?: number;
+  /** The microphone heard speech (false = can't be scored) */
+  heard?: boolean;
+  skipped?: boolean;
 }
 
 interface ReadAloudTaskProps {
@@ -251,8 +254,10 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
       transcript: skipped ? 'Skipped' : mic.transcript || 'Read aloud completed',
       time_to_start_ms: firstWord ?? 0,
       total_time_ms: skipped ? 0 : Date.now() - mountedAt.current,
-      words_read: skipped ? 0 : Math.max(readCount, 1),
+      words_read: skipped ? 0 : readCount,
       words_total: rawWords.length,
+      heard: !skipped && !!mic.transcript.trim(),
+      skipped,
     };
     mic.reset();
     window.setTimeout(() => onComplete(metrics), skipped ? 0 : 600);

@@ -107,9 +107,9 @@ export function LinkedInConnect() {
     const auto: string[] = ['Accessibility Awareness', 'Inclusive Learning'];
     // Add skills based on cognitive profile strengths
     if (cognitiveProfile) {
-      if (cognitiveProfile.visual >= 70) auto.push('Visual Design', 'Pattern Recognition');
-      if (cognitiveProfile.executive >= 70) auto.push('Time Management', 'Planning');
-      if (cognitiveProfile.workingMemory >= 70) auto.push('Research', 'Analysis');
+      if ((cognitiveProfile.visual ?? 0) >= 70) auto.push('Visual Design', 'Pattern Recognition');
+      if ((cognitiveProfile.executive ?? 0) >= 70) auto.push('Time Management', 'Planning');
+      if ((cognitiveProfile.workingMemory ?? 0) >= 70) auto.push('Research', 'Analysis');
     }
     // Parse from name if any signals
     const name = (p.name ?? '').toLowerCase();

@@ -26,7 +26,7 @@ import { API_BASE } from '../../config/api';
 import {
   calculateIndicatorScore,
   getAssessmentClassification,
-  type CognitiveProfile,
+  type MeasuredCognitiveProfile,
 } from '../../utils/assessmentScoring';
 
 export function AssessmentPage() {
@@ -51,10 +51,12 @@ export function AssessmentPage() {
     setTestState('partB');
   };
 
-  const handlePartBComplete = async (profile: CognitiveProfile) => {
+  const handlePartBComplete = async (profile: MeasuredCognitiveProfile) => {
     const indicatorScore = calculateIndicatorScore(partAPerformance, profile);
+    // Average of the tasks that were measured (one may be left out, e.g. no microphone)
+    const measured = Object.values(profile).filter((v): v is number => typeof v === 'number');
     setPartBPerformance(
-      Math.round(Object.values(profile).reduce((total, value) => total + value, 0) / Object.keys(profile).length),
+      measured.length ? Math.round(measured.reduce((total, value) => total + value, 0) / measured.length) : 0,
     );
     setFinalScore(indicatorScore);
     completeCognitiveTasks(profile, indicatorScore);

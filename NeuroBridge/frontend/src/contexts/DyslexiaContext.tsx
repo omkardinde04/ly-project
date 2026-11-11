@@ -11,13 +11,14 @@ export type LineSpacing = 'normal' | 'comfortable' | 'spacious';
 export type LetterSpacing = 'normal' | 'comfortable' | 'wide';
 export type ContentWidth = 'normal' | 'comfortable' | 'narrow';
 
+/** 0-100 per skill; a skill that couldn't be measured (e.g. no microphone) is missing */
 interface CognitiveProfile {
-  phonological: number; // 0-100
-  visual: number;
-  workingMemory: number;
-  processingSpeed: number;
-  orthographic: number;
-  executive: number;
+  phonological?: number;
+  visual?: number;
+  workingMemory?: number;
+  processingSpeed?: number;
+  orthographic?: number;
+  executive?: number;
 }
 
 interface DyslexiaSettings {

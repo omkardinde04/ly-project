@@ -104,6 +104,13 @@ export function MissionControlTask({ onComplete }: FollowStepsProps) {
   }, []);
 
   const handleProceed = () => {
+    if (phase === 'timeout') {
+      // Time ran out: credit the steps done correctly before it did
+      const correctSteps = Math.max(0, completedSteps - metrics.current.sequence_errors);
+      metrics.current.completion_rate = Math.round((correctSteps / ACTIVITY.length) * 100);
+      metrics.current.total_time_ms = Date.now() - playStartTime.current;
+      metrics.current.isCorrect = false;
+    }
     if (onComplete) onComplete(metrics.current);
   };
 

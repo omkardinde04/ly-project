@@ -9,6 +9,7 @@
  * Higher is always better here: low numbers are the areas to grow.
  */
 import { partAQuestions } from './assessmentQuestions';
+import { isScoredQuestion, scoreQuestion } from '../../utils/assessmentScoring';
 
 export type SkillId = 'phonological' | 'visual' | 'workingMemory' | 'processingSpeed' | 'orthographic' | 'executive';
 
@@ -94,6 +95,7 @@ export interface QuestionMetricLike {
   questionId: number;
   selectedOption: number;
   performanceScore?: number;
+  skipped?: boolean;
   optionChanges?: number;
   audioReplays?: number;
 }
@@ -105,6 +107,9 @@ export interface MetricsLike {
   backtrackCount?: number;
   audioReplayCount?: number;
   readingTrackingCount?: number;
+  readingTimeSec?: number;
+  readingAccuracyPct?: number;
+  readingWpm?: number;
   questionMetrics?: QuestionMetricLike[];
 }
 
@@ -114,32 +119,10 @@ const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 
 export function computeSkills(metrics: MetricsLike | undefined, profile: CognitiveProfileLike): SkillResult[] {
   const sums: Partial<Record<SkillId, { total: number; count: number }>> = {};
-  const scoredQuestions = partAQuestions.filter(
-    (question) => question.type === 'frequency' || question.correctAnswer !== undefined,
-  );
-  for (const question of scoredQuestions) {
+  for (const question of partAQuestions.filter(isScoredQuestion)) {
     const response = metrics?.questionMetrics?.find((metric) => metric.questionId === question.id);
-    let value = 0;
-    if (
-      typeof response?.performanceScore === 'number' &&
-      Number.isFinite(response.performanceScore) &&
-      response.performanceScore >= 0 &&
-      response.performanceScore <= 100
-    ) {
-      value = response.performanceScore;
-    } else if (
-      response &&
-      Number.isInteger(response.selectedOption) &&
-      response.selectedOption >= 0 &&
-      response.selectedOption < question.options.length
-    ) {
-      if (question.type === 'frequency') {
-        const weight = question.options[response.selectedOption].weight;
-        value = typeof weight === 'number' ? ((3 - Math.min(3, Math.max(0, weight))) / 3) * 100 : 0;
-      } else {
-        value = response.selectedOption === question.correctAnswer ? 100 : 0;
-      }
-    }
+    const value = scoreQuestion(question, response);
+    if (value === null) continue; // read-aloud with nothing heard: leave it out
 
     const slot = (sums[question.dimension] ??= { total: 0, count: 0 });
     slot.total += value;

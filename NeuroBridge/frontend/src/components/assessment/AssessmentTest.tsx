@@ -15,7 +15,15 @@ import { ReadingAssessmentQ1 } from './ReadingAssessmentQ1';
 import { ObjectNamingTask } from './ObjectNamingTask';
 import { HandRaisingTask } from './HandRaisingTask';
 import { LeftRightGameTask } from './LeftRightGameTask';
-import { calculatePartAPerformance } from '../../utils/assessmentScoring';
+import {
+  calculatePartAPerformance,
+  calculateReadAloudScore,
+  scoreLetterTask,
+  scorePuzzleTask,
+  scoreRoundsTask,
+  scoreWordsReadTask,
+  type ReadAloudResult,
+} from '../../utils/assessmentScoring';
 import imgAnotherEntrance from '../../assets/assessment/locked-room-another-entrance.webp';
 import imgWaitOutside from '../../assets/assessment/locked-room-wait-outside.webp';
 import imgAskNearby from '../../assets/assessment/locked-room-ask-nearby.webp';
@@ -95,6 +103,9 @@ interface AssessmentMetrics {
   questionMetrics: QuestionMetric[];
   readingTrackingCount?: number;
   readingTimeSec?: number;
+  /** Read-aloud question: share of words read correctly, and reading speed */
+  readingAccuracyPct?: number;
+  readingWpm?: number;
 }
 
 interface QuestionMetric {
@@ -105,6 +116,8 @@ interface QuestionMetric {
   optionChanges: number;
   audioReplays: number;
   performanceScore?: number;
+  /** Couldn't be measured (camera/mic unavailable or skipped): left out of the score */
+  skipped?: boolean;
 }
 
 function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | string[]; onComplete: (trackCount: number) => void }) {
@@ -280,6 +293,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const [performanceScores, setPerformanceScores] = useState<(number | undefined)[]>(
     Array(partAQuestions.length).fill(undefined),
   );
+  const [skippedQuestions, setSkippedQuestions] = useState<boolean[]>(Array(partAQuestions.length).fill(false));
   const [startTime] = useState(Date.now());
   const [optionChanges, setOptionChanges] = useState<number[]>(Array(partAQuestions.length).fill(0));
   const [audioReplays, setAudioReplays] = useState<number[]>(Array(partAQuestions.length).fill(0));
@@ -289,6 +303,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
   const [showObjectNamingOptions, setShowObjectNamingOptions] = useState(false);
   const previousQuestionRef = useRef(0);
   const q5ReadingTimeRef = useRef<number>(0);
+  const q5ReadAloudRef = useRef<ReadAloudResult | null>(null);
 
   useEffect(() => {
     if (partAQuestions[currentQuestion].type === 'object_naming') {
@@ -320,18 +335,26 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
     });
   };
 
-  const handleAnswer = (optionIndex: number, performanceScore?: number) => {
+  /**
+   * performanceScore: 0–100 measured by the task. null = couldn't be measured,
+   * so the question is left out of the score instead of counting as wrong.
+   */
+  const handleAnswer = (optionIndex: number, performanceScore?: number | null) => {
     const previousAnswer = answers[currentQuestion];
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = optionIndex;
     setAnswers(newAnswers);
-    if (performanceScore !== undefined) {
-      setPerformanceScores(current => {
-        const next = [...current];
-        next[currentQuestion] = performanceScore;
-        return next;
-      });
-    }
+    // Always overwrite, so a redo replaces the earlier result
+    setPerformanceScores(current => {
+      const next = [...current];
+      next[currentQuestion] = performanceScore ?? undefined;
+      return next;
+    });
+    setSkippedQuestions(current => {
+      const next = [...current];
+      next[currentQuestion] = performanceScore === null;
+      return next;
+    });
     setJustCompleted(true);
     if (previousAnswer !== -1 && previousAnswer !== optionIndex) {
       setOptionChanges(prev => {
@@ -362,6 +385,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         optionChanges: optionChanges[index] || 0,
         audioReplays: audioReplays[index] || 0,
         ...(performanceScores[index] === undefined ? {} : { performanceScore: performanceScores[index] }),
+        ...(skippedQuestions[index] ? { skipped: true } : {}),
       }));
 
       const confusionCount = optionChanges.reduce((s, c) => s + (c || 0), 0);
@@ -376,6 +400,8 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
         questionMetrics,
         readingTrackingCount: trackingMetrics.trackCount,
         readingTimeSec: q5ReadingTimeRef.current > 0 ? q5ReadingTimeRef.current : undefined,
+        readingAccuracyPct: q5ReadAloudRef.current?.accuracyPct,
+        readingWpm: q5ReadAloudRef.current?.wordsPerMinute,
       };
 
       onComplete(calculatePartAPerformance(questionMetrics), metrics);
@@ -514,7 +540,8 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 <HandRaisingTask
                   question={currentQ}
                   onComplete={(isCorrect) => {
-                    handleAnswer(isCorrect ? 0 : 1);
+                    // null = camera unavailable or skipped: left out of the score
+                    handleAnswer(isCorrect === false ? 1 : 0, isCorrect === null ? null : undefined);
                   }}
                 />
               </div>
@@ -522,8 +549,9 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <LeftRightGameTask
                   key={currentQ.id}
-                  onComplete={(isCorrect) => {
-                    handleAnswer(isCorrect ? 0 : 1);
+                  onComplete={(isCorrect, result) => {
+                    // Partial credit: % of rounds right
+                    handleAnswer(isCorrect ? 0 : 1, scoreRoundsTask(result.correct, result.total));
                   }}
                 />
               </div>
@@ -535,7 +563,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                     if (readingMetrics?.readingTimeSec) {
                       q5ReadingTimeRef.current = readingMetrics.readingTimeSec;
                     }
-                    handleAnswer(0);
+                    // Score from what the mic heard: accuracy + speed (null = nothing heard, left out)
+                    const readAloud = readingMetrics ? calculateReadAloudScore(readingMetrics) : null;
+                    q5ReadAloudRef.current = readAloud;
+                    handleAnswer(0, readAloud ? readAloud.score : null);
                   }}
                 />
               </div>
@@ -564,7 +595,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <MultiplicationRecallTask
                   onComplete={(metrics) => {
-                    handleAnswer(0);
+                    handleAnswer(0, scorePuzzleTask(metrics));
                     setTimeout(() => handleNext(currentQuestion), 100);
                   }}
                 />
@@ -573,7 +604,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <VoiceAlphabetTask
                   onComplete={(metrics) => {
-                    handleAnswer(0);
+                    handleAnswer(0, scoreLetterTask(metrics));
                     setTimeout(() => handleNext(currentQuestion), 100);
                   }}
                 />
@@ -582,7 +613,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
               <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
                 <ReadAloudTask
                   onComplete={(metrics) => {
-                    handleAnswer(0);
+                    handleAnswer(0, scoreWordsReadTask(metrics));
                     if (currentQ.id === 10) {
                       setShowBrainGamesIntro(true);
                       setTimeout(() => {

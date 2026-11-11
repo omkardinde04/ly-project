@@ -41,6 +41,8 @@ import {
   PieChart,
   Gamepad2,
   X,
+  Mic,
+  Gauge,
 } from 'lucide-react';
 
 interface AssessmentMetrics {
@@ -50,6 +52,8 @@ interface AssessmentMetrics {
   backtrackCount: number;
   audioReplayCount: number;
   questionMetrics: QuestionMetricLike[];
+  readingAccuracyPct?: number;
+  readingWpm?: number;
 }
 
 interface ReportGeneratorProps {
@@ -269,6 +273,13 @@ export function ReportGenerator({ score, partAPerformance, partBPerformance, met
     { icon: <Shuffle size={18} />, label: 'Answers changed', value: String(metrics?.confusionCount ?? 0) },
     { icon: <Volume2 size={18} />, label: 'Listened again', value: String(metrics?.audioReplayCount ?? 0) },
     { icon: <Undo2 size={18} />, label: 'Went back', value: String(metrics?.backtrackCount ?? 0) },
+    // Read-aloud question (only when the microphone heard the reading)
+    ...(typeof metrics?.readingAccuracyPct === 'number'
+      ? [
+          { icon: <Mic size={18} />, label: 'Words read correctly', value: `${metrics.readingAccuracyPct}%` },
+          { icon: <Gauge size={18} />, label: 'Reading speed', value: `${metrics.readingWpm ?? '—'} wpm` },
+        ]
+      : []),
   ];
 
   const settingChips = [

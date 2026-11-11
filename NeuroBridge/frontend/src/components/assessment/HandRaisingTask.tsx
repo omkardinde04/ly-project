@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp, ArrowDown, ThumbsUp } from 'lucide-react';
 
-export function HandRaisingTask({ question, onComplete }: { question: any, onComplete: (isCorrect: boolean) => void }) {
+/** Seconds before a "Skip" button appears, so nobody gets stuck if the camera can't see a hand. */
+const SKIP_AFTER_SEC = 20;
+
+/**
+ * onComplete(true/false) = raised the right/wrong hand.
+ * onComplete(null) = couldn't be measured (no camera, or skipped) → left out of the score.
+ */
+export function HandRaisingTask({ question, onComplete }: { question: any, onComplete: (isCorrect: boolean | null) => void }) {
   const [stage, setStage] = useState<'tutorial' | 'assessment'>('tutorial');
   const [phase, setPhase] = useState<'standby' | 'initializing' | 'preparing' | 'detecting' | 'completed'>('standby');
   const [targetHand, setTargetHand] = useState<'left' | 'right'>('left');
@@ -13,8 +20,9 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
   const cameraHardwareRef = useRef<any>(null);
   
   const detectionCount = useRef(0);
-  const isCorrectRef = useRef<boolean>(false);
+  const isCorrectRef = useRef<boolean | null>(null);
   const phaseRef = useRef(phase);
+  const [canSkip, setCanSkip] = useState(false);
 
   useEffect(() => {
     setTargetHand(Math.random() > 0.5 ? 'left' : 'right');
@@ -33,6 +41,7 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
     
     if (!(window as any).Hands || !(window as any).Camera) {
       console.error("MediaPipe Hands not loaded.");
+      isCorrectRef.current = null; // not measured
       if (isMounted) setPhase('completed');
       return;
     }
@@ -55,15 +64,18 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
       
       if (phaseRef.current === 'detecting' && results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         // Anatomical hand validation
-        const handedness = results.multiHandedness[0].label.toLowerCase(); // 'left' or 'right'
-        let actualHand = handedness;
+        // MediaPipe labels hands as if the image were mirrored (selfie view). The camera
+        // frames we send are NOT mirrored, so the label is the opposite of the person's
+        // real hand and must be swapped (per MediaPipe Hands docs).
+        const label = results.multiHandedness[0].label.toLowerCase(); // as seen in a mirror
+        const actualHand: 'left' | 'right' = label === 'left' ? 'right' : 'left';
         
         // Check if hand is raised (Index finger tip [8] is above wrist [0])
         const wrist = results.multiHandLandmarks[0][0];
         const indexFinger = results.multiHandLandmarks[0][8];
         const isRaised = indexFinger.y < (wrist.y - 0.15); // Hand must be visibly raised up
         
-        if (isRaised && actualHand) {
+        if (isRaised) {
            // We found a raised hand!
            // Check if it matches the target
            const isMatch = actualHand === targetHand;
@@ -108,6 +120,7 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
         }
       }).catch((e: any) => {
         console.error(e);
+        isCorrectRef.current = null; // camera unavailable: not measured
         if (isMounted) setPhase('completed');
       });
     }
@@ -140,6 +153,19 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
       onComplete(isCorrectRef.current);
     }
   }, [phase, onComplete]);
+
+  // Offer a way out if no hand has been detected after a while
+  useEffect(() => {
+    if (stage !== 'assessment' || phase === 'completed') return;
+    const t = window.setTimeout(() => setCanSkip(true), SKIP_AFTER_SEC * 1000);
+    return () => window.clearTimeout(t);
+  }, [stage, phase]);
+
+  const skipQuestion = () => {
+    isCorrectRef.current = null; // not measured
+    if (cameraHardwareRef.current) cameraHardwareRef.current.stop();
+    setPhase('completed');
+  };
 
   const handleStartAssessment = () => {
     setStage('assessment');
@@ -263,12 +289,27 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
                     <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
                        <span className="text-4xl">📸</span>
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">Hand Detected!</h3>
-                    <p className="text-slate-500 font-medium mb-2">Your response has been recorded.</p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">
+                      {isCorrectRef.current === null ? 'Moving on' : 'Hand Detected!'}
+                    </h3>
+                    <p className="text-slate-500 font-medium mb-2">
+                      {isCorrectRef.current === null
+                        ? "We couldn't use the camera for this one. It won't count against you."
+                        : 'Your response has been recorded.'}
+                    </p>
                   </motion.div>
                 )}
               </div>
-              
+
+              {canSkip && phase !== 'completed' && (
+                <button
+                  type="button"
+                  onClick={skipQuestion}
+                  className="mt-4 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold transition-colors cursor-pointer"
+                >
+                  Camera can't see my hand? Skip this one
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

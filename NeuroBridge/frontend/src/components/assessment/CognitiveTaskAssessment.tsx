@@ -4,23 +4,17 @@ import { getSpeechService } from '../../services/speechService';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useSpeechCapture, micStatusText } from './useSpeechCapture';
 import { MicButton, LevelBars, TimeBar, MicErrorBox } from './MicControls';
-import { calculatePercentCorrect } from '../../utils/assessmentScoring';
+import { calculatePercentCorrect, type MeasuredCognitiveProfile } from '../../utils/assessmentScoring';
 
 interface CognitiveTaskProps {
-  onComplete: (scores: { phonological: number; visual: number; workingMemory: number; processingSpeed: number; orthographic: number; executive: number }) => void;
+  /** A task that couldn't be measured (e.g. no microphone) is left out of the profile. */
+  onComplete: (scores: MeasuredCognitiveProfile) => void;
 }
 
 export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
   const [currentTask, setCurrentTask] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [scores, setScores] = useState({
-    phonological: 0,
-    visual: 0,
-    workingMemory: 0,
-    processingSpeed: 0,
-    orthographic: 0,
-    executive: 0,
-  });
+  const [scores, setScores] = useState<MeasuredCognitiveProfile>({});
 
   const tasks = [
     { id: 'phonological', name: 'Sound Blending', icon: '🔊' },
@@ -31,11 +25,13 @@ export function CognitiveTaskAssessment({ onComplete }: CognitiveTaskProps) {
     { id: 'executive', name: 'Time Reading', icon: '🕐' },
   ];
 
-  const handleTaskComplete = (taskId: string, score: number, taskIndex = currentTask) => {
+  const handleTaskComplete = (taskId: keyof MeasuredCognitiveProfile, score: number | null, taskIndex = currentTask) => {
     if (taskIndex !== currentTask) return;
     if (isLoading) return;
     setIsLoading(true);
-    const updatedScores = { ...scores, [taskId]: score };
+    const updatedScores: MeasuredCognitiveProfile = { ...scores };
+    if (score === null) delete updatedScores[taskId]; // not measured: leave it out
+    else updatedScores[taskId] = score;
     setScores(updatedScores);
 
     setTimeout(() => {
@@ -903,13 +899,17 @@ function heardWord(transcript: string, accepted: string[]): boolean {
   return targets.some((t) => t === joined || tokens.includes(t) || (t.length > 5 && joined.includes(t)));
 }
 
-function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void }) {
+/**
+ * onComplete(score) = % of words read correctly, out of the words where the mic worked.
+ * onComplete(null) = couldn't be measured (no mic support, or the mic failed on every word),
+ * so the task is left out of the cognitive average instead of counting as 0 or 100.
+ */
+function TimedReadingTask({ onComplete }: { onComplete: (score: number | null) => void }) {
   const { reduceMotion } = useDyslexia();
   const mic = useSpeechCapture({ maxMs: 7000 });
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [typed, setTyped] = useState('');
-  const [typedResult, setTypedResult] = useState<WordResult>('none');
   const correctRef = useRef(0);
+  const measuredRef = useRef(0);
 
   const q = READING_WORDS[currentIdx];
   const matched = heardWord(mic.transcript, q.accepted);
@@ -928,21 +928,22 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
     return () => window.clearTimeout(t);
   }, [status, matched, transcript, stop]);
 
-  const micResult: WordResult =
+  const result: WordResult =
     mic.status !== 'stopped' ? 'none' : matched ? 'correct' : mic.transcript ? 'wrong' : 'silent';
-  const result: WordResult = mic.supported ? micResult : typedResult;
 
   const { reset } = mic;
+  /** 'unmeasured' = the mic failed on this word, so it doesn't count either way */
   const goNext = useCallback(
-    (wasCorrect: boolean) => {
-      if (wasCorrect) correctRef.current += 1;
+    (outcome: 'correct' | 'wrong' | 'unmeasured') => {
+      if (outcome !== 'unmeasured') measuredRef.current += 1;
+      if (outcome === 'correct') correctRef.current += 1;
       reset();
-      setTyped('');
-      setTypedResult('none');
       if (currentIdx < READING_WORDS.length - 1) {
         setCurrentIdx(currentIdx + 1);
       } else {
-        onComplete(calculatePercentCorrect(correctRef.current, READING_WORDS.length));
+        onComplete(
+          measuredRef.current > 0 ? calculatePercentCorrect(correctRef.current, measuredRef.current) : null,
+        );
       }
     },
     [currentIdx, reset, onComplete],
@@ -951,14 +952,33 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
   // Show the result for a moment, then move on by itself
   useEffect(() => {
     if (result !== 'correct' && result !== 'wrong') return;
-    const t = window.setTimeout(() => goNext(result === 'correct'), result === 'correct' ? 1100 : 1600);
+    const t = window.setTimeout(() => goNext(result), result === 'correct' ? 1100 : 1600);
     return () => window.clearTimeout(t);
   }, [result, goNext]);
 
-  const submitTyped = () => {
-    if (!typed.trim()) return;
-    setTypedResult(heardWord(typed, q.accepted) ? 'correct' : 'wrong');
-  };
+  // No speech recognition in this browser: typing would just copy the word on screen,
+  // so this task can't be measured here and is left out.
+  if (!mic.supported) {
+    return (
+      <div className="bg-surface rounded-3xl shadow-xl p-6 sm:p-8 text-center max-w-2xl mx-auto border-2 border-border">
+        <div className="text-5xl mb-3" aria-hidden>
+          📖
+        </div>
+        <h3 className="text-2xl font-bold text-text mb-2">Word Reading</h3>
+        <p className="text-text-muted text-base font-medium mb-6 max-w-md mx-auto">
+          This activity needs you to read words out loud, and this browser can't use the microphone for that.
+          It won't count against you. For the full test, use Chrome or Edge.
+        </p>
+        <button
+          type="button"
+          onClick={() => onComplete(null)}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-md cursor-pointer"
+        >
+          Continue
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface rounded-3xl shadow-xl p-6 sm:p-8 text-center max-w-2xl mx-auto border-2 border-border">
@@ -969,7 +989,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
         </div>
         <h3 className="text-2xl font-bold text-text mb-2">Word Reading</h3>
         <p className="text-text-muted text-base font-medium">
-          {mic.supported ? 'Tap the mic and read the word out loud.' : 'Type the word you see.'}
+          Tap the mic and read the word out loud.
         </p>
       </div>
 
@@ -1016,7 +1036,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
               💙
             </span>
             <p className="text-violet-700 font-bold text-lg">No worries! Next word…</p>
-            {mic.supported && mic.transcript && (
+            {mic.transcript && (
               <p className="text-xs text-text-muted">{`We heard: "${mic.transcript}"`}</p>
             )}
           </div>
@@ -1037,7 +1057,7 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
               </button>
               <button
                 type="button"
-                onClick={() => goNext(false)}
+                onClick={() => goNext('wrong')}
                 className="px-6 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-text font-bold transition-all cursor-pointer"
               >
                 Skip word
@@ -1046,9 +1066,10 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
           </div>
         )}
 
-        {result === 'none' && mic.supported && (
+        {result === 'none' && (
           mic.error ? (
-            <MicErrorBox error={mic.error} onRetry={mic.start} onSkip={() => goNext(false)} />
+            // A broken/blocked mic is not the reader's fault: skip without counting the word
+            <MicErrorBox error={mic.error} onRetry={mic.start} onSkip={() => goNext('unmeasured')} />
           ) : (
             <>
               <MicButton status={mic.status} level={mic.level} onStart={mic.start} onStop={mic.stop} reduceMotion={reduceMotion} />
@@ -1061,26 +1082,6 @@ function TimedReadingTask({ onComplete }: { onComplete: (score: number) => void 
           )
         )}
 
-        {result === 'none' && !mic.supported && (
-          <div className="flex flex-col items-center gap-3 w-full">
-            <input
-              type="text"
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              placeholder="Type the word…"
-              aria-label="Type the word"
-              className="w-full max-w-xs px-4 py-3 border-2 border-border rounded-2xl focus:border-blue-400 focus:outline-none text-lg font-medium text-center"
-              onKeyDown={(e) => e.key === 'Enter' && submitTyped()}
-            />
-            <button
-              type="button"
-              onClick={submitTyped}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-md cursor-pointer"
-            >
-              Check
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="mt-6 text-sm text-text-muted font-medium">

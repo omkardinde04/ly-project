@@ -191,7 +191,7 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
 
     const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRec) {
-      setMicError('Speech recognition is not supported in this browser. You can still read aloud and click words to mark errors, then press Finish Reading.');
+      setMicError('Speech recognition is not supported in this browser. Please use Chrome or Edge for this question, or read aloud and press Finish Reading.');
       return;
     }
 
@@ -327,17 +327,6 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spokenWords, cleanWords, isListening]);
 
-  // Fallback: User can tap any word to toggle status (idle -> green -> red -> idle)
-  const toggleWordStatus = (index: number) => {
-    setWordStatuses((prev) => {
-      const next = [...prev];
-      if (next[index] === 'idle') next[index] = 'green';
-      else if (next[index] === 'green') next[index] = 'red';
-      else next[index] = 'idle';
-      return next;
-    });
-  };
-
   return (
     <div className="w-full flex flex-col items-center bg-transparent py-5 sm:py-7 px-4" style={{ minHeight: '0' }}>
       <div className="w-full max-w-[580px] flex flex-col gap-5 sm:gap-6 mx-auto">
@@ -394,7 +383,8 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
           style={{ lineHeight: 2, letterSpacing: '0.02em' }}
         >
           {words.map((word, idx) => {
-            let statusClass = 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60';
+            // Words are marked only from what the microphone hears, never by clicking
+            let statusClass = 'text-slate-700 dark:text-slate-300';
 
             if (wordStatuses[idx] === 'green') {
               statusClass =
@@ -414,9 +404,7 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
             return (
               <span
                 key={idx}
-                onClick={() => toggleWordStatus(idx)}
-                title="Tap word to adjust status"
-                className={`inline-block mx-1 my-1 transition-all duration-200 cursor-pointer rounded select-none ${statusClass}`}
+                className={`inline-block mx-1 my-1 transition-all duration-200 rounded select-none ${statusClass}`}
               >
                 {word}
               </span>
