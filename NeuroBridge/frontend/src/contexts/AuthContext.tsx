@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { API_BASE } from '../config/api';
+import { generateReadingProfile } from '../utils/profileGenerator';
 
 export interface User {
   id: number;
@@ -125,26 +126,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Link any pre-login (anonymous) assessment to this account
       const tempAssessment = localStorage.getItem('temp_assessment');
-      if (tempAssessment && !userData.assessment_completed) {
-        const assessmentData = JSON.parse(tempAssessment);
-        const assessmentResponse = await fetch(`${API_BASE}/api/auth/google/assessment/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${newToken}`,
-          },
-          body: JSON.stringify({
-            assessment_score: assessmentData.score,
-            classification: assessmentData.classification,
-            assessment_metrics: assessmentData.metrics ? JSON.stringify(assessmentData.metrics) : undefined,
-          }),
-        });
+      if (tempAssessment) {
+        try {
+          const assessmentData = JSON.parse(tempAssessment);
+          if (assessmentData?.readingProfile) {
+            localStorage.setItem('nbReadingProfile', JSON.stringify(assessmentData.readingProfile));
+          }
+          if (!userData.assessment_completed) {
+            const assessmentResponse = await fetch(`${API_BASE}/api/auth/google/assessment/complete`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${newToken}`,
+              },
+              body: JSON.stringify({
+                assessment_score: assessmentData.score,
+                classification: assessmentData.classification,
+                assessment_metrics: assessmentData.metrics ? JSON.stringify(assessmentData.metrics) : undefined,
+              }),
+            });
 
-        if (assessmentResponse.ok) {
-          localStorage.removeItem('temp_assessment');
-          const updatedData = await tryFetch(`${API_BASE}/api/auth/email/me`);
-          if (updatedData) userData = updatedData;
+            if (assessmentResponse.ok) {
+              localStorage.removeItem('temp_assessment');
+              const updatedData = await tryFetch(`${API_BASE}/api/auth/email/me`);
+              if (updatedData) userData = updatedData;
+            }
+          }
+        } catch (e) {
+          console.warn('Failed parsing temp_assessment:', e);
         }
+      }
+
+      // If user has assessment completed on record but no local profile, generate and preserve it
+      if (userData?.assessment_completed && !localStorage.getItem('nbReadingProfile')) {
+        try {
+          const savedSettings = localStorage.getItem('dyslexiaSettings');
+          const parsed = savedSettings ? JSON.parse(savedSettings) : null;
+          const profile = generateReadingProfile({
+            indicatorScore: typeof userData.assessment_score === 'number' ? userData.assessment_score : 25,
+            cognitiveProfile: parsed?.cognitiveProfile || null,
+          });
+          localStorage.setItem('nbReadingProfile', JSON.stringify(profile));
+        } catch (_) {}
       }
 
       setUser(userData);
@@ -161,8 +184,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    // Clear all localStorage entries
-    localStorage.clear();
+    // Clear only authentication session; NEVER wipe out accessibility preferences or reading profile
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('temp_assessment');
   };
 
   const updateUser = (userData: Partial<User>) => {

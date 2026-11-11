@@ -17,6 +17,8 @@ import {
   Type,
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { ExtensionSyncCard } from '../ui/ExtensionSyncCard';
 
 const ZIP_URL = '/assets/neurobridge-chrome-extension.zip';
 
@@ -150,11 +152,18 @@ function LiveDemo() {
 export function ChromeExtensionPage() {
   const navigate = useNavigate();
   const { isDyslexiaMode, isTestCompleted } = useDyslexia();
+  const { user } = useAuth();
+  const hasUnlocked = isTestCompleted || !!user?.assessment_completed;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-8">
+      {/* ── Live Extension Integration Status ── */}
+      <motion.div {...fade(0)}>
+        <ExtensionSyncCard />
+      </motion.div>
+
       {/* ── Header ── */}
-      <motion.div {...fade(0)} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <motion.div {...fade(0.05)} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         <div>
           <div className="inline-flex items-center gap-2 bg-coral-soft text-coral font-bold text-sm px-4 py-1.5 rounded-full mb-3">
             <Chrome size={16} /> Chrome extension
@@ -167,7 +176,7 @@ export function ChromeExtensionPage() {
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            {isTestCompleted ? (
+            {hasUnlocked ? (
               <a
                 href={ZIP_URL}
                 download="neurobridge-chrome-extension.zip"
@@ -189,7 +198,7 @@ export function ChromeExtensionPage() {
             </a>
           </div>
           <p className="mt-3 text-xs text-text-muted font-medium">
-            {isTestCompleted
+            {hasUnlocked
               ? 'Free · For Google Chrome, Microsoft Edge and Brave on a computer'
               : 'Free · Unlocks when you finish the 15-minute test'}
           </p>

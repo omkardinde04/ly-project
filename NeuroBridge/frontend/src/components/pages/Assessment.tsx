@@ -28,9 +28,10 @@ import {
   getAssessmentClassification,
   type MeasuredCognitiveProfile,
 } from '../../utils/assessmentScoring';
+import { generateReadingProfile } from '../../utils/profileGenerator';
 
 export function AssessmentPage() {
-  const { language, completeCognitiveTasks } = useDyslexia();
+  const { language, completeCognitiveTasks, setReadingProfile } = useDyslexia();
   const { user, token, updateUser } = useAuth();
   const navigate = useNavigate();
   const t = getTranslation(language);
@@ -60,6 +61,20 @@ export function AssessmentPage() {
     );
     setFinalScore(indicatorScore);
     completeCognitiveTasks(profile, indicatorScore);
+
+    const generatedProfile = generateReadingProfile({
+      indicatorScore,
+      cognitiveProfile: profile,
+      partAPerformance,
+      metrics: {
+        confusionCount: assessmentMetrics?.confusionCount,
+        backtrackCount: assessmentMetrics?.backtrackCount,
+        readingAccuracyPct: assessmentMetrics?.readingAccuracyPct,
+        readingWpm: assessmentMetrics?.readingWpm,
+      },
+    });
+    setReadingProfile(generatedProfile);
+
     setTestState('report');
 
     // Always keep the result: saved to the account when logged in, otherwise
@@ -69,16 +84,18 @@ export function AssessmentPage() {
       scoringVersion: 2,
       partAPerformance,
       cognitiveProfile: profile,
-    });
+      readingProfile: generatedProfile,
+    }, generatedProfile);
   };
 
-  const saveAssessmentResults = async (score: number, metrics: any) => {
+  const saveAssessmentResults = async (score: number, metrics: any, readingProfile?: any) => {
     const assessmentType = getAssessmentClassification(score);
 
     const tempAssessment = {
       score,
       classification: assessmentType,
       metrics,
+      readingProfile: readingProfile || null,
       completed_at: new Date().toISOString(),
     };
     localStorage.setItem('temp_assessment', JSON.stringify(tempAssessment));

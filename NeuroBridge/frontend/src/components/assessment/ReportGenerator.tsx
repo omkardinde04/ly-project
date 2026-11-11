@@ -18,6 +18,7 @@ import {
   type Band,
   type QuestionMetricLike,
 } from './reportData';
+import { ExtensionSyncCard } from '../ui/ExtensionSyncCard';
 import {
   Sparkles,
   ArrowRight,
@@ -567,35 +568,9 @@ export function ReportGenerator({ score, partAPerformance, partBPerformance, met
         </motion.section>
       </div>
 
-      {/* 7. Chrome extension */}
-      <motion.div
-        {...enter(0.4)}
-        className="rounded-3xl p-6 sm:p-7 border border-blue-200 bg-gradient-to-br from-blue-50/90 via-indigo-50/40 to-white shadow-xs flex flex-col sm:flex-row items-center justify-between gap-5 text-left"
-      >
-        <div className="flex items-center gap-4">
-          <div className="w-13 h-13 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/25">
-            <Chrome size={26} />
-          </div>
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black mb-1">
-              <CheckCircle2 size={12} />
-              <span>Assessment Completed • Extension Unlocked</span>
-            </div>
-            <h3 className="text-base sm:text-lg font-black text-[#1A202C]">Download NeuroBridge Chrome Extension</h3>
-            <p className="text-xs text-slate-600 font-medium leading-relaxed max-w-lg mt-0.5">
-              Get the OpenDyslexic font and a line-tracking reading ruler on every website you visit.
-            </p>
-          </div>
-        </div>
-
-        <a
-          href="/assets/neurobridge-chrome-extension.zip"
-          download="neurobridge-chrome-extension.zip"
-          className="shrink-0 w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <Download size={16} />
-          <span>Download Chrome Extension</span>
-        </a>
+      {/* 7. Chrome extension integration */}
+      <motion.div {...enter(0.4)}>
+        <ExtensionSyncCard />
       </motion.div>
 
       <p className="text-center text-[11px] italic text-[#64748B]">

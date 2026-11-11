@@ -412337,13 +412337,14 @@ googleAuthRouter.post("/assessment/complete", AuthService.authenticateToken, asy
     await newResult.save();
     let adaptiveParams = null;
     try {
+      const cp = parsedMetrics.cognitiveProfile || parsedMetrics;
       const cognitiveProfile = {
-        phonological: parsedMetrics.phonological || 50,
-        visual: parsedMetrics.visual || 50,
-        workingMemory: parsedMetrics.memory || parsedMetrics.workingMemory || 50,
-        processingSpeed: parsedMetrics.processing_speed || parsedMetrics.processingSpeed || 50,
-        orthographic: parsedMetrics.orthographic || 50,
-        executive: parsedMetrics.executive || 50
+        phonological: cp.phonological || 50,
+        visual: cp.visual || 50,
+        workingMemory: cp.memory || cp.workingMemory || 50,
+        processingSpeed: cp.processing_speed || cp.processingSpeed || 50,
+        orthographic: cp.orthographic || 50,
+        executive: cp.executive || 50
       };
       adaptiveParams = await initializeMLAdaptiveParams(req.user.userId, cognitiveProfile);
     } catch (mlError) {
@@ -412403,13 +412404,14 @@ googleAuthRouter.post("/ml/init-adaptive-params", AuthService.authenticateToken,
     } catch (e) {
       console.error("Error parsing metrics:", e);
     }
+    const cp = parsedMetrics.cognitiveProfile || parsedMetrics;
     const cognitiveProfile = {
-      phonological: parsedMetrics.phonological || 50,
-      visual: parsedMetrics.visual || 50,
-      workingMemory: parsedMetrics.memory || parsedMetrics.workingMemory || 50,
-      processingSpeed: parsedMetrics.processing_speed || parsedMetrics.processingSpeed || 50,
-      orthographic: parsedMetrics.orthographic || 50,
-      executive: parsedMetrics.executive || 50
+      phonological: cp.phonological || 50,
+      visual: cp.visual || 50,
+      workingMemory: cp.memory || cp.workingMemory || 50,
+      processingSpeed: cp.processing_speed || cp.processingSpeed || 50,
+      orthographic: cp.orthographic || 50,
+      executive: cp.executive || 50
     };
     const adaptiveParams = await initializeMLAdaptiveParams(userId3, cognitiveProfile);
     if (adaptiveParams) {

@@ -2,6 +2,11 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { FUN_DEFAULTS, type FunFontId } from '../utils/funFonts';
 import { getAssessmentSeverity, type AssessmentSeverity } from '../utils/assessmentScoring';
+import {
+  generateReadingProfile,
+  validateReadingProfile,
+  type NeuroBridgeReadingProfile,
+} from '../utils/profileGenerator';
 
 export type Language = 'en' | 'hi' | 'mr';
 export type DyslexiaLevel = AssessmentSeverity;
@@ -38,6 +43,7 @@ interface DyslexiaSettings {
   testScore: number | null;
   assessmentScoringVersion: number | null;
   cognitiveProfile: CognitiveProfile | null;
+  readingProfile: NeuroBridgeReadingProfile | null;
   partACompleted: boolean;
   partBCompleted: boolean;
   /* Fun mode (isDyslexiaMode = Fun mode on) */
@@ -62,6 +68,7 @@ interface DyslexiaContextType extends DyslexiaSettings {
   resetVisualPreferences: () => void;
   setDyslexiaLevel: (level: DyslexiaLevel) => void;
   completeCognitiveTasks: (profile: CognitiveProfile, indicatorScore: number) => void;
+  setReadingProfile: (profile: NeuroBridgeReadingProfile | null) => void;
   resetTest: () => void;
   setFunFont: (font: FunFontId) => void;
   setFunLineHeight: (value: number) => void;
@@ -89,6 +96,7 @@ const defaultSettings: DyslexiaSettings = {
   testScore: null,
   assessmentScoringVersion: null,
   cognitiveProfile: null,
+  readingProfile: null,
   partACompleted: false,
   partBCompleted: false,
   ...FUN_DEFAULTS,
@@ -98,6 +106,17 @@ const DyslexiaContext = createContext<DyslexiaContextType | undefined>(undefined
 
 export function DyslexiaProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<DyslexiaSettings>(() => {
+    let restoredProfile: NeuroBridgeReadingProfile | null = null;
+    try {
+      const rawProfile = localStorage.getItem('nbReadingProfile');
+      if (rawProfile) {
+        const parsedProfile = JSON.parse(rawProfile);
+        if (validateReadingProfile(parsedProfile)) {
+          restoredProfile = parsedProfile;
+        }
+      }
+    } catch (_) {}
+
     const saved = localStorage.getItem('dyslexiaSettings');
     if (saved) {
       try {
@@ -112,15 +131,16 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
           assessmentScoringVersion: usesCurrentScoring ? 2 : null,
           dyslexiaLevel: usesCurrentScoring ? parsed.dyslexiaLevel : 'none',
           cognitiveProfile: usesCurrentScoring ? parsed.cognitiveProfile : null,
+          readingProfile: usesCurrentScoring ? (restoredProfile || parsed.readingProfile || null) : null,
           isTestCompleted: usesCurrentScoring ? parsed.isTestCompleted : false,
           partACompleted: usesCurrentScoring ? parsed.partACompleted : false,
           partBCompleted: usesCurrentScoring ? parsed.partBCompleted : false,
         };
       } catch (e) {
-        return defaultSettings;
+        return { ...defaultSettings, readingProfile: restoredProfile };
       }
     }
-    return defaultSettings;
+    return { ...defaultSettings, readingProfile: restoredProfile };
   });
 
   useEffect(() => {
@@ -207,6 +227,14 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
   };
 
   const completeCognitiveTasks = (profile: CognitiveProfile, indicatorScore: number) => {
+    const generatedProfile = generateReadingProfile({
+      indicatorScore,
+      cognitiveProfile: profile,
+    });
+    try {
+      localStorage.setItem('nbReadingProfile', JSON.stringify(generatedProfile));
+    } catch (_) {}
+
     setSettings(prev => ({
       ...prev,
       partACompleted: true,
@@ -215,8 +243,20 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       testScore: indicatorScore,
       assessmentScoringVersion: 2,
       cognitiveProfile: profile,
+      readingProfile: generatedProfile,
       dyslexiaLevel: getAssessmentSeverity(indicatorScore)
     }));
+  };
+
+  const setReadingProfile = (profile: NeuroBridgeReadingProfile | null) => {
+    try {
+      if (profile) {
+        localStorage.setItem('nbReadingProfile', JSON.stringify(profile));
+      } else {
+        localStorage.removeItem('nbReadingProfile');
+      }
+    } catch (_) {}
+    setSettings(prev => ({ ...prev, readingProfile: profile }));
   };
 
   const setFunFont = (font: FunFontId) => setSettings((prev) => ({ ...prev, funFont: font }));
@@ -227,6 +267,9 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
   const resetFunSettings = () => setSettings((prev) => ({ ...prev, ...FUN_DEFAULTS, textSize: 100 }));
 
   const resetTest = () => {
+    try {
+      localStorage.removeItem('nbReadingProfile');
+    } catch (_) {}
     setSettings(prev => ({ 
       ...prev, 
       isTestCompleted: false, 
@@ -234,6 +277,7 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       assessmentScoringVersion: null,
       dyslexiaLevel: 'none',
       cognitiveProfile: null,
+      readingProfile: null,
       partACompleted: false,
       partBCompleted: false
     }));
@@ -256,6 +300,7 @@ export function DyslexiaProvider({ children }: { children: ReactNode }) {
       resetVisualPreferences,
       setDyslexiaLevel,
       completeCognitiveTasks,
+      setReadingProfile,
       resetTest,
       setFunFont,
       setFunLineHeight,
