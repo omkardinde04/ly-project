@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=app.js --log-level=warning",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=build/server.cjs --log-level=warning",
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",

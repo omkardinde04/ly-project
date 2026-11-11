@@ -3,7 +3,8 @@
   "services": {
     "backend": {
       "root": "backend",
-      "framework": "express"
+      "framework": "express",
+      "entrypoint": "vercel-entry.js"
     },
     "frontend": {
       "root": "frontend",
