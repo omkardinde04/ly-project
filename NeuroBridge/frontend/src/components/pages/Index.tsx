@@ -156,7 +156,7 @@ export default function Index() {
               </h2>
 
               <p className="relative text-sm sm:text-base text-blue-100 font-medium leading-relaxed max-w-xl mx-auto">
-                Take a 5-minute test, get the Chrome helper, play games and learn your way.
+                Take a 15-minute test, get the Chrome helper, play games and learn your way.
               </p>
 
               <div className="relative flex flex-wrap items-center justify-center gap-4 pt-2">

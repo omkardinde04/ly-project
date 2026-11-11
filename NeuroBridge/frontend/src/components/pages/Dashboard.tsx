@@ -248,7 +248,7 @@ function DashboardWelcome({ onStartAssessment }: { onStartAssessment: () => void
           Personalize your learning experience by taking our quick interactive assessment.
           <br />
           <span className="text-xs sm:text-sm text-[#94A3B8]">
-            It only takes 5-10 minutes and calibrates your cognitive strengths & reading supports.
+            It takes about 15 minutes and calibrates your cognitive strengths & reading supports.
           </span>
         </p>
 
@@ -266,7 +266,7 @@ function DashboardWelcome({ onStartAssessment }: { onStartAssessment: () => void
           <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-5">
             <div className="text-3xl mb-2">⚡</div>
             <h3 className="font-extrabold text-sm text-[#1A202C] mb-1">Fast & Calm</h3>
-            <p className="text-xs text-[#64748B]">Complete in just 5 minutes</p>
+            <p className="text-xs text-[#64748B]">Complete in about 15 minutes</p>
           </div>
         </div>
 

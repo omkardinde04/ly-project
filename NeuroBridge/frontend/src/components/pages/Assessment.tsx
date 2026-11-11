@@ -213,7 +213,7 @@ export function AssessmentPage() {
             <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#8B5CF6] border border-purple-100 flex items-center justify-center">
               <Timer size={20} />
             </div>
-            <h3 className="font-extrabold text-sm text-[#1A202C]">5–10 Minutes</h3>
+            <h3 className="font-extrabold text-sm text-[#1A202C]">15 Minutes</h3>
             <p className="text-xs text-[#64748B] font-medium leading-relaxed">
               Take your time with zero pressure. Answer as best you can; accuracy informs your support indicator.
             </p>

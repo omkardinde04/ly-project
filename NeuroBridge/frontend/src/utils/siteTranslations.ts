@@ -100,7 +100,7 @@ const ROWS: [string, string, string][] = [
   ['Lessons', 'पाठ', 'धडे'],
   ['Assess', 'जाँचें', 'तपासा'],
   ['Quick test', 'छोटा टेस्ट', 'छोटी चाचणी'],
-  ['A 5-minute test finds what helps you read.', '5 मिनट का टेस्ट बताता है कि पढ़ने में क्या मदद करता है।', '5 मिनिटांची चाचणी वाचनासाठी काय मदत करते ते शोधते.'],
+  ['A 15-minute test finds what helps you read.', '15 मिनट का टेस्ट बताता है कि पढ़ने में क्या मदद करता है।', '15 मिनिटांची चाचणी वाचनासाठी काय मदत करते ते शोधते.'],
   ['Test', 'टेस्ट', 'चाचणी'],
   ['Extend', 'आगे बढ़ाएँ', 'वाढवा'],
   ['Use your reading settings on any website.', 'अपनी पढ़ने की सेटिंग किसी भी वेबसाइट पर इस्तेमाल करें।', 'तुमच्या वाचन सेटिंग्ज कोणत्याही वेबसाइटवर वापरा.'],
@@ -131,7 +131,7 @@ const ROWS: [string, string, string][] = [
   ['Short 15-minute sessions work best.', '15 मिनट के छोटे सत्र सबसे अच्छे हैं।', '15 मिनिटांची छोटी सत्रे सर्वात चांगली.'],
   ['How do I get the Chrome helper?', 'मुझे Chrome सहायक कैसे मिलेगा?', 'मला Chrome मदतनीस कसा मिळेल?'],
   ['It is easy:', 'यह आसान है:', 'हे सोपे आहे:'],
-  ['Finish the 5-minute test.', '5 मिनट का टेस्ट पूरा करें।', '5 मिनिटांची चाचणी पूर्ण करा.'],
+  ['Finish the 15-minute test.', '15 मिनट का टेस्ट पूरा करें।', '15 मिनिटांची चाचणी पूर्ण करा.'],
   ['Download the Chrome helper.', 'Chrome सहायक डाउनलोड करें।', 'Chrome मदतनीस डाउनलोड करा.'],
   ['Your font and ruler now work on every website.', 'अब आपका फ़ॉन्ट और रूलर हर वेबसाइट पर चलेगा।', 'आता तुमचा फॉन्ट आणि रूलर प्रत्येक वेबसाइटवर चालेल.'],
   ['Study tip', 'पढ़ाई की टिप', 'अभ्यासाची टीप'],
@@ -175,7 +175,7 @@ const ROWS: [string, string, string][] = [
   ['How it works.', 'यह कैसे काम करता है।', 'हे कसे काम करते.'],
   ['No hard setup. Just three simple steps.', 'कोई मुश्किल सेटअप नहीं। बस तीन आसान कदम।', 'अवघड सेटअप नाही. फक्त तीन सोप्या पायऱ्या.'],
   ['A short, friendly test finds what helps you read.', 'एक छोटा, आसान टेस्ट बताता है कि पढ़ने में क्या मदद करता है।', 'एक छोटी, सोपी चाचणी वाचनासाठी काय मदत करते ते शोधते.'],
-  ['5 minutes', '5 मिनट', '5 मिनिटे'],
+  ['15 minutes', '15 मिनट', '15 मिनिटे'],
   ['Play and learn', 'खेलें और सीखें', 'खेळा आणि शिका'],
   ['Play brain games and take easy lessons.', 'दिमाग़ी खेल खेलें और आसान पाठ पढ़ें।', 'मेंदूचे खेळ खेळा आणि सोपे धडे शिका.'],
   ['Games and lessons', 'खेल और पाठ', 'खेळ आणि धडे'],
@@ -229,7 +229,7 @@ const ROWS: [string, string, string][] = [
   // ── Final call-to-action
   ['Empowering Every Mind', 'हर दिमाग़ को ताक़त', 'प्रत्येक मनाला बळ'],
   ['Your learning starts here.', 'आपकी पढ़ाई यहाँ से शुरू होती है।', 'तुमचे शिक्षण इथून सुरू होते.'],
-  ['Take a 5-minute test, get the Chrome helper, play games and learn your way.', '5 मिनट का टेस्ट दें, Chrome सहायक लें, खेल खेलें और अपने तरीके से सीखें।', '5 मिनिटांची चाचणी द्या, Chrome मदतनीस घ्या, खेळ खेळा आणि तुमच्या पद्धतीने शिका.'],
+  ['Take a 15-minute test, get the Chrome helper, play games and learn your way.', '15 मिनट का टेस्ट दें, Chrome सहायक लें, खेल खेलें और अपने तरीके से सीखें।', '15 मिनिटांची चाचणी द्या, Chrome मदतनीस घ्या, खेळ खेळा आणि तुमच्या पद्धतीने शिका.'],
 
   // ── Footer
   ['Empowering neurodivergent and dyslexic students with cognitive brain games, visual courses, diagnostic assessments, friend chat, and our personalized Chrome reading extension.', 'दिमाग़ी खेल, तस्वीरों वाले कोर्स, जाँच टेस्ट, दोस्तों से चैट और हमारे Chrome पढ़ने के एक्सटेंशन से डिस्लेक्सिया वाले छात्रों की मदद।', 'मेंदूचे खेळ, चित्रांचे कोर्स, चाचण्या, मित्रांशी गप्पा आणि आमच्या Chrome वाचन एक्सटेंशनद्वारे डिस्लेक्सिया असलेल्या विद्यार्थ्यांना मदत.'],

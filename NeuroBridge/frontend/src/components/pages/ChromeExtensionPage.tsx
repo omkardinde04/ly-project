@@ -191,7 +191,7 @@ export function ChromeExtensionPage() {
           <p className="mt-3 text-xs text-text-muted font-medium">
             {isTestCompleted
               ? 'Free · For Google Chrome, Microsoft Edge and Brave on a computer'
-              : 'Free · Unlocks when you finish the 5-minute test'}
+              : 'Free · Unlocks when you finish the 15-minute test'}
           </p>
         </div>
 

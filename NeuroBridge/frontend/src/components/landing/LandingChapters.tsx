@@ -506,7 +506,7 @@ const JARVIS_CONVERSATIONS = [
     user: 'How do I get the Chrome helper?',
     intro: 'It is easy:',
     bullets: [
-      'Finish the 5-minute test.',
+      'Finish the 15-minute test.',
       'Download the Chrome helper.',
       'Your font and ruler now work on every website.',
     ],
@@ -813,7 +813,7 @@ const STEPS = [
     desc: 'A short, friendly test finds what helps you read.',
     icon: UserCheck,
     color: 'text-[#2563EB] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800',
-    tag: '5 minutes',
+    tag: '15 minutes',
   },
   {
     number: '02',
