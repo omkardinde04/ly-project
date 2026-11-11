@@ -12,6 +12,7 @@ import {
   Volume2,
   Eye,
   Sliders,
+  LayoutDashboard,
 } from 'lucide-react';
 import { AssessmentTest } from '../assessment/AssessmentTest';
 import { ReportGenerator } from '../assessment/ReportGenerator';
@@ -152,6 +153,29 @@ export function AssessmentPage() {
       <div className="bg-white rounded-3xl sm:rounded-[36px] shadow-xs border border-blue-100/90 p-6 sm:p-10 md:p-12 space-y-8 text-left relative overflow-hidden">
         {/* Decorative subtle ambient circle */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-blue-100/40 via-purple-50/30 to-transparent rounded-full blur-2xl pointer-events-none -z-0" />
+
+        {token && user?.assessment_completed && (
+          <div
+            role="status"
+            className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-200"
+          >
+            <div className="flex items-start gap-2.5">
+              <CheckCircle2 size={20} className="shrink-0 mt-px text-emerald-600" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-extrabold text-emerald-900">You have already taken the test.</p>
+                <p className="text-xs font-medium text-emerald-800">Your result is saved. Go to your dashboard, or take the test again below.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold shadow-xs transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/40 focus-visible:ring-offset-2"
+            >
+              <LayoutDashboard size={14} />
+              <span>Go to Dashboard</span>
+            </button>
+          </div>
+        )}
 
         {/* 1. Header & Title */}
         <div className="text-center max-w-2xl mx-auto space-y-3 relative z-10">

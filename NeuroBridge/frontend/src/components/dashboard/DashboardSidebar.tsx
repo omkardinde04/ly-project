@@ -7,10 +7,13 @@ import {
   Users,
   Settings,
   MapPin,
+  RotateCcw,
+  Home,
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardData } from '../../hooks/useDashboardData';
+import { useRetakeAssessment } from '../../hooks/useRetakeAssessment';
 import { getTranslation } from '../../utils/translations';
 import { SidebarHeader } from './sidebar/SidebarHeader';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
@@ -40,6 +43,7 @@ export function DashboardSidebar({
   const t = getTranslation(language);
 
   const { learningStreak } = useDashboardData();
+  const { retakeAssessment, isRetaking } = useRetakeAssessment();
 
   const handleLogout = () => {
     navigate('/');
@@ -82,6 +86,34 @@ export function DashboardSidebar({
       icon: Settings,
     },
   ];
+
+  // Actions that leave the dashboard
+  const extraItems = [
+    {
+      id: 'retake-test',
+      label: isRetaking ? 'Resetting…' : 'Retake test',
+      tooltipDescription: 'Take the assessment again',
+      icon: RotateCcw,
+    },
+    {
+      id: 'homepage',
+      label: 'Homepage',
+      tooltipDescription: 'Go to the homepage',
+      icon: Home,
+    },
+  ];
+
+  const handleExtraClick = (id: string) => {
+    if (isMobileOpen) onCloseMobile();
+    if (id === 'homepage') {
+      navigate('/');
+      return;
+    }
+    if (id === 'retake-test' && !isRetaking) {
+      const ok = window.confirm('Retake the test? Your current result will be replaced by the new one.');
+      if (ok) void retakeAssessment();
+    }
+  };
 
   const handleItemClick = (id: string) => {
     if (id === 'assessment') {
@@ -154,6 +186,26 @@ export function DashboardSidebar({
               />
             ))}
           </ul>
+
+          {!isCollapsed && (
+            <div className="px-3.5 pt-4 pb-2 text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">
+              More
+            </div>
+          )}
+          <ul className={`space-y-1 p-0 m-0 ${isCollapsed ? 'pt-3 mt-2 border-t border-slate-100' : ''}`}>
+            {extraItems.map((item) => (
+              <SidebarNavItem
+                key={item.id}
+                id={item.id}
+                label={item.label}
+                tooltipDescription={item.tooltipDescription}
+                icon={item.icon}
+                isActive={false}
+                isCollapsed={isCollapsed}
+                onClick={() => handleExtraClick(item.id)}
+              />
+            ))}
+          </ul>
         </nav>
 
         {/* Pinned Bottom Account Card */}
@@ -205,6 +257,24 @@ export function DashboardSidebar({
                     badge={item.badge}
                     isCollapsed={false}
                     onClick={() => handleItemClick(item.id)}
+                  />
+                ))}
+              </ul>
+
+              <div className="px-3.5 pt-4 pb-1.5 text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">
+                More
+              </div>
+              <ul className="space-y-1.5 p-0 m-0">
+                {extraItems.map((item) => (
+                  <SidebarNavItem
+                    key={item.id}
+                    id={item.id}
+                    label={item.label}
+                    tooltipDescription={item.tooltipDescription}
+                    icon={item.icon}
+                    isActive={false}
+                    isCollapsed={false}
+                    onClick={() => handleExtraClick(item.id)}
                   />
                 ))}
               </ul>

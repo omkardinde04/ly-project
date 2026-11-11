@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogoIcon } from '../ui/LogoIcon';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { AudioControl } from '../ui/AudioControl';
 import { DarkModeToggle } from '../ui/DarkModeToggle';
 import { DyslexiaToggle } from '../ui/DyslexiaToggle';
 import { FunModeMenu } from '../ui/FunModeMenu';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight, LayoutDashboard } from 'lucide-react';
 
 /**
  * Responsive layout (nothing ever overflows the row):
@@ -31,6 +32,9 @@ export function Navbar({
   const isLoginPage = location.pathname === '/login';
   const isAssessmentPage = location.pathname.startsWith('/assessment');
   const { isDarkMode } = useDyslexia();
+  const { user, token } = useAuth();
+  // Logged in AND finished the test → offer the dashboard instead of Log in / Get Started
+  const canOpenDashboard = !!token && !!user && !!user.assessment_completed;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavigation = (link: string) => {
@@ -163,7 +167,16 @@ export function Navbar({
                 Go Back
               </Link>
             ) : (
-              showLogin && (
+              showLogin && canOpenDashboard ? (
+                <Link
+                  to="/dashboard"
+                  data-jarvis-id="nav-dashboard"
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold whitespace-nowrap transition-all shadow-xs flex items-center gap-1.5 shrink-0 ${focusRing}`}
+                >
+                  <LayoutDashboard size={14} />
+                  <span>Go to Dashboard</span>
+                </Link>
+              ) : showLogin && (
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Link
                     to="/login"
@@ -252,7 +265,7 @@ export function Navbar({
               <FunModeMenu variant="inline" />
             </div>
 
-            {!isLoginPage && showLogin && (
+            {!isLoginPage && showLogin && !canOpenDashboard && (
               <div className="flex gap-2 pt-1 sm:hidden">
                 <Link
                   to="/login"

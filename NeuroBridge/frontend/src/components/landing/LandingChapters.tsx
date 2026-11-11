@@ -25,6 +25,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { CharacterFigure } from './CharacterFigure';
 import { CHAPTERS, DROP_IN, popIn } from './landingConfig';
 
@@ -179,6 +180,9 @@ const HERO_STATS: { key: 'students' | 'assessments' | 'practiceMinutes' | null; 
 
 export function HeroChapter() {
   const navigate = useNavigate();
+  const { user, token } = useAuth();
+  // Logged in AND finished the test
+  const canOpenDashboard = !!token && !!user && !!user.assessment_completed;
   const t = useTone();
   const { reduceMotion, isDyslexiaMode, toggleDyslexiaMode } = useDyslexia();
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -249,10 +253,17 @@ export function HeroChapter() {
           transition={{ duration: 0.5, delay: 0.15 }}
           className="flex flex-wrap items-center gap-3 sm:gap-4"
         >
-          <button type="button" data-jarvis-id="hero-get-started" onClick={() => navigate('/assessment')} className={primaryBtn}>
-            <span>Take the test</span>
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+          {canOpenDashboard ? (
+            <button type="button" data-jarvis-id="hero-go-dashboard" onClick={() => navigate('/dashboard')} className={primaryBtn}>
+              <span>Go to Dashboard</span>
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          ) : (
+            <button type="button" data-jarvis-id="hero-get-started" onClick={() => navigate('/assessment')} className={primaryBtn}>
+              <span>Take the test</span>
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          )}
           <button
             type="button"
             data-jarvis-id="hero-explore-features"

@@ -26,6 +26,7 @@ import { AudioControl } from '../ui/AudioControl';
 import { LinkedInConnect } from '../dashboard/LinkedInConnect';
 import { Brain } from '../dashboard/Brain';
 import { API_BASE } from '../../config/api';
+import { useRetakeAssessment } from '../../hooks/useRetakeAssessment';
 
 export function Dashboard() {
   const { user, token } = useAuth();
@@ -192,9 +193,8 @@ export function Dashboard() {
 }
 
 function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
-  const { user, token, updateUser } = useAuth();
-  const navigate = useNavigate();
-  const [isRetaking, setIsRetaking] = useState(false);
+  const { user, token } = useAuth();
+  const { retakeAssessment: handleRetakeAssessment, isRetaking } = useRetakeAssessment();
   const dashboardData = useDashboardData();
 
   useEffect(() => {
@@ -204,35 +204,6 @@ function HomeDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
       headers: { 'Authorization': `Bearer ${token}` }
     }).catch(() => {});
   }, [user?.assessment_completed, token]);
-
-  const handleRetakeAssessment = async () => {
-    if (!token || !user) return;
-    
-    setIsRetaking(true);
-    try {
-      const response = await fetch(`${API_BASE}/api/auth/google/assessment/retake`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        // Update local user state
-        updateUser({
-          assessment_completed: false,
-          assessment_score: undefined
-        });
-        
-        // Navigate to assessment
-        navigate('/assessment');
-      } else {
-        console.error('Failed to retake assessment');
-      }
-    } catch (error) {
-      console.error('Error retaking assessment:', error);
-    } finally {
-      setIsRetaking(false);
-    }
-  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-7 pb-12">
