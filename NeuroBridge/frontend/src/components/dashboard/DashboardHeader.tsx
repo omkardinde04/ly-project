@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, Calendar, ArrowRight, BookOpen, Bot, Users, Gamepad2 } from 'lucide-react';
+import { Search, Sparkles, Calendar, ArrowRight, Users, Gamepad2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDyslexia } from '../../contexts/DyslexiaContext';
 import { getTranslation } from '../../utils/translations';
@@ -22,9 +22,7 @@ export function DashboardHeader({ onNavigate }: DashboardHeaderProps) {
   );
 
   const quickActions = [
-    { label: 'Reading Practice', tab: 'learning', icon: BookOpen },
     { label: t.navGameZone, tab: 'progress', icon: Gamepad2 },
-    { label: 'AI Notebook', tab: 'notebook', icon: Bot },
     { label: 'Peer Circle', tab: 'community', icon: Users },
   ];
 
