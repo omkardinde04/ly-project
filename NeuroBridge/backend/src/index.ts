@@ -1,7 +1,13 @@
 import dotenv from 'dotenv';
+import fs from 'fs';
 import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+if (!process.env.VERCEL && typeof __dirname !== 'undefined') {
+  const envPath = path.resolve(__dirname, '../.env');
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
 
 import express from 'express';
 import cors from 'cors';
@@ -153,9 +159,6 @@ if (!process.env.VERCEL) {
   startServer();
 }
 
-// Export app for both ES modules and CommonJS Vercel serverless handlers
-module.exports = app;
-module.exports.default = app;
-module.exports.app = app;
+// Export Express app as default for Vercel (@vercel/backends)
 export default app;
 export { app };

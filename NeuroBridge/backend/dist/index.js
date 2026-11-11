@@ -5,8 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.app = exports.connectToDatabase = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
+const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../.env') });
+if (!process.env.VERCEL && typeof __dirname !== 'undefined') {
+    const envPath = path_1.default.resolve(__dirname, '../.env');
+    if (fs_1.default.existsSync(envPath)) {
+        dotenv_1.default.config({ path: envPath });
+    }
+}
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const express_session_1 = __importDefault(require("express-session"));
@@ -144,8 +150,5 @@ const startServer = async () => {
 if (!process.env.VERCEL) {
     startServer();
 }
-// Export app for both ES modules and CommonJS Vercel serverless handlers
-module.exports = app;
-module.exports.default = app;
-module.exports.app = app;
+// Export Express app as default for Vercel (@vercel/backends)
 exports.default = app;

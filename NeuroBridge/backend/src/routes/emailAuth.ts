@@ -117,14 +117,16 @@ const lastEmailError = (): string | undefined =>
   lastEmailReport?.attempts.find((a) => !a.ok && a.via.startsWith('gmail'))?.error ||
   lastEmailReport?.attempts.find((a) => !a.ok)?.error;
 
-// Check Gmail login once at startup so problems show up in the terminal straight away
-if (gmailConfigured()) {
-  smtpTransport(465)
-    .verify()
-    .then(() => console.log(`✅ Email ready: Gmail login OK for ${process.env.EMAIL_USER}`))
-    .catch((error: any) => console.error(`⚠️  Email check failed: ${explainEmailError(error)}`));
-} else {
-  console.warn('⚠️  Email not configured: set EMAIL_USER and EMAIL_PASSWORD in backend/.env');
+// Check Gmail login once at local startup (skip on serverless cold starts)
+if (!process.env.VERCEL) {
+  if (gmailConfigured()) {
+    smtpTransport(465)
+      .verify()
+      .then(() => console.log(`✅ Email ready: Gmail login OK for ${process.env.EMAIL_USER}`))
+      .catch((error: any) => console.error(`⚠️  Email check failed: ${explainEmailError(error)}`));
+  } else {
+    console.warn('⚠️  Email not configured: set EMAIL_USER and EMAIL_PASSWORD in backend/.env');
+  }
 }
 
 // Helper: generate a secure random token

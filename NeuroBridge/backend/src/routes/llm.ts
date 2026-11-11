@@ -21,8 +21,10 @@ async function extractText(file: Express.Multer.File): Promise<string> {
 
   if (name.endsWith('.pdf')) {
     try {
-      // Lazy-load pdf-parse only when parsing a PDF to avoid crashing serverless startup
-      const pdfParse = require('pdf-parse');
+      // Lazy-load pdf-parse core module to avoid ESM require issues and pdf-parse/index.js debug test-file reads
+      // @ts-ignore pdf-parse/lib/pdf-parse.js does not ship type declarations
+      const pdfParseMod: any = await import('pdf-parse/lib/pdf-parse.js');
+      const pdfParse = pdfParseMod.default || pdfParseMod;
       const data = await pdfParse(file.buffer);
       const text = data.text?.trim();
       if (!text) throw new Error('Could not read text from PDF. Try a text-based PDF.');

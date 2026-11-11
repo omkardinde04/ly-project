@@ -29,7 +29,7 @@ setInterval(() => {
         if (now > expiry)
             pendingStates.delete(state);
     }
-}, 15 * 60 * 1000);
+}, 15 * 60 * 1000).unref();
 // ── GET /api/linkedin/auth ── Returns OAuth URL for frontend to redirect to ──
 exports.linkedinRouter.get('/auth', (_req, res) => {
     const scopes = ['openid', 'profile', 'email'].join(' ');
