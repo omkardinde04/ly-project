@@ -2,7 +2,6 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useDyslexia, type DyslexiaLevel } from '../../contexts/DyslexiaContext';
 import { getTranslation, type Translation } from '../../utils/translations';
-import { AudioControl } from '../ui/AudioControl';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProgressGame } from '../dashboard/ProgressGame';
 import { SkillRadar, BandDonut } from './ReportCharts';
@@ -178,7 +177,6 @@ export function ReportGenerator({ score, partAPerformance, partBPerformance, met
   const learningStyle = getLearningStyle();
   const recommendations = getRecommendations(level);
 
-  const reportText = `Your support indicator is ${getLevelText(level)}. The indicator score is ${score} out of 100; higher scores mean more observed difficulty signals. This is a learning aid, not a medical diagnosis.`;
 
   // ── Real per-skill results (Part A answers + Part B tasks) ────────────────
   const skills = useMemo(() => computeSkills(metrics, cognitiveProfile), [metrics, cognitiveProfile]);
@@ -300,7 +298,6 @@ export function ReportGenerator({ score, partAPerformance, partBPerformance, met
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <AudioControl text={reportText} showControls={false} />
           {downloadButton()}
         </div>
       </div>
