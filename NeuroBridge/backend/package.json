@@ -2,11 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "vercel-entry.js",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=build/server.cjs --log-level=warning",
-    "start": "ts-node src/index.ts",
-    "dev": "nodemon src/index.ts",
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node20 --format=cjs --outfile=build/server.cjs --log-level=warning",
+    "start": "ts-node src/main.ts",
+    "dev": "nodemon src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typecheck": "tsc --noEmit"
   },
