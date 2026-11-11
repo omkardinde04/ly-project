@@ -63,7 +63,7 @@ export const connectToDatabase = async () => {
   try {
     await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 });
     isDbConnected = true;
-    console.log(`✅ Connected to MongoDB at ${mongoUri}`);
+    console.log(`✅ Connected to MongoDB at ${mongoUri.replace(/\/\/[^@]*@/, "//***@")}`);
   } catch (error: any) {
     console.error('❌ MongoDB connection error:', error.message);
   }
