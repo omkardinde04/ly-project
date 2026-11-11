@@ -37,7 +37,7 @@ export function DashboardSidebar({
   onCloseMobile,
 }: DashboardSidebarProps) {
   const { language, resetTest } = useDyslexia();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const t = getTranslation(language);
@@ -45,9 +45,13 @@ export function DashboardSidebar({
   const { learningStreak } = useDashboardData();
   const { retakeAssessment, isRetaking } = useRetakeAssessment();
 
+  // Sign out fully: clear the login session so public pages show "Log in" again
+  // Leave the protected dashboard first, otherwise clearing the session makes
+  // the route guard bounce to /login instead of the homepage.
   const handleLogout = () => {
-    navigate('/');
+    navigate('/', { replace: true });
     setTimeout(() => {
+      logout();
       resetTest();
     }, 50);
   };
