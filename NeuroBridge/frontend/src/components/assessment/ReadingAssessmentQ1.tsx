@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, ArrowUp, ArrowDown, Sparkles, FastForward, ArrowRight, ThumbsUp } from 'lucide-react';
+import { ChevronRight, ChevronLeft, ArrowUp, ArrowDown, Sparkles, ArrowRight, ThumbsUp } from 'lucide-react';
 
 type Stage = 'tutorial' | 'assessment' | 'completion';
 
@@ -268,10 +268,6 @@ export function ReadingAssessmentQ1({ onComplete }: { onComplete?: () => void })
             </div>
 
             <div className="relative flex items-center gap-3">
-              <button onClick={() => onComplete?.()} className="hidden md:flex items-center gap-1.5 px-4 py-2.5 rounded-full font-medium transition-colors text-sm border border-orange-200 text-orange-600 hover:bg-orange-50 bg-white">
-                <FastForward size={16} /> Force next
-              </button>
-              
               {stage === 'completion' && (
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
