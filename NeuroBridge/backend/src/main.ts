@@ -61,7 +61,12 @@ export const connectToDatabase = async () => {
   }
   const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/neurobridge';
   try {
-    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 });
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 10000,
+      bufferCommands: false   // fail fast instead of buffering ops when disconnected
+    });
     isDbConnected = true;
     console.log(`✅ Connected to MongoDB at ${mongoUri.replace(/\/\/[^@]*@/, "//***@")}`);
   } catch (error: any) {
