@@ -145,20 +145,53 @@ const passwordProblem = (password: unknown): string | null => {
   return null;
 };
 
-// ─── PENDING SIGN-UPS ─────────────────────────────────────────────────────────
-// After sign-up the browser gets an opaque id it can poll to learn when the
-// email link has been clicked (so the page can move on by itself). The id
-// reveals nothing about the email address. Kept in memory; 24 h lifetime.
-const PENDING_TTL_MS = 24 * 60 * 60 * 1000;
-const pendingSignups = new Map<string, { email: string; expires: number }>();
-const createPendingId = (email: string): string => {
-  const now = Date.now();
-  for (const [id, entry] of pendingSignups) if (entry.expires < now) pendingSignups.delete(id);
-  const id = crypto.randomBytes(24).toString('hex');
-  pendingSignups.set(id, { email, expires: now + PENDING_TTL_MS });
-  return id;
+// ─── LINK BASE URL ────────────────────────────────────────────────────────────
+// Where links in emails point. FRONTEND_URL wins, except a localhost value on a
+// deployed (Vercel) backend — then use the project's public production URL,
+// which Vercel provides at runtime. Never taken from request headers, so a
+// forged Origin/Host cannot redirect a verification link to another site.
+const appBaseUrl = (): string => {
+  const configured = (process.env.FRONTEND_URL || '').trim().replace(/\/+$/, '');
+  const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(configured);
+  if (configured && !(isLocal && process.env.VERCEL)) return configured;
+  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+  if (process.env.VERCEL && vercelHost) return `https://${vercelHost}`;
+  return configured || 'http://localhost:5147';
 };
 
+// ─── PENDING SIGN-UPS ─────────────────────────────────────────────────────────
+// After sign-up the browser gets an opaque id it can poll to learn when the
+// email link has been clicked (so the page can move on by itself). The id is
+// the email + expiry encrypted with AES-256-GCM, so it reveals nothing about the
+// address and needs no server memory — serverless instances don't share memory.
+const PENDING_TTL_MS = 24 * 60 * 60 * 1000;
+const pendingKey = crypto
+  .createHash('sha256')
+  .update(`pending-signup:${process.env.JWT_SECRET || process.env.SESSION_SECRET || 'neurobridge-dev-secret'}`)
+  .digest();
+
+const createPendingId = (email: string): string => {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', pendingKey, iv);
+  const payload = JSON.stringify({ e: email, x: Date.now() + PENDING_TTL_MS });
+  const data = Buffer.concat([cipher.update(payload, 'utf8'), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), data]).toString('base64url');
+};
+
+/** Returns the email for a valid, unexpired pending id, otherwise null. */
+const readPendingId = (id: string): string | null => {
+  try {
+    const raw = Buffer.from(id, 'base64url');
+    if (raw.length < 29) return null;
+    const decipher = crypto.createDecipheriv('aes-256-gcm', pendingKey, raw.subarray(0, 12));
+    decipher.setAuthTag(raw.subarray(12, 28));
+    const payload = JSON.parse(Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString('utf8'));
+    if (typeof payload?.e !== 'string' || typeof payload?.x !== 'number' || payload.x < Date.now()) return null;
+    return payload.e;
+  } catch {
+    return null;
+  }
+};
 
 // ─── Email HTML Templates ──────────────────────────────────────────────────────
 const verificationEmailHtml = (link: string) => `
@@ -264,7 +297,7 @@ emailAuthRouter.post('/register', async (req: Request, res: Response) => {
         // Resend verification email for unverified accounts
         const newToken = generateToken();
         await database.saveVerificationToken(existingUser.email, newToken, 24 * 60);
-        const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5147'}/verify-email?token=${newToken}`;
+        const verificationLink = `${appBaseUrl()}/verify-email?token=${newToken}`;
         const resent = await sendEmail(existingUser.email, 'Verify Your NeuroBridge Account', verificationEmailHtml(verificationLink));
 
         return res.status(400).json({
@@ -294,7 +327,7 @@ emailAuthRouter.post('/register', async (req: Request, res: Response) => {
     await database.saveVerificationToken(normalizedEmail, verificationToken, 24 * 60); // 24 hours
 
     // ── Send verification email ──────────────────────────────────────────────
-    const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5147'}/verify-email?token=${verificationToken}`;
+    const verificationLink = `${appBaseUrl()}/verify-email?token=${verificationToken}`;
     const emailSent = await sendEmail(
       normalizedEmail,
       'Verify Your NeuroBridge Account',
@@ -407,14 +440,12 @@ emailAuthRouter.get('/email-status', async (req: Request, res: Response) => {
 // Polled by the "check your email" screen right after sign-up.
 emailAuthRouter.get('/verification-status/:pendingId', async (req: Request, res: Response) => {
   try {
-    const entry = pendingSignups.get(String(req.params.pendingId || ''));
-    if (!entry || entry.expires < Date.now()) {
+    const email = readPendingId(String(req.params.pendingId || ''));
+    if (!email) {
       return res.status(404).json({ error: 'Unknown or expired sign-up' });
     }
-    const user = await database.findUserByEmail(entry.email);
-    const verified = !!user?.email_verified;
-    if (verified) pendingSignups.delete(String(req.params.pendingId));
-    return res.json({ verified });
+    const user = await database.findUserByEmail(email);
+    return res.json({ verified: !!user?.email_verified });
   } catch (error) {
     console.error('Verification status error:', error);
     res.status(500).json({ error: 'Could not check verification status' });
@@ -500,7 +531,7 @@ emailAuthRouter.post('/resend-verification', async (req: Request, res: Response)
 
     const newToken = generateToken();
     await database.saveVerificationToken(user.email, newToken, 24 * 60);
-    const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5147'}/verify-email?token=${newToken}`;
+    const verificationLink = `${appBaseUrl()}/verify-email?token=${newToken}`;
     const sent = await sendEmail(user.email, 'Verify Your NeuroBridge Account', verificationEmailHtml(verificationLink));
     if (!sent) {
       return res.status(502).json({
@@ -542,7 +573,7 @@ emailAuthRouter.post('/forgot-password', async (req: Request, res: Response) => 
     const resetToken = generateToken();
     await database.saveResetToken(user.email, resetToken, 60); // 1 hour
 
-    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5147'}/reset-password?token=${resetToken}`;
+    const resetLink = `${appBaseUrl()}/reset-password?token=${resetToken}`;
     const emailSent = await sendEmail(
       user.email,
       'Reset Your NeuroBridge Password',

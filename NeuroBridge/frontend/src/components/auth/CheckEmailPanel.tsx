@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MailCheck, ExternalLink, RotateCw, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
+import { MailCheck, ExternalLink, RotateCw, CheckCircle2, ArrowRight, Loader2, AlertTriangle } from 'lucide-react';
 import { AUTH_CHANNEL, EMAIL_AUTH_API as API, mailProviderFor, openInboxBeside } from '../../utils/emailVerification';
 
 const POLL_MS = 4000;
@@ -153,6 +153,16 @@ export function CheckEmailPanel({ email, pendingId, emailSent: initiallySent, de
           <p className="text-sm text-[#475569] font-medium">Click the link in that email to turn on your account.</p>
         )}
       </div>
+
+      {emailSent && (
+        <div
+          role="note"
+          className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 text-xs font-semibold leading-relaxed"
+        >
+          <AlertTriangle size={16} className="shrink-0 mt-px text-amber-600" aria-hidden="true" />
+          <p>Not in your inbox? Please check your Spam folder too. If it is there, mark it as "Not spam".</p>
+        </div>
+      )}
 
       {emailSent ? (
         <button

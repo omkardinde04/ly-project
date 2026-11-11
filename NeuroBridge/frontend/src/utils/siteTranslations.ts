@@ -287,6 +287,7 @@ const ROWS: [string, string, string][] = [
   ['Open the verify link', 'पुष्टि लिंक खोलें', 'पडताळणी लिंक उघडा'],
   ['Waiting for you to click the link…', 'आपके लिंक दबाने का इंतज़ार…', 'तुम्ही लिंक दाबण्याची वाट पाहत आहोत…'],
   ["Can't find it?", 'नहीं मिल रहा?', 'सापडत नाही?'],
+  ['Not in your inbox? Please check your Spam folder too. If it is there, mark it as "Not spam".', 'इनबॉक्स में नहीं है? कृपया अपना Spam फ़ोल्डर भी देखें। अगर वहाँ है, तो उसे "Not spam" चुनें।', 'इनबॉक्समध्ये नाही? कृपया तुमचा Spam फोल्डरही पाहा. तिथे असल्यास, त्याला "Not spam" म्हणून चिन्हांकित करा.'],
   ['Look in the Spam or Promotions folder.', 'Spam या Promotions फ़ोल्डर में देखें।', 'Spam किंवा Promotions फोल्डरमध्ये पाहा.'],
   ['The link works for 24 hours.', 'लिंक 24 घंटे तक चलता है।', 'लिंक 24 तास चालते.'],
   ['Send the email again', 'ईमेल फिर से भेजें', 'ईमेल पुन्हा पाठवा'],

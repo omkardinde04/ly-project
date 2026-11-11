@@ -414259,14 +414259,35 @@ var passwordProblem = (password) => {
   if (!/[^A-Za-z0-9]/.test(password)) return "Password must include at least one special character (for example ! @ # $)";
   return null;
 };
+var appBaseUrl = () => {
+  const configured = (process.env.FRONTEND_URL || "").trim().replace(/\/+$/, "");
+  const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(configured);
+  if (configured && !(isLocal && process.env.VERCEL)) return configured;
+  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+  if (process.env.VERCEL && vercelHost) return `https://${vercelHost}`;
+  return configured || "http://localhost:5147";
+};
 var PENDING_TTL_MS = 24 * 60 * 60 * 1e3;
-var pendingSignups = /* @__PURE__ */ new Map();
+var pendingKey = import_crypto3.default.createHash("sha256").update(`pending-signup:${process.env.JWT_SECRET || process.env.SESSION_SECRET || "neurobridge-dev-secret"}`).digest();
 var createPendingId = (email) => {
-  const now = Date.now();
-  for (const [id2, entry] of pendingSignups) if (entry.expires < now) pendingSignups.delete(id2);
-  const id = import_crypto3.default.randomBytes(24).toString("hex");
-  pendingSignups.set(id, { email, expires: now + PENDING_TTL_MS });
-  return id;
+  const iv = import_crypto3.default.randomBytes(12);
+  const cipher = import_crypto3.default.createCipheriv("aes-256-gcm", pendingKey, iv);
+  const payload = JSON.stringify({ e: email, x: Date.now() + PENDING_TTL_MS });
+  const data = Buffer.concat([cipher.update(payload, "utf8"), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), data]).toString("base64url");
+};
+var readPendingId = (id) => {
+  try {
+    const raw = Buffer.from(id, "base64url");
+    if (raw.length < 29) return null;
+    const decipher = import_crypto3.default.createDecipheriv("aes-256-gcm", pendingKey, raw.subarray(0, 12));
+    decipher.setAuthTag(raw.subarray(12, 28));
+    const payload = JSON.parse(Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString("utf8"));
+    if (typeof payload?.e !== "string" || typeof payload?.x !== "number" || payload.x < Date.now()) return null;
+    return payload.e;
+  } catch {
+    return null;
+  }
 };
 var verificationEmailHtml = (link) => `
 <!DOCTYPE html>
@@ -414359,7 +414380,7 @@ emailAuthRouter.post("/register", async (req, res) => {
       if (!existingUser.email_verified) {
         const newToken = generateToken();
         await database_default.saveVerificationToken(existingUser.email, newToken, 24 * 60);
-        const verificationLink2 = `${process.env.FRONTEND_URL || "http://localhost:5147"}/verify-email?token=${newToken}`;
+        const verificationLink2 = `${appBaseUrl()}/verify-email?token=${newToken}`;
         const resent = await sendEmail(existingUser.email, "Verify Your NeuroBridge Account", verificationEmailHtml(verificationLink2));
         return res.status(400).json({
           error: "Account already exists but email not verified. A new verification email has been sent \u2014 please check your inbox.",
@@ -414381,7 +414402,7 @@ emailAuthRouter.post("/register", async (req, res) => {
     });
     const verificationToken = generateToken();
     await database_default.saveVerificationToken(normalizedEmail, verificationToken, 24 * 60);
-    const verificationLink = `${process.env.FRONTEND_URL || "http://localhost:5147"}/verify-email?token=${verificationToken}`;
+    const verificationLink = `${appBaseUrl()}/verify-email?token=${verificationToken}`;
     const emailSent = await sendEmail(
       normalizedEmail,
       "Verify Your NeuroBridge Account",
@@ -414468,14 +414489,12 @@ emailAuthRouter.get("/email-status", async (req, res) => {
 });
 emailAuthRouter.get("/verification-status/:pendingId", async (req, res) => {
   try {
-    const entry = pendingSignups.get(String(req.params.pendingId || ""));
-    if (!entry || entry.expires < Date.now()) {
+    const email = readPendingId(String(req.params.pendingId || ""));
+    if (!email) {
       return res.status(404).json({ error: "Unknown or expired sign-up" });
     }
-    const user = await database_default.findUserByEmail(entry.email);
-    const verified = !!user?.email_verified;
-    if (verified) pendingSignups.delete(String(req.params.pendingId));
-    return res.json({ verified });
+    const user = await database_default.findUserByEmail(email);
+    return res.json({ verified: !!user?.email_verified });
   } catch (error) {
     console.error("Verification status error:", error);
     res.status(500).json({ error: "Could not check verification status" });
@@ -414542,7 +414561,7 @@ emailAuthRouter.post("/resend-verification", async (req, res) => {
     }
     const newToken = generateToken();
     await database_default.saveVerificationToken(user.email, newToken, 24 * 60);
-    const verificationLink = `${process.env.FRONTEND_URL || "http://localhost:5147"}/verify-email?token=${newToken}`;
+    const verificationLink = `${appBaseUrl()}/verify-email?token=${newToken}`;
     const sent = await sendEmail(user.email, "Verify Your NeuroBridge Account", verificationEmailHtml(verificationLink));
     if (!sent) {
       return res.status(502).json({
@@ -414572,7 +414591,7 @@ emailAuthRouter.post("/forgot-password", async (req, res) => {
     }
     const resetToken = generateToken();
     await database_default.saveResetToken(user.email, resetToken, 60);
-    const resetLink = `${process.env.FRONTEND_URL || "http://localhost:5147"}/reset-password?token=${resetToken}`;
+    const resetLink = `${appBaseUrl()}/reset-password?token=${resetToken}`;
     const emailSent = await sendEmail(
       user.email,
       "Reset Your NeuroBridge Password",
@@ -416221,7 +416240,7 @@ var connectToDatabase = async () => {
   try {
     await import_mongoose20.default.connect(mongoUri, { serverSelectionTimeoutMS: 3e3 });
     isDbConnected = true;
-    console.log(`\u2705 Connected to MongoDB at ${mongoUri}`);
+    console.log(`\u2705 Connected to MongoDB at ${mongoUri.replace(/\/\/[^@]*@/, "//***@")}`);
   } catch (error) {
     console.error("\u274C MongoDB connection error:", error.message);
   }
