@@ -657,7 +657,7 @@ emailAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res: 
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, email_verified, created_at } = user;
+    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, reading_profile, email_verified, created_at } = user;
     return res.json({
       id,
       google_id,
@@ -667,6 +667,7 @@ emailAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res: 
       assessment_completed,
       assessment_score,
       classification,
+      reading_profile: reading_profile || null,
       email_verified,
       created_at,
     });

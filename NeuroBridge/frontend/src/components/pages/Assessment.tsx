@@ -113,6 +113,7 @@ export function AssessmentPage() {
             assessment_score: score,
             classification: assessmentType,
             assessment_metrics: JSON.stringify(metrics),
+            reading_profile: readingProfile,
           }),
         });
 
@@ -121,6 +122,7 @@ export function AssessmentPage() {
             assessment_completed: true,
             assessment_score: score,
             classification: assessmentType,
+            reading_profile: readingProfile,
           });
           localStorage.removeItem('temp_assessment');
         }

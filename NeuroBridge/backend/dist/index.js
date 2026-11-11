@@ -412016,6 +412016,7 @@ var UserSchema = new import_mongoose.Schema({
   assessment_score: { type: Number },
   classification: { type: String },
   assessment_metrics: { type: String },
+  reading_profile: { type: import_mongoose.Schema.Types.Mixed },
   email_verified: { type: Boolean, default: false },
   verification_token: { type: String },
   verification_token_expiry: { type: Date },
@@ -412054,6 +412055,11 @@ var DatabaseService = class {
   // Update user assessment data
   async updateUserAssessment(userId3, assessmentData) {
     const user = await User_default.findByIdAndUpdate(userId3, assessmentData, { new: true });
+    return toUser(user);
+  }
+  // Update user reading profile
+  async updateUserReadingProfile(userId3, readingProfile) {
+    const user = await User_default.findByIdAndUpdate(userId3, { reading_profile: readingProfile }, { new: true });
     return toUser(user);
   }
   // Get user by ID
@@ -412290,7 +412296,7 @@ googleAuthRouter.get("/me", AuthService.authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, created_at } = user;
+    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, reading_profile, created_at } = user;
     res.json({
       id,
       google_id,
@@ -412300,6 +412306,7 @@ googleAuthRouter.get("/me", AuthService.authenticateToken, async (req, res) => {
       assessment_completed,
       assessment_score,
       classification,
+      reading_profile: reading_profile || null,
       created_at
     });
   } catch (error) {
@@ -412309,15 +412316,20 @@ googleAuthRouter.get("/me", AuthService.authenticateToken, async (req, res) => {
 });
 googleAuthRouter.post("/assessment/complete", AuthService.authenticateToken, async (req, res) => {
   try {
-    const { assessment_score, classification, assessment_metrics } = req.body;
+    const { assessment_score, classification, assessment_metrics, reading_profile } = req.body;
     if (typeof assessment_score !== "number" || !Number.isFinite(assessment_score) || assessment_score < 0 || assessment_score > 100 || typeof classification !== "string" || !classification.trim()) {
       return res.status(400).json({ error: "Assessment score and classification are required" });
+    }
+    let parsedReadingProfile = null;
+    if (reading_profile) {
+      parsedReadingProfile = typeof reading_profile === "string" ? JSON.parse(reading_profile) : reading_profile;
     }
     await database_default.updateUserAssessment(req.user.userId, {
       assessment_completed: true,
       assessment_score,
       classification,
-      assessment_metrics
+      assessment_metrics,
+      ...parsedReadingProfile ? { reading_profile: parsedReadingProfile } : {}
     });
     let parsedMetrics = {};
     try {
@@ -412326,6 +412338,9 @@ googleAuthRouter.post("/assessment/complete", AuthService.authenticateToken, asy
       }
     } catch (e) {
       console.error("Error parsing metrics:", e);
+    }
+    if (parsedReadingProfile) {
+      parsedMetrics.readingProfile = parsedReadingProfile;
     }
     const newResult = new AssessmentResult_default({
       userId: req.user.userId,
@@ -412358,6 +412373,19 @@ googleAuthRouter.post("/assessment/complete", AuthService.authenticateToken, asy
   } catch (error) {
     console.error("Assessment completion error:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+googleAuthRouter.post("/reading-profile", AuthService.authenticateToken, async (req, res) => {
+  try {
+    const { reading_profile } = req.body;
+    if (!reading_profile || typeof reading_profile !== "object") {
+      return res.status(400).json({ error: "Valid reading_profile object is required" });
+    }
+    const updated = await database_default.updateUserReadingProfile(req.user.userId, reading_profile);
+    res.json({ success: true, reading_profile: updated.reading_profile });
+  } catch (error) {
+    console.error("Save reading profile error:", error);
+    res.status(500).json({ error: "Internal server error: " + error.message });
   }
 });
 googleAuthRouter.post("/assessment/retake", AuthService.authenticateToken, async (req, res) => {
@@ -414656,7 +414684,7 @@ emailAuthRouter.get("/me", AuthService.authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, email_verified, created_at } = user;
+    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, reading_profile, email_verified, created_at } = user;
     return res.json({
       id,
       google_id,
@@ -414666,6 +414694,7 @@ emailAuthRouter.get("/me", AuthService.authenticateToken, async (req, res) => {
       assessment_completed,
       assessment_score,
       classification,
+      reading_profile: reading_profile || null,
       email_verified,
       created_at
     });

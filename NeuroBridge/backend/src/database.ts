@@ -11,6 +11,7 @@ export interface User {
   assessment_score?: number;
   classification?: string;
   assessment_metrics?: string;
+  reading_profile?: any;
   email_verified: boolean;
   verification_token?: string;
   verification_token_expiry?: string | Date;
@@ -51,8 +52,14 @@ class DatabaseService {
   }
 
   // Update user assessment data
-  async updateUserAssessment(userId: string | number, assessmentData: { assessment_completed: boolean; assessment_score?: number; classification?: string; assessment_metrics?: string }): Promise<User> {
+  async updateUserAssessment(userId: string | number, assessmentData: { assessment_completed: boolean; assessment_score?: number; classification?: string; assessment_metrics?: string; reading_profile?: any }): Promise<User> {
     const user = await UserModel.findByIdAndUpdate(userId, assessmentData, { new: true });
+    return toUser(user)!;
+  }
+
+  // Update user reading profile
+  async updateUserReadingProfile(userId: string | number, readingProfile: any): Promise<User> {
+    const user = await UserModel.findByIdAndUpdate(userId, { reading_profile: readingProfile }, { new: true });
     return toUser(user)!;
   }
 

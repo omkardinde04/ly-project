@@ -194,7 +194,7 @@ googleAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res:
     }
 
     // Return user info without sensitive data
-    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, created_at } = user;
+    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, reading_profile, created_at } = user;
     res.json({
       id,
       google_id,
@@ -204,6 +204,7 @@ googleAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res:
       assessment_completed,
       assessment_score,
       classification,
+      reading_profile: reading_profile || null,
       created_at
     });
   } catch (error) {
@@ -215,7 +216,7 @@ googleAuthRouter.get('/me', AuthService.authenticateToken, async (req: any, res:
 // Update assessment completion
 googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, async (req: any, res: Response) => {
   try {
-    const { assessment_score, classification, assessment_metrics } = req.body;
+    const { assessment_score, classification, assessment_metrics, reading_profile } = req.body;
     
     if (
       typeof assessment_score !== 'number' ||
@@ -228,11 +229,17 @@ googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, asy
       return res.status(400).json({ error: 'Assessment score and classification are required' });
     }
 
+    let parsedReadingProfile: any = null;
+    if (reading_profile) {
+      parsedReadingProfile = typeof reading_profile === 'string' ? JSON.parse(reading_profile) : reading_profile;
+    }
+
     await database.updateUserAssessment(req.user.userId, {
       assessment_completed: true,
       assessment_score,
       classification,
-      assessment_metrics
+      assessment_metrics,
+      ...(parsedReadingProfile ? { reading_profile: parsedReadingProfile } : {})
     });
 
     // Save detailed results to MongoDB
@@ -243,6 +250,10 @@ googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, asy
       }
     } catch (e) {
       console.error('Error parsing metrics:', e);
+    }
+
+    if (parsedReadingProfile) {
+      parsedMetrics.readingProfile = parsedReadingProfile;
     }
 
     const newResult = new AssessmentResult({
@@ -283,6 +294,21 @@ googleAuthRouter.post('/assessment/complete', AuthService.authenticateToken, asy
   } catch (error) {
     console.error('Assessment completion error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Save or update reading profile directly
+googleAuthRouter.post('/reading-profile', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const { reading_profile } = req.body;
+    if (!reading_profile || typeof reading_profile !== 'object') {
+      return res.status(400).json({ error: 'Valid reading_profile object is required' });
+    }
+    const updated = await database.updateUserReadingProfile(req.user.userId, reading_profile);
+    res.json({ success: true, reading_profile: updated.reading_profile });
+  } catch (error: any) {
+    console.error('Save reading profile error:', error);
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
   }
 });
 

@@ -12,6 +12,7 @@ export interface User {
   assessment_completed: boolean;
   assessment_score?: number;
   classification?: string;
+  reading_profile?: any;
   email_verified: boolean;
   created_at: string;
 }
@@ -53,7 +54,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (storedToken && storedUser) {
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        if (parsedUser?.reading_profile && !localStorage.getItem('nbReadingProfile')) {
+          localStorage.setItem('nbReadingProfile', JSON.stringify(parsedUser.reading_profile));
+        }
       }
     } catch (err) {
       console.warn('Could not read user session from storage:', err);
@@ -129,8 +134,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (tempAssessment) {
         try {
           const assessmentData = JSON.parse(tempAssessment);
-          if (assessmentData?.readingProfile) {
-            localStorage.setItem('nbReadingProfile', JSON.stringify(assessmentData.readingProfile));
+          const pendingProfile = assessmentData?.readingProfile || assessmentData?.reading_profile;
+          if (pendingProfile) {
+            localStorage.setItem('nbReadingProfile', JSON.stringify(pendingProfile));
           }
           if (!userData.assessment_completed) {
             const assessmentResponse = await fetch(`${API_BASE}/api/auth/google/assessment/complete`, {
@@ -143,6 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 assessment_score: assessmentData.score,
                 classification: assessmentData.classification,
                 assessment_metrics: assessmentData.metrics ? JSON.stringify(assessmentData.metrics) : undefined,
+                reading_profile: pendingProfile || undefined,
               }),
             });
 
@@ -157,16 +164,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
 
-      // If user has assessment completed on record but no local profile, generate and preserve it
-      if (userData?.assessment_completed && !localStorage.getItem('nbReadingProfile')) {
+      // Hydrate reading profile from backend if user already has one saved
+      if (userData?.reading_profile) {
+        localStorage.setItem('nbReadingProfile', JSON.stringify(userData.reading_profile));
+      } else if (userData?.assessment_completed) {
+        // If user completed assessment on backend but has no saved reading_profile, generate and persist to backend
         try {
-          const savedSettings = localStorage.getItem('dyslexiaSettings');
-          const parsed = savedSettings ? JSON.parse(savedSettings) : null;
-          const profile = generateReadingProfile({
-            indicatorScore: typeof userData.assessment_score === 'number' ? userData.assessment_score : 25,
-            cognitiveProfile: parsed?.cognitiveProfile || null,
-          });
-          localStorage.setItem('nbReadingProfile', JSON.stringify(profile));
+          const rawProfile = localStorage.getItem('nbReadingProfile');
+          let profileToSave = null;
+          if (rawProfile) {
+            profileToSave = JSON.parse(rawProfile);
+          } else {
+            const savedSettings = localStorage.getItem('dyslexiaSettings');
+            const parsed = savedSettings ? JSON.parse(savedSettings) : null;
+            profileToSave = generateReadingProfile({
+              indicatorScore: typeof userData.assessment_score === 'number' ? userData.assessment_score : 25,
+              cognitiveProfile: parsed?.cognitiveProfile || null,
+            });
+            localStorage.setItem('nbReadingProfile', JSON.stringify(profileToSave));
+          }
+
+          if (profileToSave) {
+            fetch(`${API_BASE}/api/auth/google/reading-profile`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${newToken}`,
+              },
+              body: JSON.stringify({ reading_profile: profileToSave }),
+            }).catch(() => {});
+            userData.reading_profile = profileToSave;
+          }
         } catch (_) {}
       }
 

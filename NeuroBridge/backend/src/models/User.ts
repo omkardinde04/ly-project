@@ -10,6 +10,7 @@ export interface IUser extends Document {
   assessment_score?: number;
   classification?: string;
   assessment_metrics?: string;
+  reading_profile?: any;
   email_verified: boolean;
   verification_token?: string;
   verification_token_expiry?: Date;
@@ -28,6 +29,7 @@ const UserSchema: Schema = new Schema({
   assessment_score: { type: Number },
   classification: { type: String },
   assessment_metrics: { type: String },
+  reading_profile: { type: Schema.Types.Mixed },
   email_verified: { type: Boolean, default: false },
   verification_token: { type: String },
   verification_token_expiry: { type: Date },
