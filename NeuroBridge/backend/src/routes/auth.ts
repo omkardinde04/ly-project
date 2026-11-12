@@ -1,4 +1,7 @@
 import { Router, Request, Response } from 'express';
+import { AuthService } from '../auth';
+import database from '../database';
+import AssessmentResult from '../models/AssessmentResult';
 
 /**
  * In-App Account Registration Route
@@ -113,5 +116,126 @@ authRouter.post('/unstop/register', async (req: Request, res: Response) => {
       success: true,
       message: 'Please try connecting your Unstop account, or check if the email is already registered.',
     });
+  }
+});
+
+// ─── UNIFIED AUTH / READING PROFILE ROUTES ────────────────────────────────────
+// Provider-agnostic routes: works with any valid JWT from Google or Email auth
+
+// GET /api/auth/me
+authRouter.get('/me', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const user = await database.getUserById(req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const { id, google_id, name, email, profile_picture, assessment_completed, assessment_score, classification, reading_profile, email_verified, created_at } = user;
+    res.json({
+      id,
+      google_id,
+      name,
+      email,
+      profile_picture,
+      assessment_completed,
+      assessment_score,
+      classification,
+      reading_profile: reading_profile || null,
+      email_verified,
+      created_at
+    });
+  } catch (error) {
+    console.error('Unified get user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/auth/reading-profile
+authRouter.post('/reading-profile', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const { reading_profile } = req.body;
+    if (!reading_profile || typeof reading_profile !== 'object') {
+      return res.status(400).json({ error: 'Valid reading_profile object is required' });
+    }
+    const updated = await database.updateUserReadingProfile(req.user.userId, reading_profile);
+    res.json({ success: true, reading_profile: updated.reading_profile });
+  } catch (error: any) {
+    console.error('Unified save reading profile error:', error);
+    res.status(500).json({ error: 'Internal server error: ' + error.message });
+  }
+});
+
+// POST /api/auth/assessment/complete
+authRouter.post('/assessment/complete', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    const { assessment_score, classification, assessment_metrics, reading_profile } = req.body;
+
+    if (
+      typeof assessment_score !== 'number' ||
+      !Number.isFinite(assessment_score) ||
+      assessment_score < 0 ||
+      assessment_score > 100 ||
+      typeof classification !== 'string' ||
+      !classification.trim()
+    ) {
+      return res.status(400).json({ error: 'Assessment score and classification are required' });
+    }
+
+    let parsedReadingProfile: any = null;
+    if (reading_profile) {
+      parsedReadingProfile = typeof reading_profile === 'string' ? JSON.parse(reading_profile) : reading_profile;
+    }
+
+    await database.updateUserAssessment(req.user.userId, {
+      assessment_completed: true,
+      assessment_score,
+      classification,
+      assessment_metrics,
+      ...(parsedReadingProfile ? { reading_profile: parsedReadingProfile } : {})
+    });
+
+    let parsedMetrics: any = {};
+    try {
+      if (assessment_metrics) {
+        parsedMetrics = JSON.parse(assessment_metrics);
+      }
+    } catch (e) {
+      console.error('Error parsing metrics:', e);
+    }
+
+    if (parsedReadingProfile) {
+      parsedMetrics.readingProfile = parsedReadingProfile;
+    }
+
+    const newResult = new AssessmentResult({
+      userId: req.user.userId,
+      googleId: req.user.googleId,
+      score: assessment_score,
+      classification: classification,
+      metrics: parsedMetrics
+    });
+
+    await newResult.save();
+
+    res.json({
+      success: true,
+      message: 'Assessment completed successfully',
+      reading_profile: parsedReadingProfile
+    });
+  } catch (error) {
+    console.error('Unified assessment completion error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/auth/assessment/retake
+authRouter.post('/assessment/retake', AuthService.authenticateToken, async (req: any, res: Response) => {
+  try {
+    await database.updateUserAssessment(req.user.userId, {
+      assessment_completed: false,
+      assessment_score: undefined,
+      classification: undefined
+    });
+    res.json({ success: true, message: 'Assessment reset successfully' });
+  } catch (error) {
+    console.error('Unified assessment retake error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });

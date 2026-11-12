@@ -139,24 +139,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             localStorage.setItem('nbReadingProfile', JSON.stringify(pendingProfile));
           }
           if (!userData.assessment_completed) {
-            const assessmentResponse = await fetch(`${API_BASE}/api/auth/google/assessment/complete`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${newToken}`,
-              },
-              body: JSON.stringify({
-                assessment_score: assessmentData.score,
-                classification: assessmentData.classification,
-                assessment_metrics: assessmentData.metrics ? JSON.stringify(assessmentData.metrics) : undefined,
-                reading_profile: pendingProfile || undefined,
-              }),
+            const postEndpoints = [
+              `${API_BASE}/api/auth/assessment/complete`,
+              `${API_BASE}/api/auth/email/assessment/complete`,
+              `${API_BASE}/api/auth/google/assessment/complete`
+            ];
+            const bodyPayload = JSON.stringify({
+              assessment_score: assessmentData.score,
+              classification: assessmentData.classification,
+              assessment_metrics: assessmentData.metrics ? JSON.stringify(assessmentData.metrics) : undefined,
+              reading_profile: pendingProfile || undefined,
             });
 
-            if (assessmentResponse.ok) {
-              localStorage.removeItem('temp_assessment');
-              const updatedData = await tryFetch(`${API_BASE}/api/auth/email/me`);
-              if (updatedData) userData = updatedData;
+            for (const ep of postEndpoints) {
+              try {
+                const res = await fetch(ep, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${newToken}`,
+                  },
+                  body: bodyPayload,
+                });
+                if (res.ok) {
+                  localStorage.removeItem('temp_assessment');
+                  const updatedData = await tryFetch(`${API_BASE}/api/auth/me`) || await tryFetch(`${API_BASE}/api/auth/email/me`);
+                  if (updatedData) userData = updatedData;
+                  break;
+                }
+              } catch (_) {}
             }
           }
         } catch (e) {
@@ -185,14 +196,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
 
           if (profileToSave) {
-            fetch(`${API_BASE}/api/auth/google/reading-profile`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${newToken}`,
-              },
-              body: JSON.stringify({ reading_profile: profileToSave }),
-            }).catch(() => {});
+            const saveEndpoints = [
+              `${API_BASE}/api/auth/reading-profile`,
+              `${API_BASE}/api/auth/email/reading-profile`,
+              `${API_BASE}/api/auth/google/reading-profile`
+            ];
+            for (const ep of saveEndpoints) {
+              try {
+                const res = await fetch(ep, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${newToken}`,
+                  },
+                  body: JSON.stringify({ reading_profile: profileToSave }),
+                });
+                if (res.ok) break;
+              } catch (_) {}
+            }
             userData.reading_profile = profileToSave;
           }
         } catch (_) {}

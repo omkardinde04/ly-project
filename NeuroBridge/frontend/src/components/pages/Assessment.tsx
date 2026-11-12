@@ -103,28 +103,40 @@ export function AssessmentPage() {
     if (token && user) {
       setIsSaving(true);
       try {
-        const response = await fetch(`${API_BASE}/api/auth/google/assessment/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            assessment_score: score,
-            classification: assessmentType,
-            assessment_metrics: JSON.stringify(metrics),
-            reading_profile: readingProfile,
-          }),
+        const endpoints = [
+          `${API_BASE}/api/auth/assessment/complete`,
+          `${API_BASE}/api/auth/google/assessment/complete`,
+          `${API_BASE}/api/auth/email/assessment/complete`
+        ];
+        const body = JSON.stringify({
+          assessment_score: score,
+          classification: assessmentType,
+          assessment_metrics: JSON.stringify(metrics),
+          reading_profile: readingProfile,
         });
 
-        if (response.ok) {
-          updateUser({
-            assessment_completed: true,
-            assessment_score: score,
-            classification: assessmentType,
-            reading_profile: readingProfile,
-          });
-          localStorage.removeItem('temp_assessment');
+        for (const ep of endpoints) {
+          try {
+            const response = await fetch(ep, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body,
+            });
+
+            if (response.ok) {
+              updateUser({
+                assessment_completed: true,
+                assessment_score: score,
+                classification: assessmentType,
+                reading_profile: readingProfile,
+              });
+              localStorage.removeItem('temp_assessment');
+              break;
+            }
+          } catch (_) {}
         }
       } catch (error) {
         console.error('Error saving assessment results:', error);
