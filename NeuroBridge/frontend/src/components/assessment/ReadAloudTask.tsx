@@ -264,7 +264,7 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white rounded-3xl p-5 sm:p-8 border border-blue-100 shadow-sm flex flex-col items-center gap-5">
+    <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-4 p-2 sm:p-4 my-auto">
       {/* Header */}
       <div className="w-full flex items-center justify-between gap-3">
         <div className="text-left">
@@ -279,8 +279,8 @@ export function ReadAloudTask({ onComplete }: ReadAloudTaskProps) {
       </div>
 
       {/* Paragraph Box */}
-      <div className="w-full rounded-2xl bg-[#FFFBEB]/60 border border-amber-100 p-5 sm:p-7">
-        <p className="text-left text-[#1E293B]" style={{ fontSize: 'clamp(1.2rem, 2.6vw, 1.6rem)', lineHeight: 2.1 }}>
+      <div className="w-full rounded-2xl bg-[#FFFBEB]/60 border border-amber-100 p-4 sm:p-5">
+        <p className="text-left text-[#1E293B]" style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.45rem)', lineHeight: 1.85 }}>
           {rawWords.map((word, i) => {
             const isTricky = paragraph.highlights.includes(cleanWords[i]);
             const isRead = alignment.isWordRead[i];

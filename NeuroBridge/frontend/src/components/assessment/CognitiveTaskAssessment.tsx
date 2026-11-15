@@ -262,27 +262,16 @@ type VisualPhase = 'showing' | 'answering';
 
 function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => void }) {
   const TOTAL_QUESTIONS = 6;
-  const TIME_PER_QUESTION = 15;
-  const TARGET_DISPLAY_MS = 5000;
 
   const [questions] = useState<VisualQuestion[]>(() => generateVisualQuestions(TOTAL_QUESTIONS));
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
   const [phase, setPhase] = useState<VisualPhase>('showing');
   const [correctCount, setCorrectCount] = useState(0);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timeLeftRef = useRef(TIME_PER_QUESTION);
-
-  const stopTimer = () => {
-    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-  };
 
   const goNext = useCallback((newCorrect: number) => {
     if (currentIdx < TOTAL_QUESTIONS - 1) {
       setCurrentIdx(prev => prev + 1);
-      timeLeftRef.current = TIME_PER_QUESTION;
-      setTimeLeft(TIME_PER_QUESTION);
       setPhase('showing');
       setShowSkipConfirm(false);
     } else {
@@ -290,30 +279,13 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
     }
   }, [currentIdx, TOTAL_QUESTIONS, onComplete]);
 
-  useEffect(() => {
+  const handleReadyToAnswer = () => {
     if (phase !== 'showing') return;
-    const timeout = setTimeout(() => setPhase('answering'), TARGET_DISPLAY_MS);
-    return () => clearTimeout(timeout);
-  }, [currentIdx, phase]);
-
-  // Timer tick
-  useEffect(() => {
-    if (phase !== 'answering') return;
-    timerRef.current = setInterval(() => {
-      const nextTime = Math.max(0, timeLeftRef.current - 1);
-      timeLeftRef.current = nextTime;
-      setTimeLeft(nextTime);
-      if (nextTime === 0) {
-        stopTimer();
-        goNext(correctCount);
-      }
-    }, 1000);
-    return () => stopTimer();
-  }, [currentIdx, phase, correctCount, goNext]);
+    setPhase('answering');
+  };
 
   const handleAnswer = (word: string) => {
     if (phase !== 'answering') return;
-    stopTimer();
     const isCorrect = word === questions[currentIdx].answer;
     const newCorrect = isCorrect ? correctCount + 1 : correctCount;
     setCorrectCount(newCorrect);
@@ -326,13 +298,9 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
   };
 
   const confirmSkip = () => {
-    stopTimer();
     setShowSkipConfirm(false);
-    // Go directly to next question — no 'timesup' phase shown
     if (currentIdx < TOTAL_QUESTIONS - 1) {
       setCurrentIdx(prev => prev + 1);
-      timeLeftRef.current = TIME_PER_QUESTION;
-      setTimeLeft(TIME_PER_QUESTION);
       setPhase('showing');
     } else {
       onComplete(calculatePercentCorrect(correctCount, TOTAL_QUESTIONS));
@@ -342,53 +310,64 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
   const cancelSkip = () => setShowSkipConfirm(false);
 
   const q = questions[currentIdx];
-  const timerColor = timeLeft > 10 ? 'bg-blue-500' : timeLeft > 5 ? 'bg-orange-400' : 'bg-red-500';
 
   return (
     <div className="bg-surface rounded-3xl shadow-xl p-8 text-center max-w-2xl mx-auto border-2 border-border relative min-h-[420px]">
-      {/* Timer — Top Right */}
-      {phase === 'answering' && (
-        <div className={`absolute top-5 right-5 ${timerColor} text-white px-4 py-2 rounded-full font-black text-base shadow-md transition-colors duration-300`}>
-          ⏱ {timeLeft}s
-        </div>
-      )}
-
       {/* Centered header */}
       <div className="flex flex-col items-center mb-6">
         <div className="text-4xl mb-3">👁️</div>
         <h3 className="text-2xl font-bold text-text mb-1">Visual Attention</h3>
-        <p className="text-text-muted text-sm font-medium">Remember the word, then select its match. Skipped or timed-out answers count as incorrect.</p>
+        <p className="text-text-muted text-sm font-medium">
+          {phase === 'showing'
+            ? 'Study the word carefully. Click when you are ready to see the question.'
+            : 'Which word did you see? Select the exact match.'}
+        </p>
       </div>
 
-      {/* Show the target for 5 seconds before flashing options */}
+      {/* Show the target until the user clicks they are ready */}
       {phase === 'showing' && (
         <motion.div
           key={`showing-${currentIdx}`}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="flex flex-col items-center justify-center py-6 gap-4"
+          className="flex flex-col items-center justify-center py-4 gap-5"
           aria-live="polite"
         >
-          <p className="text-xs uppercase tracking-widest text-text-muted font-bold">Study this word carefully</p>
-          <div className="inline-flex items-center justify-center px-12 py-6 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-sm">
-            <span className="text-4xl sm:text-5xl font-black text-blue-700 tracking-widest">{q.target}</span>
+          <div className="flex items-center justify-between w-full max-w-xs px-2 text-xs font-bold text-text-muted uppercase tracking-wider">
+            <span>Word {currentIdx + 1} of {TOTAL_QUESTIONS}</span>
+            <span className="text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Take your time</span>
           </div>
 
-          {/* 5-second countdown progress bar */}
-          <div className="w-48 h-2 bg-blue-100 rounded-full overflow-hidden mt-3 shadow-inner">
-            <motion.div
-              initial={{ width: '100%' }}
-              animate={{ width: '0%' }}
-              transition={{ duration: 5, ease: 'linear' }}
-              className="h-full bg-blue-500 rounded-full"
-            />
-          </div>
-          <span className="text-xs font-semibold text-text-muted">Options will appear in 5s</span>
+          <button
+            type="button"
+            onClick={handleReadyToAnswer}
+            className="group inline-flex flex-col items-center justify-center px-12 py-8 rounded-3xl bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 border-2 border-blue-200 hover:border-blue-400 hover:shadow-md active:scale-98 transition-all cursor-pointer shadow-sm w-full max-w-md"
+            title="Click when you are ready"
+          >
+            <span className="text-xs uppercase tracking-widest text-text-muted font-bold mb-2 group-hover:text-blue-600 transition-colors">
+              Study this word
+            </span>
+            <span className="text-4xl sm:text-5xl font-black text-blue-700 tracking-widest select-none">
+              {q.target}
+            </span>
+            <span className="text-xs font-semibold text-blue-500 mt-3 opacity-80 group-hover:opacity-100 flex items-center gap-1">
+              Tap card or click button below when ready
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleReadyToAnswer}
+            className="mt-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-8 py-3.5 rounded-2xl font-bold text-base shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <span>I'm Ready for the Question</span>
+            <span>→</span>
+          </button>
         </motion.div>
       )}
 
-      {/* Phase: Answering — Flashes options after 5s */}
+      {/* Phase: Answering — user selects their answer without any timer pressure */}
       {phase === 'answering' && (
         <motion.div
           key={`answering-${currentIdx}`}
@@ -401,6 +380,7 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
             {q.options.map((word, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => handleAnswer(word)}
                 className="py-4 px-6 rounded-2xl bg-gray-50 hover:bg-blue-50 active:scale-95 border-2 border-border hover:border-blue-400 text-xl font-black text-text transition-all shadow-sm hover:scale-105 cursor-pointer"
               >
@@ -416,8 +396,9 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
           {/* Skip — Bottom Right */}
           {!showSkipConfirm ? (
             <button
+              type="button"
               onClick={handleSkip}
-              className="absolute bottom-5 right-5 bg-gray-100 hover:bg-gray-200 text-text-muted px-5 py-2 rounded-full font-semibold text-sm transition-all"
+              className="absolute bottom-5 right-5 bg-gray-100 hover:bg-gray-200 text-text-muted px-5 py-2 rounded-full font-semibold text-sm transition-all cursor-pointer"
             >
               Skip →
             </button>
@@ -426,12 +407,14 @@ function VisualAttentionTask({ onComplete }: { onComplete: (score: number) => vo
               <p className="text-text font-semibold text-sm text-center">Skip this question?</p>
               <div className="flex gap-2 w-full">
                 <button
+                  type="button"
                   onClick={cancelSkip}
                   className="flex-1 bg-gray-100 hover:bg-gray-200 text-text-muted py-2 rounded-xl font-semibold text-sm transition-all"
                 >
                   No, stay
                 </button>
                 <button
+                  type="button"
                   onClick={confirmSkip}
                   className="flex-1 bg-orange-400 hover:bg-orange-500 text-white py-2 rounded-xl font-bold text-sm transition-all"
                 >
@@ -464,7 +447,6 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
   const [optionItems, setOptionItems] = useState<string[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [totalScore, setTotalScore] = useState(0);
-  const [countdown, setCountdown] = useState(3);
 
   const startRound = useCallback(() => {
     const shuffled = [...MEMORY_EMOJIS].sort(() => Math.random() - 0.5);
@@ -476,22 +458,15 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
     setOptionItems(options);
     setSelected([]);
     setPhase('showing');
-    setCountdown(3);
   }, []);
 
   useEffect(() => { startRound(); }, [round]);
 
-  // Countdown while showing
-  useEffect(() => {
+  const handleReadyToSelect = () => {
     if (phase !== 'showing') return;
-    if (countdown <= 0) {
-      setPhase('hidden');
-      setTimeout(() => setPhase('selecting'), 600);
-      return;
-    }
-    const t = setTimeout(() => setCountdown(prev => prev - 1), 1000);
-    return () => clearTimeout(t);
-  }, [phase, countdown]);
+    setPhase('hidden');
+    setTimeout(() => setPhase('selecting'), 500);
+  };
 
   const toggleSelect = (emoji: string) => {
     if (phase !== 'selecting') return;
@@ -539,26 +514,41 @@ function WorkingMemoryTask({ onComplete }: { onComplete: (score: number) => void
         <p className="text-text-muted text-sm font-medium">Round {round + 1} of {ROUND_COUNT}</p>
       </div>
 
-      {/* Phase: Showing */}
+      {/* Phase: Showing — Self-paced studying */}
       {phase === 'showing' && (
-        <div>
-          <div className="bg-green-50 border border-green-200 rounded-2xl px-6 py-3 mb-5 inline-block">
-            <p className="text-green-700 font-bold text-sm">
-              🟢 Remember these items! Hiding in {countdown}s…
+        <div className="flex flex-col items-center">
+          <div className="bg-purple-50 border border-purple-200 rounded-2xl px-6 py-3 mb-5 inline-block">
+            <p className="text-purple-700 font-bold text-sm">
+              🧠 Study these items! Take your time, then tap the cards or click below when ready.
             </p>
           </div>
-          <div className="grid grid-cols-4 gap-4 max-w-xs mx-auto">
+
+          <button
+            type="button"
+            onClick={handleReadyToSelect}
+            className="grid grid-cols-4 gap-4 max-w-xs mx-auto p-4 rounded-3xl bg-gradient-to-br from-purple-50/60 to-blue-50/60 border-2 border-purple-200 hover:border-purple-400 hover:shadow-md transition-all cursor-pointer group"
+            title="Click when you are ready"
+          >
             {targetItems.map((emoji, i) => (
               <motion.div
                 key={i}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-blue-100 border-2 border-purple-200 flex items-center justify-center text-3xl shadow-sm"
+                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-blue-100 border-2 border-purple-200 flex items-center justify-center text-3xl shadow-sm group-hover:scale-105 transition-transform"
               >
                 {emoji}
               </motion.div>
             ))}
-          </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleReadyToSelect}
+            className="mt-6 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white px-8 py-3.5 rounded-2xl font-bold text-base shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <span>I'm Ready to Pick</span>
+            <span>→</span>
+          </button>
         </div>
       )}
 

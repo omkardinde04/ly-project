@@ -15,6 +15,8 @@ import { ReadingAssessmentQ1 } from './ReadingAssessmentQ1';
 import { ObjectNamingTask } from './ObjectNamingTask';
 import { HandRaisingTask } from './HandRaisingTask';
 import { LeftRightGameTask } from './LeftRightGameTask';
+import { useSpeechCapture, micStatusText } from './useSpeechCapture';
+import { LevelBars, MicErrorBox } from './MicControls';
 import {
   calculatePartAPerformance,
   calculateReadAloudScore,
@@ -132,41 +134,15 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
   const [hoveredWordIdx, setHoveredWordIdx] = useState<number>(-1);
   const [wordStatuses, setWordStatuses] = useState<('idle' | 'correct' | 'wrong')[]>(Array(words.length).fill('idle'));
   const [trackCount, setTrackCount] = useState(0);
-  const [transcript, setTranscript] = useState('');
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recogRef = useRef<any>(null);
+  const mic = useSpeechCapture({ maxMs: 60000 });
 
   const startListening = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-       alert("Speech recognition not supported in this browser. Please click stop to continue.");
-       setPhase('listening'); // to allow them to stop
-       return;
-    }
-    const rec = new SR();
-    rec.lang = 'en-US';
-    rec.continuous = true;
-    rec.interimResults = true;
-    recogRef.current = rec;
-
-    rec.onresult = (e: any) => {
-      let currentTranscript = '';
-      for (let i = 0; i < e.results.length; ++i) {
-        currentTranscript += e.results[i][0].transcript;
-      }
-      setTranscript(currentTranscript);
-    };
-
-    rec.start();
     setPhase('listening');
+    mic.start();
   };
 
   const stopListening = () => {
-    if (recogRef.current) {
-      try { recogRef.current.stop(); } catch (e) { /* ignore */ }
-    }
+    mic.stop();
     setPhase('done');
     onComplete(trackCount);
   };
@@ -181,7 +157,7 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
   };
 
   useEffect(() => {
-    const spokenWords = transcript.toLowerCase().split(/\s+/).filter(Boolean);
+    const spokenWords = mic.transcript.toLowerCase().split(/\s+/).filter(Boolean);
     if (spokenWords.length === 0) return;
 
     setWordStatuses(() => {
@@ -232,7 +208,7 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
 
       return newStatuses;
     });
-  }, [transcript, words]);
+  }, [mic.transcript, words]);
 
   useEffect(() => {
     if (phase === 'listening' && wordStatuses.every(s => s !== 'idle')) {
@@ -242,45 +218,57 @@ function ReadingTrackingTask({ paragraph, onComplete }: { paragraph: string | st
 
   return (
     <div className="flex flex-col items-center justify-center p-6 w-full h-full">
-       {phase === 'idle' && (
-         <button onClick={startListening} className="mb-6 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 transition-all">
-           🎤 Start Mic & Read
-         </button>
-       )}
-       {phase === 'listening' && (
-         <div className="flex flex-col items-center mb-6">
-           <button onClick={stopListening} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 animate-pulse transition-all">
-             🛑 Stop & Finish
-           </button>
-           <p className="text-sm text-text-muted mt-2 font-medium">Recording... read the paragraph aloud.</p>
-         </div>
-       )}
-       {phase === 'done' && (
-         <div className="mb-6 bg-green-100 text-green-700 px-6 py-3 rounded-full font-bold text-lg flex items-center gap-2">
-           ✅ Completed! You tracked words {trackCount} times. Click Next to proceed.
-         </div>
-       )}
+      {mic.error ? (
+        <MicErrorBox
+          error={mic.error}
+          onRetry={() => {
+            setPhase('listening');
+            mic.start();
+          }}
+          onSkip={() => {
+            setPhase('done');
+            onComplete(0);
+          }}
+        />
+      ) : phase === 'idle' && (
+        <button onClick={startListening} className="mb-6 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 transition-all">
+          🎤 Start Mic & Read
+        </button>
+      )}
+      {!mic.error && phase === 'listening' && (
+        <div className="flex flex-col items-center gap-2 mb-6">
+          <button onClick={stopListening} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2 animate-pulse transition-all cursor-pointer">
+            🛑 Stop & Finish
+          </button>
+          <LevelBars level={mic.level} active={true} />
+          <p className="text-sm text-text-muted font-medium">{micStatusText(mic.status, mic.heardSound, mic.supported)} Read the paragraph aloud.</p>
+        </div>
+      )}
+      {!mic.error && phase === 'done' && (
+        <div className="mb-6 bg-green-100 text-green-700 px-6 py-3 rounded-full font-bold text-lg flex items-center gap-2">
+          ✅ Completed! You tracked words {trackCount} times. Click Next to proceed.
+        </div>
+      )}
 
-       <div className="text-2xl leading-relaxed max-w-lg text-left p-6 bg-surface rounded-2xl border-2 border-border shadow-inner" style={{ lineHeight: '2.5' }}>
-         {words.map((word, idx) => {
-           let statusClass = 'text-text';
-           if (wordStatuses[idx] === 'correct') statusClass = 'text-green-600 bg-green-100 font-bold';
-           if (wordStatuses[idx] === 'wrong') statusClass = 'text-red-600 bg-red-100 font-bold';
+      <div className="text-2xl leading-relaxed max-w-lg text-left p-6 bg-surface rounded-2xl border-2 border-border shadow-inner" style={{ lineHeight: '2.5' }}>
+        {words.map((word, idx) => {
+          let statusClass = 'text-text';
+          if (wordStatuses[idx] === 'correct') statusClass = 'text-green-600 bg-green-100 font-bold';
+          if (wordStatuses[idx] === 'wrong') statusClass = 'text-red-600 bg-red-100 font-bold';
 
-           return (
-             <span 
-               key={idx} 
-               onMouseEnter={() => handleMouseEnter(idx)}
-               onMouseLeave={handleMouseLeave}
-               className={`inline-block px-1 rounded transition-colors duration-200 cursor-default ${
-                 hoveredWordIdx === idx ? 'scale-110 shadow-sm border border-yellow-300 bg-yellow-50' : ''
-               } ${statusClass}`}
-             >
-               {word}{' '}
-             </span>
-           );
-         })}
-       </div>
+          return (
+            <span
+              key={idx}
+              onMouseEnter={() => handleMouseEnter(idx)}
+              onMouseLeave={handleMouseLeave}
+              className={`inline-block px-1 rounded transition-colors duration-200 cursor-default ${hoveredWordIdx === idx ? 'scale-110 shadow-sm border border-yellow-300 bg-yellow-50' : ''
+                } ${statusClass}`}
+            >
+              {word}{' '}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -417,12 +405,12 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
 
   if (currentQuestion === 0 && currentQ.type === 'reading_tracking') {
     return (
-      <ReadingAssessmentQ1 
+      <ReadingAssessmentQ1
         onComplete={() => {
           setTrackingMetrics({ trackCount: 0 });
           handleAnswer(0);
           setTimeout(() => handleNext(0), 100);
-        }} 
+        }}
       />
     );
   }
@@ -496,31 +484,31 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
             className="flex-1 min-h-0 flex flex-col bg-white rounded-3xl shadow-xs border border-blue-100/90 overflow-hidden"
           >
             {/* QUESTION TEXT */}
-            {currentQ.type !== 'object_naming' && currentQ.type !== 'hand_raising' && currentQ.type !== 'camera_direction' && currentQ.type !== 'situation_series' && currentQ.type !== 'voice_alphabet' && currentQ.type !== 'read_aloud' && currentQ.type !== 'reading_reread_tracking' && currentQ.type !== 'mission_control' && (
-              <div className="flex-none px-6 pt-5 pb-4 border-b border-slate-100 text-left">
+            {currentQ.type !== 'object_naming' && currentQ.type !== 'hand_raising' && currentQ.type !== 'camera_direction' && currentQ.type !== 'situation_series' && currentQ.type !== 'voice_alphabet' && currentQ.type !== 'read_aloud' && currentQ.type !== 'reading_reread_tracking' && currentQ.type !== 'mission_control' && currentQ.type !== 'multiplication_recall' && (
+              <div className="flex-none px-6 pt-4 pb-3 border-b border-slate-100 text-left">
                 <p
                   className="font-bold text-[#1A202C]"
-                style={{
-                  fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
-                  lineHeight: 1.5,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                {currentQ.instruction}
-              </p>
-              {currentQ.example && (
-                <div className="mt-2.5 inline-block bg-blue-50 border border-blue-200 text-[#2563EB] px-3 py-1 rounded-xl text-xs font-bold font-mono tracking-widest">
-                  {currentQ.example}
-                </div>
-              )}
-            </div>
+                  style={{
+                    fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
+                    lineHeight: 1.5,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {currentQ.instruction}
+                </p>
+                {currentQ.example && (
+                  <div className="mt-2 inline-block bg-blue-50 border border-blue-200 text-[#2563EB] px-3 py-1 rounded-xl text-xs font-bold font-mono tracking-widest">
+                    {currentQ.example}
+                  </div>
+                )}
+              </div>
             )}
 
             {currentQ.type === 'reading_tracking' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <ReadingTrackingTask
                   paragraph={currentQ.paragraph || ''}
                   onComplete={(tCount) => {
@@ -530,13 +518,13 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'object_naming' ? (
-              <ObjectNamingTask 
-                question={currentQ} 
+              <ObjectNamingTask
+                question={currentQ}
                 currentAnswer={answers[currentQuestion]}
-                onComplete={(index) => handleAnswer(index)} 
+                onComplete={(index) => handleAnswer(index)}
               />
             ) : currentQ.type === 'hand_raising' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <HandRaisingTask
                   question={currentQ}
                   onComplete={(isCorrect) => {
@@ -546,7 +534,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'camera_direction' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <LeftRightGameTask
                   key={currentQ.id}
                   onComplete={(isCorrect, result) => {
@@ -556,7 +544,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'reading_reread_tracking' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <ReadingRereadTask
                   question={currentQ}
                   onComplete={(rereadCount, readingMetrics) => {
@@ -571,7 +559,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'mission_control' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <MissionControlTask
                   onComplete={(logs) => {
                     const isAllCorrect = (logs.sequence_errors === 0 && logs.wrong_key_count === 0 && logs.extra_click_count === 0) || (logs as any).isCorrect === true;
@@ -581,7 +569,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'situation_series' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <SituationSeriesTask
                   scenarios={Q7_PICTURE_SCENARIOS}
                   title="Imagine this..."
@@ -592,7 +580,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'multiplication_recall' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <MultiplicationRecallTask
                   onComplete={(metrics) => {
                     handleAnswer(0, scorePuzzleTask(metrics));
@@ -601,7 +589,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'voice_alphabet' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <VoiceAlphabetTask
                   onComplete={(metrics) => {
                     handleAnswer(0, scoreLetterTask(metrics));
@@ -610,7 +598,7 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 />
               </div>
             ) : currentQ.type === 'read_aloud' ? (
-              <div className="flex-1 min-h-0 relative flex flex-col items-center justify-center overflow-auto bg-slate-50/60 border-b border-slate-100">
+              <div className="flex-1 min-h-0 relative flex flex-col items-center overflow-y-auto overflow-x-hidden bg-slate-50/60 border-b border-slate-100 p-2 sm:p-4">
                 <ReadAloudTask
                   onComplete={(metrics) => {
                     handleAnswer(0, scoreWordsReadTask(metrics));
@@ -654,11 +642,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                           onClick={() => handleAnswer(index)}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className={`relative py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all border text-center cursor-pointer ${
-                            isSelected
+                          className={`relative py-3.5 px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all border text-center cursor-pointer ${isSelected
                               ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs'
                               : 'bg-[#F8FAFC] text-[#1A202C] border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
-                          }`}
+                            }`}
                         >
                           <span>{option.text}</span>
                         </motion.button>
@@ -675,11 +662,10 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                 type="button"
                 onClick={handlePrevious}
                 disabled={currentQuestion === 0}
-                className={`flex items-center gap-1.5 px-5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer ${
-                  currentQuestion === 0
+                className={`flex items-center gap-1.5 px-5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer ${currentQuestion === 0
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     : 'bg-slate-100 text-[#1A202C] hover:bg-slate-200'
-                }`}
+                  }`}
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -714,19 +700,18 @@ export function AssessmentTest({ onComplete }: AssessmentTestProps) {
                   type="button"
                   onClick={() => handleNext()}
                   disabled={!isAnswered}
-                  className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full font-bold transition-colors text-sm ${
-                    isAnswered
+                  className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full font-bold transition-colors text-sm ${isAnswered
                       ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md ring-2 ring-blue-600 ring-offset-2'
                       : 'bg-[#e2e8f0] text-[#64748b] cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   <span>{currentQuestion === partAQuestions.length - 1 ? 'Finish' : 'Next'}</span>
                   {currentQuestion < partAQuestions.length - 1 && (
-                    <svg 
-                      className="h-4 w-4 ml-1" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor" 
+                    <svg
+                      className="h-4 w-4 ml-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                       strokeWidth={2.5}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

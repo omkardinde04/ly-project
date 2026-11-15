@@ -76,8 +76,8 @@ export function SituationSeriesTask({ onComplete, scenarios, title = "Imagine th
   const isPictureStep = step.options.every((o) => !!o.image);
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-[#F5F9FF] rounded-2xl p-5 sm:p-8 shadow-sm font-sans flex flex-col items-center justify-center min-h-[420px]">
-      <div className="text-center mb-8">
+    <div className="w-full max-w-2xl mx-auto font-sans flex flex-col items-center justify-center p-3 sm:p-6 my-auto">
+      <div className="text-center mb-4 sm:mb-6">
         <h2 className="text-xl font-bold text-[#1A2340] mb-2">{title}</h2>
         <div className="h-1 w-12 bg-[#4DA6FF] rounded-full mx-auto opacity-50" />
       </div>

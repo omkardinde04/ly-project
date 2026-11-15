@@ -172,7 +172,7 @@ export function VoiceAlphabetTask({ onComplete }: VoiceAlphabetTaskProps) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl p-5 sm:p-8 border border-blue-100 shadow-sm flex flex-col items-center gap-5">
+    <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-4 p-2 sm:p-4 my-auto">
       {/* Header */}
       <div className="w-full flex items-center justify-between gap-3">
         <div className="text-left">

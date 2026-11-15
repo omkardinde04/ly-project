@@ -101,16 +101,33 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
     speechService.startCommandListening(
       (transcript, isFinal) => {
         setUserInput(transcript);
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         if (isFinal && transcript.trim()) {
           handleUserSubmit(transcript.trim());
+        } else {
+          // Keep listening while user is actively speaking
+          silenceTimerRef.current = setTimeout(() => {
+            speechService.stopCommandListening();
+            setIsListening(false);
+            if (agentStatus === 'listening') setAgentStatus('idle');
+          }, 5000);
         }
       },
       (error) => {
         console.warn('[Jarvis] Speech recognition error:', error);
+        speechService.stopCommandListening();
         setIsListening(false);
         setAgentStatus('idle');
-        if (error.includes('not-allowed') || error.includes('permission')) {
-          setSpeechError('Microphone access is unavailable. You can type commands below.');
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        const normalizedError = error.toLowerCase();
+        if (normalizedError.includes('network')) {
+          setSpeechError('Mic access works, but Chrome speech-to-text is offline or blocked. Check internet, VPN, and browser extensions, or type your message.');
+        } else if (normalizedError.includes('not-allowed') || normalizedError.includes('permission')) {
+          setSpeechError('Microphone access is blocked. Allow it in the browser address bar, then try again.');
+        } else if (normalizedError.includes('no-speech')) {
+          setSpeechError('No speech was heard. Check your selected microphone and try again, or type your message.');
+        } else {
+          setSpeechError('Voice input could not start. Check the browser microphone setting, or type your message.');
         }
       },
       language
@@ -207,7 +224,7 @@ export function AIAssistant({ autoStart = true }: AIAssistantProps) {
               {/* Wake Word Tooltip Pill */}
               <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-bold shadow-lg shadow-blue-500/10">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">Say <strong className="text-[#2563EB] dark:text-blue-400 font-extrabold">"Hey Jarvis"</strong></span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">Tap to talk to <strong className="text-[#2563EB] dark:text-blue-400 font-extrabold">JARVIS</strong></span>
               </div>
 
               {/* Main Glowing Floating Trigger Orb */}

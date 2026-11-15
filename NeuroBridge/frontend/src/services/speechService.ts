@@ -19,25 +19,17 @@ export class SpeechService {
 
   constructor() {
     this.speechSynthesis = typeof window !== 'undefined' ? window.speechSynthesis : ({} as SpeechSynthesis);
-    this.initRecognizers();
   }
 
-  private initRecognizers() {
-    if (typeof window === 'undefined') return;
-
+  private createRecognizer(): any {
+    if (typeof window === 'undefined') return null;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      try {
-        this.commandRecognition = new SpeechRecognition();
-        this.commandRecognition.continuous = false;
-        this.commandRecognition.interimResults = true;
-
-        this.wakeWordRecognition = new SpeechRecognition();
-        this.wakeWordRecognition.continuous = true;
-        this.wakeWordRecognition.interimResults = true;
-      } catch (e) {
-        console.warn('[SpeechService] Recognition init error:', e);
-      }
+    if (!SpeechRecognition) return null;
+    try {
+      return new SpeechRecognition();
+    } catch (e) {
+      console.warn('[SpeechService] Recognition creation error:', e);
+      return null;
     }
   }
 
@@ -118,36 +110,47 @@ export class SpeechService {
 
   private wakeWordLocked: boolean = false;
   private lastWakeWordTime: number = 0;
+  private wakeWordCallback: (() => void) | null = null;
+  private wakeWordErrorCallback: ((err: string) => void) | null = null;
+  private wakeWordLanguage: Language = 'en';
 
   // ─── WAKE WORD LISTENING ("Hey Jarvis") ─────────────────────────────────────
 
-  /**
-   * Starts background listening specifically for the wake word "Hey Jarvis"
-   */
-  startWakeWordDetection(
-    onWakeWord: () => void,
-    onError: (error: string) => void,
-    language: Language = 'en'
-  ): void {
-    if (!this.wakeWordRecognition) {
-      onError('Speech recognition is not supported in this browser.');
+  private startWakeWordInstance(): void {
+    if (!this.isWakeWordListening || this.isCommandListening || this.wakeWordLocked || this.isSpeakingActive) {
       return;
     }
 
-    if (this.isCommandListening || this.isSpeakingActive) {
+    if (this.wakeWordRecognition) {
+      try {
+        this.wakeWordRecognition.onresult = null;
+        this.wakeWordRecognition.onerror = null;
+        this.wakeWordRecognition.onend = null;
+        this.wakeWordRecognition.abort();
+      } catch {}
+      this.wakeWordRecognition = null;
+    }
+
+    const rec = this.createRecognizer();
+    if (!rec) {
+      if (this.wakeWordErrorCallback) {
+        this.wakeWordErrorCallback('Speech recognition is not supported in this browser.');
+      }
       return;
     }
 
-    this.isWakeWordListening = true;
+    this.wakeWordRecognition = rec;
 
     const languageMap: Record<Language, string> = {
       en: 'en-US',
       hi: 'hi-IN',
       mr: 'mr-IN',
     };
-    this.wakeWordRecognition.lang = languageMap[language] || 'en-US';
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = languageMap[this.wakeWordLanguage] || 'en-US';
 
-    this.wakeWordRecognition.onresult = (event: any) => {
+    rec.onresult = (event: any) => {
       // Cooldown check (prevent repeated triggers within 4 seconds)
       if (this.wakeWordLocked || Date.now() - this.lastWakeWordTime < 4000) {
         return;
@@ -173,43 +176,68 @@ export class SpeechService {
           this.wakeWordLocked = false;
         }, 4000);
 
-        onWakeWord();
+        if (this.wakeWordCallback) {
+          this.wakeWordCallback();
+        }
       }
     };
 
-    this.wakeWordRecognition.onerror = (event: any) => {
+    rec.onerror = (event: any) => {
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         console.warn('[WakeWord] Recognition error:', event.error);
+        if (event.error === 'network') this.stopWakeWordDetection();
       }
     };
 
-    this.wakeWordRecognition.onend = () => {
-      // Automatically restart wake-word listening if still active and not taking command
+    rec.onend = () => {
+      // Automatically restart wake-word listening with a fresh instance
       if (this.isWakeWordListening && !this.isCommandListening && !this.wakeWordLocked) {
         if (this.wakeWordRestartTimer) clearTimeout(this.wakeWordRestartTimer);
         this.wakeWordRestartTimer = setTimeout(() => {
-          if (this.isWakeWordListening && !this.isCommandListening && !this.wakeWordLocked) {
-            try {
-              this.wakeWordRecognition.start();
-            } catch {}
-          }
+          this.startWakeWordInstance();
         }, 400);
       }
     };
 
     try {
-      this.wakeWordRecognition.start();
-    } catch {}
+      rec.start();
+    } catch (e) {
+      console.warn('[SpeechService] Wake word start error:', e);
+    }
+  }
+
+  /**
+   * Starts background listening specifically for the wake word "Hey Jarvis"
+   */
+  startWakeWordDetection(
+    onWakeWord: () => void,
+    onError: (error: string) => void,
+    language: Language = 'en'
+  ): void {
+    if (this.isCommandListening || this.isSpeakingActive) {
+      return;
+    }
+
+    this.isWakeWordListening = true;
+    this.wakeWordCallback = onWakeWord;
+    this.wakeWordErrorCallback = onError;
+    this.wakeWordLanguage = language;
+
+    this.startWakeWordInstance();
   }
 
   stopWakeWordDetection(): void {
     this.isWakeWordListening = false;
     if (this.wakeWordRestartTimer) clearTimeout(this.wakeWordRestartTimer);
+    this.wakeWordRestartTimer = null;
     if (this.wakeWordRecognition) {
       try {
         this.wakeWordRecognition.onresult = null;
-        this.wakeWordRecognition.stop();
+        this.wakeWordRecognition.onerror = null;
+        this.wakeWordRecognition.onend = null;
+        this.wakeWordRecognition.abort();
       } catch {}
+      this.wakeWordRecognition = null;
     }
   }
 
@@ -226,11 +254,25 @@ export class SpeechService {
     // Suspend wake word listener while taking active command
     this.stopWakeWordDetection();
 
-    if (!this.commandRecognition) {
+    // Clean up any existing command recognition
+    if (this.commandRecognition) {
+      try {
+        this.commandRecognition.onresult = null;
+        this.commandRecognition.onerror = null;
+        this.commandRecognition.onend = null;
+        this.commandRecognition.abort();
+      } catch {}
+      this.commandRecognition = null;
+    }
+
+    const rec = this.createRecognizer();
+    if (!rec) {
+      this.isCommandListening = false;
       onError('Speech recognition is not supported in this browser.');
       return;
     }
 
+    this.commandRecognition = rec;
     this.isCommandListening = true;
 
     const languageMap: Record<Language, string> = {
@@ -238,9 +280,11 @@ export class SpeechService {
       hi: 'hi-IN',
       mr: 'mr-IN',
     };
-    this.commandRecognition.lang = languageMap[language] || 'en-US';
+    rec.lang = languageMap[language] || 'en-US';
+    rec.continuous = false;
+    rec.interimResults = true;
 
-    this.commandRecognition.onresult = (event: any) => {
+    rec.onresult = (event: any) => {
       let finalTranscript = '';
       let interimTranscript = '';
 
@@ -260,26 +304,37 @@ export class SpeechService {
       }
     };
 
-    this.commandRecognition.onerror = (event: any) => {
+    rec.onerror = (event: any) => {
       this.isCommandListening = false;
-      onError(event.error || 'Speech recognition error');
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        onError(event.error || 'Speech recognition error');
+      } else if (event.error === 'no-speech') {
+        onError('no-speech');
+      }
     };
 
-    this.commandRecognition.onend = () => {
+    rec.onend = () => {
       this.isCommandListening = false;
     };
 
     try {
-      this.commandRecognition.start();
-    } catch {}
+      rec.start();
+    } catch (error: any) {
+      this.isCommandListening = false;
+      onError(error?.name || 'Speech recognition could not start');
+    }
   }
 
   stopCommandListening(): void {
     this.isCommandListening = false;
     if (this.commandRecognition) {
       try {
-        this.commandRecognition.stop();
+        this.commandRecognition.onresult = null;
+        this.commandRecognition.onerror = null;
+        this.commandRecognition.onend = null;
+        this.commandRecognition.abort();
       } catch {}
+      this.commandRecognition = null;
     }
   }
 

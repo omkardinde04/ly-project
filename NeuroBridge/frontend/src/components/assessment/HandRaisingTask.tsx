@@ -172,8 +172,8 @@ export function HandRaisingTask({ question, onComplete }: { question: any, onCom
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center bg-white relative p-4 h-full overflow-hidden w-full">
-      <div className="w-full max-w-2xl flex flex-col items-center h-full gap-4 pt-4 sm:pt-8">
+    <div className="flex-1 flex flex-col items-center bg-white relative p-3 sm:p-4 h-full overflow-hidden w-full">
+      <div className="w-full max-w-2xl flex flex-col items-center h-full gap-3 pt-2 sm:pt-4 my-auto">
         
         {/* 1. Instruction */}
         <motion.div 

@@ -18,7 +18,7 @@ export function ObjectNamingTask({ question, currentAnswer, onComplete }: { ques
 
   return (
     <div className="flex-1 flex flex-col items-center bg-white relative p-4 h-full overflow-hidden w-full">
-      <div className="w-full max-w-2xl flex flex-col items-center h-full gap-4 pt-4 sm:pt-8">
+      <div className="w-full max-w-2xl flex flex-col items-center h-full gap-3 pt-2 sm:pt-4 my-auto">
         
         {/* 1. Instruction */}
         <motion.div 
@@ -26,7 +26,7 @@ export function ObjectNamingTask({ question, currentAnswer, onComplete }: { ques
           animate={{ opacity: 1, y: 0 }}
           className="w-full text-center flex flex-col items-center"
         >
-          <h2 className="text-[16px] sm:text-[18px] font-bold text-[#1A202C] leading-snug tracking-wide">
+          <h2 className="text-[15px] sm:text-[17px] font-bold text-[#1A202C] leading-snug tracking-wide">
             {question.instruction}
           </h2>
           
@@ -67,7 +67,7 @@ export function ObjectNamingTask({ question, currentAnswer, onComplete }: { ques
             >
               <div 
                 className={`w-full max-w-xl bg-gradient-to-br from-[#F8FAFC] to-blue-50/40 rounded-2xl border ${stage === 'tutorial' && tutorialStep === 2 ? 'border-blue-400 shadow-md ring-4 ring-blue-50 bg-blue-50/10' : 'border-blue-100'} overflow-hidden flex items-center justify-center p-2 transition-all duration-300`}
-                style={{ height: '220px', minHeight: '220px' }}
+                style={{ height: 'clamp(160px, 24vh, 210px)' }}
               >
                 {IllustrationComponent && <IllustrationComponent question={question} />}
               </div>

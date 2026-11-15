@@ -228,11 +228,10 @@ authRouter.post('/assessment/complete', AuthService.authenticateToken, async (re
 // POST /api/auth/assessment/retake
 authRouter.post('/assessment/retake', AuthService.authenticateToken, async (req: any, res: Response) => {
   try {
-    await database.updateUserAssessment(req.user.userId, {
-      assessment_completed: false,
-      assessment_score: undefined,
-      classification: undefined
-    });
+    const user = await database.resetUserAssessment(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
     res.json({ success: true, message: 'Assessment reset successfully' });
   } catch (error) {
     console.error('Unified assessment retake error:', error);

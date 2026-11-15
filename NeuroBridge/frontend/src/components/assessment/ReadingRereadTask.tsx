@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
+import { useSpeechCapture } from './useSpeechCapture';
+import { LevelBars } from './MicControls';
 
 export interface ReadingMetrics {
   readingTimeMs: number;
@@ -149,117 +151,46 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
     Array(words.length).fill('idle'),
   );
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [isListening, setIsListening] = useState(false);
+  const [captureActive, setCaptureActive] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [micError, setMicError] = useState<string | null>(null);
 
   // Accurate reading time refs (measured quietly, never displayed to the student)
   const startTimeRef = useRef<number>(0);
   const readingTimeSecRef = useRef<number>(0);
   const isListeningRef = useRef(false);
-  const recogRef = useRef<any>(null);
-  const isMountedRef = useRef(true);
   const autoFinishTimerRef = useRef<any>(null);
+  const mic = useSpeechCapture({ maxMs: 120000 });
+  const transcript = mic.transcript;
+  const isListening = captureActive && !mic.error;
+  const micError = mic.error?.message;
 
   // Unmount cleanup
   useEffect(() => {
-    isMountedRef.current = true;
     return () => {
-      isMountedRef.current = false;
       isListeningRef.current = false;
       if (autoFinishTimerRef.current) clearTimeout(autoFinishTimerRef.current);
-      if (recogRef.current) {
-        try {
-          recogRef.current.onend = null;
-          recogRef.current.onerror = null;
-          recogRef.current.onresult = null;
-          recogRef.current.stop();
-        } catch {
-          /* ignore */
-        }
-        recogRef.current = null;
-      }
     };
   }, []);
 
+  useEffect(() => {
+    if (!mic.error) return;
+    isListeningRef.current = false;
+    if (autoFinishTimerRef.current) clearTimeout(autoFinishTimerRef.current);
+  }, [mic.error]);
+
   const startReading = () => {
-    setMicError(null);
-    setIsListening(true);
+    setCaptureActive(true);
     isListeningRef.current = true;
     startTimeRef.current = Date.now();
-
-    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRec) {
-      setMicError('Speech recognition is not supported in this browser. Please use Chrome or Edge for this question, or read aloud and press Finish Reading.');
-      return;
-    }
-
-    try {
-      const rec = new SpeechRec();
-      rec.lang = 'en-US';
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.maxAlternatives = 1;
-
-      rec.onresult = (event: any) => {
-        let full = '';
-        for (let i = 0; i < event.results.length; i++) {
-          const piece = event.results[i][0]?.transcript || '';
-          full += piece + ' ';
-        }
-        const cleaned = full.trim();
-        if (isMountedRef.current) {
-          setTranscript(cleaned);
-        }
-      };
-
-      rec.onerror = (event: any) => {
-        console.warn('SpeechRecognition error:', event?.error);
-        if (!isMountedRef.current) return;
-        if (event?.error === 'not-allowed') {
-          setMicError('Microphone permission blocked. Please allow microphone access in your browser settings.');
-        } else if (event?.error !== 'no-speech' && event?.error !== 'aborted') {
-          // Log non-critical error without breaking UI
-        }
-      };
-
-      rec.onend = () => {
-        // If still in reading mode, automatically restart to handle Chrome silence pauses
-        if (isListeningRef.current && isMountedRef.current) {
-          try {
-            rec.start();
-          } catch {
-            /* already active or busy */
-          }
-        }
-      };
-
-      recogRef.current = rec;
-      rec.start();
-    } catch (e: any) {
-      console.error('Error starting speech recognition:', e);
-      setMicError('Microphone could not be started. You can still read aloud and finish when done.');
-    }
+    mic.start();
   };
 
   const finishReading = () => {
     isListeningRef.current = false;
-    setIsListening(false);
+    setCaptureActive(false);
     setIsCompleted(true);
     if (autoFinishTimerRef.current) clearTimeout(autoFinishTimerRef.current);
-
-    if (recogRef.current) {
-      try {
-        recogRef.current.onend = null;
-        recogRef.current.onerror = null;
-        recogRef.current.onresult = null;
-        recogRef.current.stop();
-      } catch {
-        /* ignore */
-      }
-      recogRef.current = null;
-    }
+    mic.stop();
 
     // Note down reading time in seconds (quietly measured, NOT shown to the user)
     const elapsedMs = startTimeRef.current > 0 ? Date.now() - startTimeRef.current : 0;
@@ -283,22 +214,12 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
 
   const resetTask = () => {
     isListeningRef.current = false;
-    setIsListening(false);
+    setCaptureActive(false);
     setIsCompleted(false);
-    setTranscript('');
-    setMicError(null);
+    mic.reset();
     setWordStatuses(Array(words.length).fill('idle'));
     setCurrentWordIndex(0);
     startTimeRef.current = 0;
-    if (recogRef.current) {
-      try {
-        recogRef.current.onend = null;
-        recogRef.current.stop();
-      } catch {
-        /* ignore */
-      }
-      recogRef.current = null;
-    }
   };
 
   // Convert transcript into spoken words and align with paragraph
@@ -318,7 +239,7 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
     if (nextIndex >= cleanWords.length - 1 && correct + wrong >= cleanWords.length) {
       if (!autoFinishTimerRef.current) {
         autoFinishTimerRef.current = window.setTimeout(() => {
-          if (isMountedRef.current && isListeningRef.current) {
+          if (isListeningRef.current) {
             finishReading();
           }
         }, 1500);
@@ -328,8 +249,8 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
   }, [spokenWords, cleanWords, isListening]);
 
   return (
-    <div className="w-full flex flex-col items-center bg-transparent py-5 sm:py-7 px-4" style={{ minHeight: '0' }}>
-      <div className="w-full max-w-[580px] flex flex-col gap-5 sm:gap-6 mx-auto">
+    <div className="w-full flex flex-col items-center bg-transparent py-3 sm:py-5 px-4 my-auto" style={{ minHeight: '0' }}>
+      <div className="w-full max-w-[580px] flex flex-col gap-4 sm:gap-5 mx-auto">
         {/* Header Block: Calm title without showing reading time / timer */}
         <div className="flex flex-col items-center text-center">
           <h2 className="text-xl font-black tracking-tight text-slate-800 dark:text-white mb-1">
@@ -341,8 +262,8 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
         </div>
 
         {/* Status / Mic Control Strip */}
-        <div className="flex flex-col items-center gap-2 w-full">
-          {!isListening && !isCompleted && (
+        <div className="flex flex-col items-center gap-3 w-full">
+          {!isListening && !isCompleted && !micError && (
             <button
               type="button"
               onClick={startReading}
@@ -354,9 +275,12 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
           )}
 
           {isListening && (
-            <div className="flex items-center gap-2.5 px-4 py-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800/60 font-bold text-xs sm:text-sm shadow-2xs">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-              <span>Listening to your voice... Read clearly</span>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2.5 px-4 py-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800/60 font-bold text-xs sm:text-sm shadow-2xs">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                <span>{mic.heardSound ? 'Voice detected! Reading clearly...' : 'Listening to your voice... Start reading'}</span>
+              </div>
+              <LevelBars level={mic.level} active={true} />
             </div>
           )}
 
@@ -367,10 +291,28 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
             </div>
           )}
 
-          {micError && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs font-semibold max-w-md text-center">
-              <AlertCircle size={15} className="shrink-0 text-amber-600" />
-              <span>{micError}</span>
+          {micError && !isCompleted && (
+            <div className="w-full max-w-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-amber-900 dark:text-amber-200 shadow-xs">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-left">
+                <AlertCircle size={18} className="text-amber-600 shrink-0" />
+                <span>{micError}</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={startReading}
+                  className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                >
+                  Try again
+                </button>
+                <button
+                  type="button"
+                  onClick={finishReading}
+                  className="px-3.5 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                >
+                  Finish Reading
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -445,6 +387,18 @@ export function ReadingRereadTask({ question, onComplete }: ReadingRereadTaskPro
             </button>
           )}
         </div>
+
+        {!isCompleted && (
+          <div className="flex justify-center mt-1">
+            <button
+              type="button"
+              onClick={() => finishReading()}
+              className="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline cursor-pointer"
+            >
+              Skip reading aloud — proceed to next activity
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

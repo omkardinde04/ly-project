@@ -167,7 +167,7 @@ export function LeftRightGameTask({ onComplete }: { onComplete: (isCorrect: bool
         : 'Sam is facing you. Which hand is Sam waving?';
 
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-5 p-4 sm:p-6">
+    <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-4 p-2 sm:p-4 my-auto">
       {/* Header + stars */}
       <div className="w-full flex items-center justify-between gap-3">
         <div className="text-left">

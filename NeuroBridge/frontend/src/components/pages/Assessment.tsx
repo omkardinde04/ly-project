@@ -31,7 +31,7 @@ import {
 import { generateReadingProfile } from '../../utils/profileGenerator';
 
 export function AssessmentPage() {
-  const { language, completeCognitiveTasks, setReadingProfile } = useDyslexia();
+  const { language, completeCognitiveTasks, setReadingProfile, resetTest } = useDyslexia();
   const { user, token, updateUser } = useAuth();
   const navigate = useNavigate();
   const t = getTranslation(language);
@@ -147,6 +147,12 @@ export function AssessmentPage() {
   };
 
   const handleRetake = () => {
+    resetTest();
+    localStorage.removeItem('temp_assessment');
+    setPartAPerformance(0);
+    setPartBPerformance(0);
+    setFinalScore(0);
+    setAssessmentMetrics(null);
     setTestState('partA');
   };
 

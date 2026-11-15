@@ -64,10 +64,10 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-surface rounded-2xl p-8 border border-border shadow-sm font-sans flex flex-col items-center justify-center min-h-[400px]">
-      <div className="text-center mb-10">
-        <h2 className="text-xl font-bold text-text mb-2">Pop Quiz Activity</h2>
-        <p className="text-sm text-text-muted">Tap your answer, then press Next</p>
+    <div className="w-full max-w-md mx-auto font-sans flex flex-col items-center justify-center p-3 sm:p-5 my-auto">
+      <div className="text-center mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-text mb-1">Pop Quiz Activity</h2>
+        <p className="text-xs sm:text-sm text-text-muted">Tap your answer, then press Next</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -79,24 +79,22 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
           transition={{ duration: 0.2 }}
           className="w-full flex flex-col items-center"
         >
-          <div className="text-5xl font-black text-[#1E3A8A] mb-12 tracking-tight">
+          <div className="text-4xl sm:text-5xl font-black text-[#1E3A8A] mb-6 sm:mb-8 tracking-tight">
             {QUESTIONS[currentIdx].display}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 w-full max-w-xs">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-xs">
             {QUESTIONS[currentIdx].options.map((option, i) => {
               const isSelected = selectedOption === option;
               return (
                 <motion.button
                   key={i}
                   type="button"
-                  // No inline hover colours: framer-motion leaves them behind when the
-                  // button is selected under the pointer, hiding the white number.
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => handleSelect(option)}
                   aria-pressed={isSelected}
-                  className={`relative py-6 border-2 rounded-2xl text-2xl font-black transition-colors shadow-sm cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
+                  className={`relative py-4 sm:py-5 border-2 rounded-2xl text-xl sm:text-2xl font-black transition-colors shadow-sm cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
                     isSelected
                       ? 'bg-[#2563EB] border-[#1D4ED8] text-white ring-4 ring-blue-200'
                       : selectedOption !== null
@@ -122,7 +120,7 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 onClick={handleNext}
-                className="mt-8 flex items-center gap-2 bg-[#2563EB] hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-md transition-all"
+                className="mt-6 flex items-center gap-2 bg-[#2563EB] hover:bg-blue-600 text-white px-7 py-2.5 rounded-xl font-bold text-base shadow-md transition-all cursor-pointer"
               >
                 Next <span>→</span>
               </motion.button>
@@ -131,7 +129,7 @@ export function MultiplicationRecallTask({ onComplete }: MultiplicationRecallTas
         </motion.div>
       </AnimatePresence>
 
-      <div className="mt-12 flex gap-2">
+      <div className="mt-6 flex gap-2">
         {QUESTIONS.map((_, i) => (
           <div 
             key={i} 

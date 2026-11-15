@@ -66,7 +66,7 @@ export function LevelBars({ level, active }: { level: number; active: boolean })
       {bars.map((w, i) => (
         <span
           key={i}
-          className={`w-1.5 rounded-full transition-[height] duration-100 ${active ? 'bg-rose-400' : 'bg-slate-200'}`}
+          className={`w-1.5 rounded-full transition-[height] duration-100 ${active ? 'bg-rose-400 animate-pulse' : 'bg-slate-200'}`}
           style={{ height: `${Math.max(4, Math.min(24, (active ? level : 0) * 24 * w * 1.6 + 4))}px` }}
         />
       ))}

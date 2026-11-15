@@ -87,7 +87,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
   // Floating Window Persistent States
   const [isOpen, setIsOpen] = useState(false);
-  const [wakeWordEnabled, setWakeWordEnabled] = useState(true);
+  const [wakeWordEnabled, setWakeWordEnabled] = useState(false);
 
   // Agent dynamic execution states
   const [agentStatus, setAgentStatus] = useState<AgentExecutionStatus>('idle');
@@ -103,7 +103,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         setIsOpen(true);
         setIsAutoStarted(true);
         const firstName = user?.name ? user.name.split(' ')[0] : 'there';
-        const greeting = `Hi ${firstName}! I'm JARVIS. I can read pages out loud with word highlighting, summarize articles, navigate anywhere, or answer your questions. Just say "Hey Jarvis" or tap below.`;
+        const greeting = `Hi ${firstName}! I'm JARVIS. I can read pages out loud with word highlighting, summarize articles, navigate anywhere, or answer your questions. Tap the microphone or type below to talk to me.`;
         conversationManager.addMessage('assistant', greeting, userProfile.language || 'en');
         setConversationState(conversationManager.getState());
       }

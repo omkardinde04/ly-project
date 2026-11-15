@@ -57,6 +57,23 @@ class DatabaseService {
     return toUser(user)!;
   }
 
+  async resetUserAssessment(userId: string | number): Promise<User | null> {
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: { assessment_completed: false },
+        $unset: {
+          assessment_score: 1,
+          classification: 1,
+          assessment_metrics: 1,
+          reading_profile: 1,
+        },
+      },
+      { new: true },
+    );
+    return toUser(user);
+  }
+
   // Update user reading profile
   async updateUserReadingProfile(userId: string | number, readingProfile: any): Promise<User> {
     const user = await UserModel.findByIdAndUpdate(userId, { reading_profile: readingProfile }, { new: true });
