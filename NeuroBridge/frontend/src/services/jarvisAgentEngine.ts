@@ -7,9 +7,60 @@ import type {
   JarvisActionType,
 } from '../types/jarvisAgent';
 import { GLOBAL_ACTIONS } from './jarvisActionRegistry';
+import { JarvisActionRouter } from './jarvisActionRouter';
 import { API_BASE } from '../config/api';
 
+export interface StreamHandlers {
+  onChunk?: (token: string, accumulated: string) => void;
+  onSentence?: (sentence: string) => void;
+  onReset?: (reason?: string) => void;
+  signal?: AbortSignal;
+}
+
 export class JarvisAgentEngine {
+  /**
+   * Main entrypoint with streaming response and progressive sentence chunking
+   */
+  public async processInputStream(
+    userInput: string,
+    context: JarvisContext,
+    handlers: StreamHandlers = {}
+  ): Promise<StructuredIntent> {
+    const cleanInput = userInput.trim();
+    if (!cleanInput) {
+      return {
+        type: 'conversation',
+        displayText: "I'm ready! How can I help you learn or explore today?",
+        spokenResponse: "I'm ready! How can I help you learn or explore today?",
+      };
+    }
+
+    // 1. Fast-Path: Direct High-Confidence Website Commands (0ms latency)
+    const directCmd = this.getDirectCommand(cleanInput, context);
+    if (directCmd) {
+      if (handlers.onChunk) {
+        handlers.onChunk(directCmd.displayText || '', directCmd.displayText || '');
+      }
+      if (handlers.onSentence && directCmd.spokenResponse) {
+        handlers.onSentence(directCmd.spokenResponse);
+      }
+      return directCmd;
+    }
+
+    // 2. Real-Time Streaming LLM via Backend /api/llm/chat/stream
+    try {
+      const streamResult = await this.queryLLMStream(cleanInput, context, handlers);
+      if (streamResult) {
+        return streamResult;
+      }
+    } catch (err) {
+      console.warn('[JarvisAgentEngine] Streaming LLM error, falling back to standard LLM:', err);
+    }
+
+    // 3. Fallback to standard request
+    return this.processInput(userInput, context);
+  }
+
   /**
    * Main entrypoint to determine user intent from input and website context
    * Uses real LLM (ChatGPT-style) with instant command fast-path and dual fallbacks
@@ -58,130 +109,156 @@ export class JarvisAgentEngine {
   }
 
   /**
-   * Fast-path immediate commands for core site actions
+   * Fast-path immediate commands for core site actions (Navigation, Scrolling, Reading, Accessibility)
    */
-  private getDirectCommand(input: string, context: JarvisContext): StructuredIntent | null {
-    const text = input.toLowerCase().trim();
+  public getDirectCommand(input: string, context?: JarvisContext): StructuredIntent | null {
+    return JarvisActionRouter.route(input, context);
+  }
 
-    // Spotlight / Page Reading commands
-    if (this.matchesAny(text, ['read this page', 'read page', 'read aloud', 'start reading', 'read out loud', 'वाचून दाखव'])) {
-      return {
-        type: 'action',
-        action: 'read_page',
-        displayText: 'Reading the current page aloud with word spotlight...',
-        spokenResponse: 'Starting page reading now.',
-      };
-    }
-    if (this.matchesAny(text, ['pause reading', 'pause audio', 'pause reader', 'थांबव'])) {
-      return {
-        type: 'action',
-        action: 'pause_reading',
-        displayText: 'Paused reading.',
-        spokenResponse: 'Paused.',
-      };
-    }
-    if (this.matchesAny(text, ['resume reading', 'continue reading', 'unpause', 'पुढे वाच'])) {
-      return {
-        type: 'action',
-        action: 'resume_reading',
-        displayText: 'Resuming reading.',
-        spokenResponse: 'Resuming reading.',
-      };
-    }
-    if (this.matchesAny(text, ['stop reading', 'stop audio', 'stop reader', 'वाचणे बंद कर'])) {
-      return {
-        type: 'action',
-        action: 'stop_reading',
-        displayText: 'Stopped reading.',
-        spokenResponse: 'Stopped reading.',
-      };
+  /**
+   * Real-time streaming LLM query with Server-Sent Events and sentence chunking
+   */
+  private async queryLLMStream(
+    userInput: string,
+    context: JarvisContext,
+    handlers: StreamHandlers
+  ): Promise<StructuredIntent | null> {
+    const startTime = Date.now();
+    const history = (context.recentHistory || []).map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    }));
+    const hasContext = Boolean(history.length > 0 || context.pageContent || context.currentRoute);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 16000);
+
+    // Link external abort signal if provided
+    if (handlers.signal) {
+      handlers.signal.addEventListener('abort', () => controller.abort());
     }
 
-    // Dyslexia & Visual Accessibility Tools
-    if (this.matchesAny(text, ['toggle dyslexia font', 'opendyslexic font', 'change font', 'dyslexia font', 'फॉन्ट बदल'])) {
-      return {
-        type: 'action',
-        action: 'toggle_dyslexia_font',
-        displayText: 'Toggled OpenDyslexic readable font.',
-        spokenResponse: 'Adjusted font for reading ease.',
-      };
-    }
-    if (this.matchesAny(text, ['high contrast', 'toggle high contrast', 'contrast mode'])) {
-      return {
-        type: 'action',
-        action: 'toggle_high_contrast',
-        displayText: 'Toggled high contrast mode.',
-        spokenResponse: 'Toggled contrast mode.',
-      };
-    }
-    if (this.matchesAny(text, ['bigger text', 'larger text', 'increase text size', 'make text bigger', 'मोठा फॉन्ट'])) {
-      return {
-        type: 'action',
-        action: 'increase_text_size',
-        displayText: 'Increased text size.',
-        spokenResponse: 'Making text larger.',
-      };
-    }
-    if (this.matchesAny(text, ['smaller text', 'decrease text size', 'make text smaller', 'लहान फॉन्ट'])) {
-      return {
-        type: 'action',
-        action: 'decrease_text_size',
-        displayText: 'Decreased text size.',
-        spokenResponse: 'Making text smaller.',
-      };
-    }
+    try {
+      const res = await fetch(`${API_BASE}/api/llm/chat/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            ...history,
+            { role: 'user', content: userInput },
+          ],
+          context: {
+            currentRoute: context.currentRoute,
+            pageTitle: context.pageTitle,
+            pageContent: context.pageContent,
+            userName: context.userName,
+            language: context.language,
+          },
+        }),
+        signal: controller.signal,
+      });
 
-    // Direct Navigation
-    if (text === 'go home' || text === 'go to home' || text === 'open home') {
-      return {
-        type: 'action',
-        action: 'navigate_home',
-        displayText: 'Navigating to Home',
-        spokenResponse: 'Taking you to the home page.',
-      };
-    }
-    if (text === 'go to dashboard' || text === 'open dashboard' || text === 'my dashboard' || text === 'dashboard') {
-      return {
-        type: 'action',
-        action: 'open_dashboard',
-        displayText: 'Navigating to Dashboard',
-        spokenResponse: 'Opening your student dashboard.',
-      };
-    }
-    if (text === 'take assessment' || text === 'go to assessment' || text === 'start assessment' || text === 'assessment') {
-      return {
-        type: 'action',
-        action: 'open_assessment',
-        displayText: 'Navigating to Assessment',
-        spokenResponse: 'Opening the cognitive assessment.',
-      };
-    }
-    if (text === 'show jobs' || text === 'open opportunities' || text === 'go to opportunities' || text === 'careers') {
-      return {
-        type: 'action',
-        action: 'open_opportunities',
-        displayText: 'Navigating to Opportunities & Jobs',
-        spokenResponse: 'Opening career opportunities.',
-      };
-    }
-    if (text === 'open community' || text === 'go to community' || text === 'community hub') {
-      return {
-        type: 'action',
-        action: 'open_community',
-        displayText: 'Navigating to Community Hub',
-        spokenResponse: 'Opening community discussions.',
-      };
-    }
-    if (text === 'nearby care' || text === 'hospitals near me' || text === 'open nearby care') {
-      return {
-        type: 'action',
-        action: 'open_nearby',
-        displayText: 'Navigating to Nearby Care',
-        spokenResponse: 'Opening nearby care and support.',
-      };
-    }
+      clearTimeout(timeout);
+      if (!res.ok || !res.body) return null;
 
-    return null;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accumulatedFullText = '';
+      let sentenceBuffer = '';
+      let receivedAction: string | null = null;
+      let finalFullText: string | null = null;
+      let finalProvider = 'unknown';
+      let finalModel = 'unknown';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+
+          const jsonStr = trimmed.slice(5).trim();
+          if (!jsonStr) continue;
+
+          try {
+            const data = JSON.parse(jsonStr);
+
+            if (data.reset) {
+              accumulatedFullText = '';
+              sentenceBuffer = '';
+              handlers.onReset?.(data.reason);
+              continue;
+            }
+
+            if (data.text) {
+              accumulatedFullText += data.text;
+              sentenceBuffer += data.text;
+              handlers.onChunk?.(data.text, accumulatedFullText);
+
+              // Sentence boundary detection (. ! ? \n) to trigger immediate TTS
+              const match = sentenceBuffer.match(/^(.*?[.!?\n]+)\s*(.*)$/s);
+              if (match && match[1].trim().length >= 10) {
+                const completeSentence = match[1].trim();
+                sentenceBuffer = match[2] || '';
+                // Clean action tags out of spoken sentences
+                const cleanSpoken = completeSentence.replace(/\[ACTION:[a-zA-Z0-9_]+\]/g, '').trim();
+                if (cleanSpoken) {
+                  handlers.onSentence?.(cleanSpoken);
+                }
+              }
+            }
+
+            if (data.done) {
+              receivedAction = data.action || null;
+              finalFullText = data.fullText || accumulatedFullText;
+              finalProvider = data.provider || 'gemini';
+              finalModel = data.model || 'cloud';
+            }
+          } catch {}
+        }
+      }
+
+      // Flush any trailing sentence to speech
+      if (sentenceBuffer.trim().length > 0) {
+        const trailingClean = sentenceBuffer.replace(/\[ACTION:[a-zA-Z0-9_]+\]/g, '').trim();
+        if (trailingClean) {
+          handlers.onSentence?.(trailingClean);
+        }
+      }
+
+      const outcomeText = finalFullText || accumulatedFullText;
+      if (!outcomeText.trim()) return null;
+
+      const totalLatency = Date.now() - startTime;
+      console.log(`[Jarvis Stream Debug] Input len: ${userInput.length} | Endpoint: /api/llm/chat/stream | Provider: ${finalProvider} (${finalModel}) | Context included: ${hasContext} | Latency: ${totalLatency}ms`);
+
+      if (receivedAction && GLOBAL_ACTIONS[receivedAction]) {
+        return {
+          type: 'action',
+          action: receivedAction as JarvisActionType,
+          displayText: outcomeText,
+          spokenResponse: outcomeText.slice(0, 240),
+        };
+      }
+
+      return {
+        type: 'conversation',
+        displayText: outcomeText,
+        spokenResponse: outcomeText.slice(0, 240),
+      };
+    } catch (err: any) {
+      clearTimeout(timeout);
+      if (err?.name === 'AbortError') {
+        return null;
+      }
+      return null;
+    }
   }
 
   /**
@@ -191,10 +268,12 @@ export class JarvisAgentEngine {
     userInput: string,
     context: JarvisContext
   ): Promise<StructuredIntent | null> {
+    const startTime = Date.now();
     const history = (context.recentHistory || []).map((m) => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content,
     }));
+    const hasContext = Boolean(history.length > 0 || context.pageContent || context.currentRoute);
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 14000);
@@ -225,6 +304,9 @@ export class JarvisAgentEngine {
       const data = await res.json();
       if (!data || !data.text) return null;
 
+      const totalLatency = Date.now() - startTime;
+      console.log(`[Jarvis Chat Debug] ReqID: ${data.requestId || 'n/a'} | Input len: ${userInput.length} | Endpoint: /api/llm/chat | Provider: ${data.provider} (${data.model}) | Context included: ${hasContext} | Latency: ${totalLatency}ms`);
+
       if (data.action && GLOBAL_ACTIONS[data.action]) {
         return {
           type: 'action',
@@ -253,6 +335,7 @@ export class JarvisAgentEngine {
     userInput: string,
     context: JarvisContext
   ): Promise<StructuredIntent | null> {
+    const startTime = Date.now();
     const systemPrompt = `You are JARVIS, an intelligent, empathetic, and friendly AI assistant inside NeuroBridge, an educational platform for neurodivergent and dyslexic learners.
 You act like ChatGPT: capable of answering ANY question — science, mathematics, coding, history, writing, explaining complex concepts simply, giving study advice, and having natural conversations.
 
@@ -271,6 +354,7 @@ ${context.pageContent ? `- Active Screen Content: "${String(context.pageContent)
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content,
     }));
+    const hasContext = Boolean(history.length > 0 || context.pageContent);
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
@@ -286,7 +370,7 @@ ${context.pageContent ? `- Active Screen Content: "${String(context.pageContent)
             { role: 'user', content: userInput },
           ],
           model: 'openai',
-          seed: 42,
+          seed: Math.floor(Math.random() * 100000),
         }),
         signal: controller.signal,
       });
@@ -295,6 +379,9 @@ ${context.pageContent ? `- Active Screen Content: "${String(context.pageContent)
       if (!res.ok) return null;
       const text = await res.text();
       if (!text || !text.trim()) return null;
+
+      const totalLatency = Date.now() - startTime;
+      console.log(`[Jarvis Client AI Debug] Input len: ${userInput.length} | Endpoint: client pollinations | Provider: pollinations (openai) | Context included: ${hasContext} | Latency: ${totalLatency}ms`);
 
       return {
         type: 'conversation',
@@ -848,11 +935,13 @@ ${context.pageContent ? `- Active Screen Content: "${String(context.pageContent)
       };
     }
 
-    // ── 10. Intelligent Contextual Fallback (Siri-like) ────────────────────────
+    // ── 10. Offline / Service Disconnection Notice ───────────────────────────
+    // Real questions are ALWAYS answered dynamically by Gemini/Pollinations cloud AI.
+    // This fallback is only reached if all network requests failed.
     return {
       type: 'conversation',
-      spokenResponse: `I'm on the ${context.pageTitle} page with you. You can ask me to read this page aloud, summarize it, or jump to courses and jobs.`,
-      displayText: `I'm right here on the **${context.pageTitle}** page.\n\nTry asking:\n• *"Read this page out loud"*\n• *"Summarize this page"*\n• *"What can I do here?"*\n• *"Go to Dashboard"*`,
+      spokenResponse: `I'm having trouble reaching the AI service right now. Please check your connection.`,
+      displayText: `I'm having trouble connecting to the AI cloud service to answer: "${input}".\n\n• Please check your internet connection and try again.\n• You can still ask me to **read this page**, **navigate to Dashboard**, or **toggle dyslexia tools**!`,
     };
   }
 

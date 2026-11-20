@@ -38,7 +38,7 @@ export class AIValidationService {
     }
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
       
       const prompt = `
         You are an AI curriculum validator for the NeuroBridge educational platform.
@@ -105,7 +105,7 @@ export class AIValidationService {
     }
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
       const prompt = `
         Analyze the following educational transcript for a lesson titled "${title}".
         Generate learning materials based ONLY on this content.

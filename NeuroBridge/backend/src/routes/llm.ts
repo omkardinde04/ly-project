@@ -6,8 +6,10 @@ import path from 'path';
 import os from 'os';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
+import { AIService } from '../services/aiProvider';
 
 export const llmRouter = Router();
+const aiService = new AIService();
 
 // ─── Multer — store file in memory ────────────────────────────────────────────
 const upload = multer({
@@ -76,7 +78,7 @@ async function processMediaWithGemini(file: Express.Multer.File, prompt: string,
       throw new Error("Audio/Video file processing failed.");
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
     const result = await model.generateContent([
       {
         fileData: {
@@ -101,7 +103,23 @@ async function processMediaWithGemini(file: Express.Multer.File, prompt: string,
   }
 }
 
-// ─── Pure JS Vector RAG Implementation (No Langchain ESM crashes) ───────────
+// ─── Environment & Provider Configuration ─────────────────────────────────────
+const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+const configuredProvider = (process.env.AI_PROVIDER || '').toLowerCase().trim();
+
+/**
+ * Returns true ONLY if local Ollama is explicitly requested in local development.
+ * Never allows calling localhost:11434 in production or on Vercel.
+ */
+function isOllamaAllowed(): boolean {
+  if (isProduction) return false;
+  return configuredProvider === 'ollama';
+}
+
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3';
+
+// ─── Pure JS Vector RAG Implementation (Optional Local Dev Only) ───────────
 
 function cosineSimilarity(vecA: number[], vecB: number[]) {
   let dotProduct = 0;
@@ -128,111 +146,81 @@ function chunkText(text: string, size = 1000, overlap = 200): string[] {
 }
 
 async function getOllamaEmbedding(text: string): Promise<number[]> {
+  if (!isOllamaAllowed()) {
+    throw new Error('Local Ollama embeddings are disabled in this environment.');
+  }
   let res;
   try {
-    res = await fetch('http://localhost:11434/api/embeddings', {
+    res = await fetch(`${OLLAMA_BASE_URL}/api/embeddings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'nomic-embed-text', prompt: text })
+      body: JSON.stringify({ model: 'nomic-embed-text', prompt: text }),
+      signal: AbortSignal.timeout(4000),
     });
-  } catch (err) {
-    throw new Error("Cannot connect to Ollama. Is the Ollama app running on your Mac/PC? (Run 'ollama run llama3' in a new terminal)");
+  } catch (err: any) {
+    throw new Error(`Cannot connect to Ollama: ${err?.message || err}`);
   }
-  if (!res.ok) throw new Error("Ollama embedding failed. Did you pull the embedding model? Run: ollama pull nomic-embed-text");
-  const data = await res.json() as { embedding: number[] };
+  if (!res.ok) throw new Error('Ollama embedding request failed.');
+  const data = (await res.json()) as { embedding: number[] };
   return data.embedding;
 }
 
+/**
+ * Unified AI Query Execution via AIService (Gemini primary -> Ollama Cloud fallback)
+ */
 async function askAI(prompt: string): Promise<string> {
-  // 1. Try local Ollama if available
   try {
-    const res = await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama3', prompt, stream: false }),
-      signal: AbortSignal.timeout(1500),
-    });
-    if (res.ok) {
-      const data = (await res.json()) as { response: string };
-      if (data.response) return data.response;
-    }
-  } catch {}
-
-  // 2. Try Gemini if configured
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (apiKey) {
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      if (text) return text;
-    } catch {}
+    const result = await aiService.chat([{ role: 'user', content: prompt }]);
+    return result.text;
+  } catch (err: any) {
+    console.warn('[LLM/askAI] AI Service call failed, using emergency fallback:', err?.message);
+    return generateIntelligentResponse(prompt);
   }
-
-  // 3. High-performance fallback: Pollinations AI (free OpenAI-compatible LLM)
-  try {
-    const res = await fetch('https://text.pollinations.ai/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'openai',
-      }),
-      signal: AbortSignal.timeout(15000),
-    });
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text.trim()) return text.trim();
-    }
-  } catch {}
-
-  throw new Error('Could not connect to AI services. Please try again.');
 }
 
 async function askOllama(prompt: string): Promise<string> {
   return askAI(prompt);
 }
 
+/**
+ * Document AI Analysis (Summarize, Explain, Simplify, Quiz, Script):
+ * - In local dev with Ollama enabled: supports chunked RAG if requested.
+ * - In production / cloud: sends full document directly to Gemini (1M token context window)
+ *   with fallback to Pollinations and smart extractive synthesis. Never throws "Cannot connect to Ollama".
+ */
+async function callDocumentAI(text: string, prompt: string): Promise<string> {
+  // If local Ollama is active and document is massive, chunk using Ollama
+  if (isOllamaAllowed() && text.length >= 8000) {
+    try {
+      const chunks = chunkText(text, 2000, 400);
+      const queryEmbedding = await getOllamaEmbedding(prompt);
+      const chunkEmbeddings = await Promise.all(
+        chunks.map(async (chunk) => ({
+          text: chunk,
+          embedding: await getOllamaEmbedding(chunk),
+        }))
+      );
+      const scoredChunks = chunkEmbeddings.map((ce) => ({
+        text: ce.text,
+        score: cosineSimilarity(queryEmbedding, ce.embedding),
+      }));
+      scoredChunks.sort((a, b) => b.score - a.score);
+      const context = scoredChunks.slice(0, 3).map((c) => c.text).join('\n\n');
+      const finalPrompt = `Use the following context to complete the task.\n\nContext:\n${context}\n\nTask:\n${prompt}`;
+      return await askAI(finalPrompt);
+    } catch (ragErr) {
+      console.warn('[LLM/callDocumentAI] Local Ollama RAG failed, falling back to direct cloud generation:', ragErr);
+    }
+  }
+
+  // Cloud/Production: Gemini handles whole documents up to 60k chars effortlessly
+  const safeText = text.slice(0, 60000);
+  const finalPrompt = `Use the following context to complete the task.\n\nContext:\n${safeText}\n\nTask:\n${prompt}`;
+  return await askAI(finalPrompt);
+}
+
 async function callOllamaRAG(text: string, prompt: string): Promise<string> {
-  // FAST PATH: If the text is short enough to fit in the context window (~8000 chars),
-  // skip the extremely slow embedding/RAG process and just send it directly!
-  if (text.length < 8000) {
-    const finalPrompt = `Use the following context to complete the task.\n\nContext:\n${text}\n\nTask:\n${prompt}`;
-    return await askOllama(finalPrompt);
-  }
-
-  // 1. Chunking for large documents only
-  const chunks = chunkText(text, 2000, 400); // Larger chunks = fewer embedding API calls = faster
-  if (chunks.length === 0) {
-    return await askOllama(prompt);
-  }
-
-  // 2. Compute embeddings dynamically
-  const queryEmbedding = await getOllamaEmbedding(prompt);
-  const chunkEmbeddings = await Promise.all(chunks.map(async chunk => {
-    return {
-      text: chunk,
-      embedding: await getOllamaEmbedding(chunk)
-    };
-  }));
-  
-  // 3. FAISS-style Similarity Search
-  const scoredChunks = chunkEmbeddings.map(ce => ({
-    text: ce.text,
-    score: cosineSimilarity(queryEmbedding, ce.embedding)
-  }));
-  
-  // Sort descending
-  scoredChunks.sort((a, b) => b.score - a.score);
-  
-  // 4. Retrieve top 3
-  const topChunks = scoredChunks.slice(0, 3).map(c => c.text);
-  const context = topChunks.join('\n\n');
-  
-  // 5. Query Ollama
-  const finalPrompt = `Use the following context to complete the task.\n\nContext:\n${context}\n\nTask:\n${prompt}`;
-  return await askOllama(finalPrompt);
+  return callDocumentAI(text, prompt);
 }
 
 // ─── Dyslexia-friendly system prompt ─────────────────────────────────────────
@@ -288,11 +276,11 @@ function makeLLMHandler(
         return;
       }
 
-      // Truncate text just in case it's absurdly large for local Ollama
+      // Safe truncate to avoid memory spikes
       const truncated = text.slice(0, 50000); 
 
-      // Use Pure JS RAG + Ollama
-      const result = await callOllamaRAG(truncated, prompt);
+      // Process document with Hosted / Cloud AI (or local Ollama if explicitly enabled)
+      const result = await callDocumentAI(truncated, prompt);
       res.json({ result, action });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Unknown error';
@@ -368,118 +356,260 @@ llmRouter.post('/chat', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const systemPrompt = `You are JARVIS, an intelligent, empathetic, and knowledgeable AI assistant inside NeuroBridge, an educational platform for neurodivergent and dyslexic learners.
-You behave like ChatGPT / Claude: capable of answering ANY question — science, mathematics, coding, history, writing essays, explaining complex concepts simply, giving study advice, and engaging in natural conversation.
+    const chatMessages = aiService.prepareMessages(
+      lastUserMsg,
+      messages.slice(0, -1),
+      context
+    );
 
-DYSLEXIA-FRIENDLY RESPONSE STYLE:
-- Write in clean, structured Markdown.
-- Use bullet points, bold key terms, and short, readable paragraphs.
-- Keep vocabulary clear and supportive (Grade 6-8 reading level unless advanced detail is requested).
-- Be encouraging and warm.
-
-WEBSITE CONTEXT:
-- Active Page: "${context.pageTitle || 'NeuroBridge'}" (${context.currentRoute || '/'})
-- Learner Name: "${context.userName || 'Learner'}"
-- Language: "${context.language || 'en'}"
-${context.pageContent ? `- Active Screen Content: "${String(context.pageContent).slice(0, 1200)}"` : ''}
-
-WEBSITE ACTIONS:
-If the user explicitly asks you to navigate or perform an on-screen function, append an action tag on its own line at the very end of your response:
-[ACTION:navigate_home] -> Go to home
-[ACTION:open_dashboard] -> Go to dashboard
-[ACTION:open_learn] -> Go to learning hub
-[ACTION:open_opportunities] -> Go to opportunities & jobs
-[ACTION:open_community] -> Go to community discussions
-[ACTION:open_assessment] -> Go to dyslexia assessment
-[ACTION:open_nearby] -> Go to nearby care & support
-[ACTION:toggle_dyslexia_font] -> Toggle OpenDyslexic font
-[ACTION:toggle_high_contrast] -> Toggle high contrast mode
-[ACTION:read_page] -> Read the current page aloud
-[ACTION:stop_reading] -> Stop reading
-Only include an action tag when the user explicitly requests navigation or an on-screen feature. For general questions, explain normally without action tags.`;
-
-    const chatHistory = [
-      { role: 'system', content: systemPrompt },
-      ...messages.slice(-8).map((m: any) => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: String(m.content || ''),
-      })),
-    ];
-
-    let reply = '';
-
-    // 1. Try Gemini if configured
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey) {
-      try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const geminiMessages = chatHistory
-          .filter((m) => m.role !== 'system')
-          .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
-          .join('\n\n');
-        const fullPrompt = `${systemPrompt}\n\n${geminiMessages}\n\nAssistant:`;
-        const result = await model.generateContent(fullPrompt);
-        reply = result.response.text();
-      } catch (geminiErr: any) {
-        console.warn('[LLM/chat] Gemini API failed:', geminiErr?.message || geminiErr);
-      }
-    }
-
-    // 2. Try Pollinations AI (High-speed OpenAI-compatible LLM)
-    if (!reply) {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 12000);
-        const pollRes = await fetch('https://text.pollinations.ai/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: chatHistory,
-            model: 'openai',
-            seed: 42,
-          }),
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (pollRes.ok) {
-          reply = await pollRes.text();
-        }
-      } catch (pollErr: any) {
-        console.warn('[LLM/chat] Pollinations AI failed:', pollErr?.message);
-      }
-    }
-
-    // 3. Fallback to Ollama if local instance exists
-    if (!reply) {
-      try {
-        const finalPrompt = `${systemPrompt}\n\nUser: ${lastUserMsg}\n\nAssistant:`;
-        reply = await askAI(finalPrompt);
-      } catch (ollamaErr: any) {
-        console.warn('[LLM/chat] Ollama failed:', ollamaErr?.message);
-      }
-    }
-
-    // 4. Guaranteed Friendly Response if all networks fail
-    if (!reply) {
-      reply = `I'm here to help you learn and explore! You asked: "${lastUserMsg}". Feel free to ask me to explain concepts, help with study techniques, or guide you around NeuroBridge.`;
-    }
-
-    // Extract action tag if present
-    let action: string | null = null;
-    const actionMatch = reply.match(/\[ACTION:([a-zA-Z0-9_]+)\]/);
-    if (actionMatch) {
-      action = actionMatch[1];
-      reply = reply.replace(/\[ACTION:[a-zA-Z0-9_]+\]/g, '').trim();
-    }
+    const result = await aiService.chat(chatMessages);
 
     res.json({
-      text: reply.trim(),
-      action,
-      spokenResponse: reply.trim().slice(0, 260),
+      text: result.text,
+      action: result.action,
+      spokenResponse: result.spokenResponse,
+      provider: result.provider,
+      model: result.model,
+      latencyMs: result.latencyMs,
+      fallbackTriggered: result.fallbackTriggered,
+      fallbackReason: result.fallbackReason,
+      candidateAttempts: result.candidateAttempts,
     });
   } catch (error: any) {
-    console.error('[LLM/chat] Unexpected error:', error);
-    res.status(500).json({ error: error?.message || 'Chat service error' });
+    console.error('[LLM/chat] Fatal error:', error);
+    const fallbackText = generateIntelligentResponse(
+      [...(req.body?.messages || [])].reverse().find((m: any) => m.role === 'user')?.content || '',
+      req.body?.messages || [],
+      req.body?.context || {}
+    );
+    res.json({
+      text: fallbackText,
+      action: null,
+      spokenResponse: fallbackText.slice(0, 260),
+      provider: 'offline-emergency',
+      model: 'knowledge-engine',
+      fallbackTriggered: true,
+      fallbackReason: error?.message,
+    });
   }
 });
+
+// ─── Real-Time Streaming Jarvis Conversational Agent (Server-Sent Events) ─────
+llmRouter.post('/chat/stream', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { messages = [], context = {} } = req.body || {};
+    const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')?.content || '';
+    if (!lastUserMsg) {
+      res.status(400).json({ error: 'No user message provided.' });
+      return;
+    }
+
+    // Initialize Server-Sent Events headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    if (typeof (res as any).flushHeaders === 'function') {
+      (res as any).flushHeaders();
+    }
+
+    let isClientDisconnected = false;
+    const clientAbortController = new AbortController();
+    res.on('close', () => {
+      if (!res.writableEnded) {
+        isClientDisconnected = true;
+        clientAbortController.abort();
+      }
+    });
+
+    const sendSSE = (data: any) => {
+      if (!isClientDisconnected && !res.writableEnded) {
+        try {
+          res.write(`data: ${JSON.stringify(data)}\n\n`);
+        } catch {}
+      }
+    };
+
+    const chatMessages = aiService.prepareMessages(
+      lastUserMsg,
+      messages.slice(0, -1),
+      context
+    );
+
+    const result = await aiService.chatStream(
+      chatMessages,
+      {
+        onChunk: (token: string) => {
+          sendSSE({ text: token });
+        },
+        onReset: (reason?: string) => {
+          // Primary provider failed after partial streaming - notify client to reset cleanly
+          sendSSE({ reset: true, reason });
+        },
+      },
+      {
+        signal: clientAbortController.signal,
+      }
+    );
+
+    // Signal stream completion
+    sendSSE({
+      done: true,
+      action: result.action,
+      fullText: result.text,
+      spokenResponse: result.spokenResponse,
+      provider: result.provider,
+      model: result.model,
+      fallbackTriggered: result.fallbackTriggered,
+      candidateAttempts: result.candidateAttempts,
+    });
+
+    if (!res.writableEnded) {
+      res.end();
+    }
+  } catch (error: any) {
+    console.error('[LLM/chat/stream] Fatal stream error:', error);
+    if (!res.writableEnded) {
+      try {
+        const emergencyText = generateIntelligentResponse(
+          [...(req.body?.messages || [])].reverse().find((m: any) => m.role === 'user')?.content || '',
+          req.body?.messages || [],
+          req.body?.context || {}
+        );
+        res.write(`data: ${JSON.stringify({ text: emergencyText })}\n\n`);
+        res.write(`data: ${JSON.stringify({
+          done: true,
+          action: null,
+          fullText: emergencyText,
+          spokenResponse: emergencyText.slice(0, 260),
+          provider: 'emergency-knowledge',
+          model: 'offline',
+          fallbackTriggered: true,
+          fallbackReason: error?.message,
+        })}\n\n`);
+      } catch {}
+      res.end();
+    }
+  }
+});
+
+// ─── Personalized Recommendations (LinkedIn / Dashboard Integration) ─────────
+llmRouter.post('/recommend', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { cognitiveProfile = {}, dyslexiaLevel = 'mild', confirmedSkills = [], interests = [] } = req.body || {};
+
+    const prompt = `You are an AI career and education advisor specialized in neurodiversity and dyslexia.
+Given a learner's profile:
+- Dyslexia Level: ${dyslexiaLevel}
+- Confirmed Skills: ${confirmedSkills.join(', ') || 'General skills'}
+- Interests: ${interests.join(', ') || 'Technology and Design'}
+- Cognitive Profile: ${JSON.stringify(cognitiveProfile)}
+
+Generate a personalized recommendations JSON object matching this schema:
+{
+  "careers": [
+    { "title": "Career Name", "match": 92, "reason": "Why it suits their strengths", "icon": "🎨" }
+  ],
+  "learningPath": [
+    { "step": 1, "title": "Skill to learn", "duration": "2 weeks", "type": "visual", "icon": "💡" }
+  ],
+  "internships": [
+    { "title": "Role", "org": "Company/Org", "deadline": "Rolling", "tags": ["Remote", "Inclusive"] }
+  ],
+  "competitions": [
+    { "title": "Hackathon/Contest", "prize": "$1,000", "tags": ["Beginner Friendly"] }
+  ],
+  "skillGaps": [
+    { "skill": "Skill", "currentLevel": 40, "targetLevel": 80, "tip": "Dyslexia-friendly learning tip" }
+  ]
+}
+
+Provide 3 careers, 4 learning steps, 3 internships, 2 competitions, and 3 skill gaps.
+Return ONLY valid JSON. No markdown, no code blocks, no backticks.`;
+
+    let resultJson = '';
+    try {
+      const raw = await askAI(prompt);
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        resultJson = jsonMatch[0];
+      }
+    } catch {}
+
+    let recommendations: any = null;
+    if (resultJson) {
+      try {
+        recommendations = JSON.parse(resultJson);
+      } catch {}
+    }
+
+    if (!recommendations || !recommendations.careers) {
+      recommendations = generateDefaultRecommendations(confirmedSkills, interests, dyslexiaLevel);
+    }
+
+    res.json({ recommendations });
+  } catch (err: any) {
+    console.error('[LLM/recommend] Error:', err);
+    res.status(500).json({ error: 'Failed to generate recommendations' });
+  }
+});
+
+function generateDefaultRecommendations(skills: string[], interests: string[], _dyslexiaLevel: string) {
+  const isVisual = interests.some((i: string) => /design|art|creative|media/i.test(i));
+  return {
+    careers: [
+      {
+        title: isVisual ? 'UI/UX & Visual Designer' : 'Frontend Accessibility Engineer',
+        match: 94,
+        reason: 'Exceptional spatial reasoning, pattern recognition, and creative problem-solving abilities suited for neurodivergent minds.',
+        icon: isVisual ? '🎨' : '💻',
+      },
+      {
+        title: 'Creative Technologist',
+        match: 88,
+        reason: 'Blends big-picture systemic thinking with technical implementation, bypassing linear text bottlenecks.',
+        icon: '🚀',
+      },
+      {
+        title: 'Product Strategy & Innovation Specialist',
+        match: 85,
+        reason: 'Leverages holistic thinking to identify workflow bottlenecks and intuitive user experiences.',
+        icon: '📊',
+      },
+    ],
+    learningPath: [
+      { step: 1, title: 'Master Visual Information Mapping', duration: '2 weeks', type: 'visual', icon: '🗺️' },
+      { step: 2, title: 'Interactive Accessibility Prototyping', duration: '3 weeks', type: 'practical', icon: '🛠️' },
+      { step: 3, title: 'Audio-Assisted Code & Architecture Review', duration: '2 weeks', type: 'audio', icon: '🎧' },
+      { step: 4, title: 'Portfolio Project Showcase', duration: '4 weeks', type: 'practical', icon: '🏆' },
+    ],
+    internships: [
+      { title: 'Neuroinclusive Product Intern', org: 'NeuroBridge Labs', deadline: 'Rolling Admissions', tags: ['Remote', 'Inclusive Mentorship'] },
+      { title: 'Accessibility Experience Associate', org: 'Global Tech Foundation', deadline: '30 Days Left', tags: ['Hybrid', 'Flexible Hours'] },
+      { title: 'Junior Frontend Developer', org: 'OpenSource Innovators', deadline: 'Open Now', tags: ['Mentorship', 'Project-based'] },
+    ],
+    competitions: [
+      { title: 'Global Accessibility Design Challenge', prize: '$5,000 & Mentorship', tags: ['Dyslexia Friendly', 'Team or Solo'] },
+      { title: 'Inclusive Tech Innovation Sprint', prize: 'Top 10 Finalist Incubation', tags: ['Beginner Friendly', 'Virtual'] },
+    ],
+    skillGaps: [
+      { skill: 'Multimodal Documentation', currentLevel: 45, targetLevel: 85, tip: 'Use mind maps and voice recordings instead of dense linear text blocks.' },
+      { skill: 'Design System Typography', currentLevel: 55, targetLevel: 90, tip: 'Practice applying dyslexia-optimized font weights and fluid letter-spacing.' },
+      { skill: 'Assistive Tech Testing', currentLevel: 50, targetLevel: 80, tip: 'Test web interfaces using screen readers and high-contrast accessibility tools.' },
+    ],
+  };
+}
+
+/**
+ * Offline Emergency Fallback
+ * Only triggered if all external cloud AI providers (Gemini, Ollama, and Pollinations)
+ * are completely unreachable due to zero network connectivity.
+ */
+function generateIntelligentResponse(
+  query: string,
+  _messages: any[] = [],
+  _context: any = {}
+): string {
+  const cleanQ = query.trim() || 'your question';
+  return `I am currently unable to reach the cloud AI services to answer: "${cleanQ}".\n\nPlease check your internet connection and try again. In the meantime, you can ask me to navigate the site, read pages aloud, or toggle dyslexia accessibility tools.`;
+}

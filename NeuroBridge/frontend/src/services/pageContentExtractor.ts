@@ -121,6 +121,98 @@ export function getExtractedPageSummary(): ExtractedPageSummary {
 /**
  * Returns any text currently highlighted by the user with their mouse/selection
  */
+export interface PageParagraphBlock {
+  id: number;
+  text: string;
+  element: HTMLElement;
+  tagName: string;
+}
+
+/**
+ * Extracts distinct, readable paragraph blocks with their source DOM elements
+ * for real-time section-by-section and paragraph-by-paragraph TTS & Spotlight tracking.
+ */
+export function extractPageParagraphs(container?: HTMLElement | string): PageParagraphBlock[] {
+  if (typeof document === 'undefined') return [];
+
+  let root: HTMLElement | null = null;
+  if (typeof container === 'string') {
+    root = document.querySelector(container);
+  } else if (container) {
+    root = container;
+  }
+
+  if (!root) {
+    const mainContainers = [
+      document.querySelector('main'),
+      document.querySelector('[role="main"]'),
+      document.querySelector('.dashboard-main'),
+      document.querySelector('.dashboard-content'),
+      document.querySelector('#root > div'),
+      document.body,
+    ];
+    root = (mainContainers.find((el) => el !== null) as HTMLElement) || document.body;
+  }
+
+  // Extract visible content nodes
+  const selectors = 'h1, h2, h3, h4, p, li, blockquote, [data-readable="true"]';
+  const elements = Array.from(root.querySelectorAll(selectors)) as HTMLElement[];
+
+  const blocks: PageParagraphBlock[] = [];
+  const seenTexts = new Set<string>();
+  let blockId = 0;
+
+  for (const el of elements) {
+    // Exclude navigation, headers, footers, assistant overlays, scripts, dialogs
+    if (
+      el.closest(
+        'nav, header, footer, .speech-ignore, [aria-hidden="true"], [role="dialog"], .assistant-window, .fixed.bottom-6.right-6'
+      )
+    ) {
+      continue;
+    }
+
+    const style = window.getComputedStyle(el);
+    if (
+      style.display === 'none' ||
+      style.visibility === 'hidden' ||
+      style.opacity === '0' ||
+      el.offsetParent === null
+    ) {
+      continue;
+    }
+
+    // Clean text
+    const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!text || text.length < 8) continue;
+
+    // Filter out boilerplate or menu labels
+    if (
+      /^(login|sign in|home|about|learn|dashboard|community|close|menu|submit|next|previous)$/i.test(
+        text
+      )
+    ) {
+      continue;
+    }
+
+    // Avoid exact duplicate paragraphs
+    if (seenTexts.has(text)) continue;
+    seenTexts.add(text);
+
+    blocks.push({
+      id: blockId++,
+      text,
+      element: el,
+      tagName: el.tagName.toLowerCase(),
+    });
+  }
+
+  return blocks;
+}
+
+/**
+ * Returns any text currently highlighted by the user with their mouse/selection
+ */
 export function getSelectedPageText(): string {
   if (typeof window === 'undefined') return '';
   const selection = window.getSelection();

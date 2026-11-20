@@ -1,16 +1,15 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { Language } from './DyslexiaContext';
-import { ttsService } from '../utils/textToSpeech';
+import { extractPageParagraphs, type PageParagraphBlock } from '../services/pageContentExtractor';
+import { getNaturalVoiceConfig } from '../utils/naturalVoice';
 
 export interface PageWordEntry {
   id: number;
   word: string;
-  node: Text;
-  startOffset: number;
-  endOffset: number;
-  element: HTMLElement;
-  range: Range;
+  startChar: number;
+  endChar: number;
+  spanElement?: HTMLSpanElement;
 }
 
 export interface ActiveRect {
@@ -18,324 +17,588 @@ export interface ActiveRect {
   left: number;
   width: number;
   height: number;
-  fontSize?: string;
-  fontWeight?: string;
-  fontFamily?: string;
 }
+
+export type ReaderLifecycleState =
+  | 'IDLE'
+  | 'EXTRACTING'
+  | 'READY'
+  | 'READING'
+  | 'PAUSED'
+  | 'COMPLETED'
+  | 'STOPPED'
+  | 'ERROR';
 
 export interface SpotlightReaderContextType {
   isActive: boolean;
   isPlaying: boolean;
   isPaused: boolean;
+  readerState: ReaderLifecycleState;
+  // Paragraph tracking
+  paragraphs: PageParagraphBlock[];
+  currentParagraphIndex: number;
+  totalParagraphs: number;
+  activeParagraphText: string;
+  // Word-by-word tracking
   words: PageWordEntry[];
   currentWordIndex: number;
-  activeRect: ActiveRect | null;
+  totalWords: number;
   activeWordText: string;
+  activeRect: ActiveRect | null;
+  // Controls
   speed: number;
   language: Language;
-  startPageReading: (container?: HTMLElement | string) => void;
-  startTextReading: (text: string, sourceElement?: HTMLElement | null) => void;
+  startPageReading: (container?: HTMLElement | string) => boolean;
+  startTextReading: (text: string, sourceElement?: HTMLElement | null) => boolean;
   pauseReading: () => void;
   resumeReading: () => void;
   stopReading: () => void;
+  restartReading: () => void;
+  nextWord: () => void;
+  prevWord: () => void;
+  nextParagraph: () => void;
+  prevParagraph: () => void;
   setSpeed: (speed: number) => void;
   jumpToWord: (index: number) => void;
 }
 
 const SpotlightReaderContext = createContext<SpotlightReaderContextType | undefined>(undefined);
 
-function extractWordsFromDOM(root: HTMLElement): PageWordEntry[] {
-  const words: PageWordEntry[] = [];
-  let currentId = 0;
-
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode(node: Text) {
-      const parent = node.parentElement;
-      if (!parent) return NodeFilter.FILTER_REJECT;
-
-      // Ignore scripts, styles, inputs, navbars, modals, and hidden elements
-      const tag = parent.tagName.toLowerCase();
-      if (['script', 'style', 'noscript', 'textarea', 'input', 'select', 'svg'].includes(tag)) {
-        return NodeFilter.FILTER_REJECT;
-      }
-
-      if (parent.closest('.speech-ignore, [aria-hidden="true"], nav, header')) {
-        return NodeFilter.FILTER_REJECT;
-      }
-
-      const style = window.getComputedStyle(parent);
-      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
-        return NodeFilter.FILTER_REJECT;
-      }
-
-      const text = node.textContent || '';
-      if (!text.trim()) return NodeFilter.FILTER_REJECT;
-
-      return NodeFilter.FILTER_ACCEPT;
-    },
-  });
-
-  let currentNode = walker.nextNode() as Text | null;
-  while (currentNode) {
-    const text = currentNode.textContent || '';
-    const regex = /(\S+)/g;
-    let match: RegExpExecArray | null;
-
-    while ((match = regex.exec(text)) !== null) {
-      const word = match[1];
-      const startOffset = match.index;
-      const endOffset = startOffset + word.length;
-
-      try {
-        const range = document.createRange();
-        range.setStart(currentNode, startOffset);
-        range.setEnd(currentNode, endOffset);
-
-        const parentEl = currentNode.parentElement || root;
-
-        words.push({
-          id: currentId++,
-          word,
-          node: currentNode,
-          startOffset,
-          endOffset,
-          element: parentEl,
-          range,
-        });
-      } catch (e) {
-        // Range creation skipped if detached
-      }
-    }
-
-    currentNode = walker.nextNode() as Text | null;
-  }
-
-  return words;
+interface WrappedBlockState {
+  element: HTMLElement;
+  originalHTML: string;
+  words: PageWordEntry[];
+  wordSpans: HTMLSpanElement[];
 }
 
 export function SpotlightReaderProvider({ children }: { children: ReactNode }) {
-  const [isActive, setIsActive] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [words, setWords] = useState<PageWordEntry[]>([]);
+  const [readerState, setReaderState] = useState<ReaderLifecycleState>('IDLE');
+  const [paragraphs, setParagraphs] = useState<PageParagraphBlock[]>([]);
+  const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [activeRect, setActiveRect] = useState<ActiveRect | null>(null);
-  const [activeWordText, setActiveWordText] = useState('');
   const [speed, setSpeedState] = useState(1);
   const [language, setLanguageState] = useState<Language>('en');
 
-  const wordsRef = useRef<PageWordEntry[]>([]);
-  wordsRef.current = words;
+  // Track wrapped element to cleanly restore original DOM on paragraph switch / stop
+  const wrappedBlockRef = useRef<WrappedBlockState | null>(null);
+  const paragraphsRef = useRef<PageParagraphBlock[]>([]);
+  paragraphsRef.current = paragraphs;
 
-  const currentIdxRef = useRef(currentWordIndex);
-  currentIdxRef.current = currentWordIndex;
+  const currentParaIdxRef = useRef(0);
+  currentParaIdxRef.current = currentParagraphIndex;
 
-  const updateWordPosition = useCallback((wordIdx: number) => {
-    const list = wordsRef.current;
-    if (wordIdx < 0 || wordIdx >= list.length) {
-      setActiveRect(null);
-      setActiveWordText('');
-      return;
+  const currentWordIdxRef = useRef(0);
+  currentWordIdxRef.current = currentWordIndex;
+
+  const sessionIdRef = useRef(0);
+  const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Fallback timer ref for browsers where onboundary is absent or delayed
+  const fallbackTimerRef = useRef<number | undefined>(undefined);
+  const hasNativeBoundaryRef = useRef(false);
+
+  const isActive = readerState === 'READING' || readerState === 'PAUSED';
+  const isPlaying = readerState === 'READING';
+  const isPaused = readerState === 'PAUSED';
+
+  /**
+   * Restores original DOM structure of any wrapped paragraph, removing injected spans
+   */
+  const unwrapCurrentBlock = useCallback(() => {
+    if (wrappedBlockRef.current) {
+      try {
+        const { element, originalHTML } = wrappedBlockRef.current;
+        if (element && element.isConnected) {
+          element.innerHTML = originalHTML;
+          element.classList.remove('nb-reading-spotlight');
+        }
+      } catch {}
+      wrappedBlockRef.current = null;
     }
 
-    const item = list[wordIdx];
-    try {
-      const rect = item.range.getBoundingClientRect();
-      const style = window.getComputedStyle(item.element);
-
-      // Scroll smoothly into view if off-screen or near edges
-      if (rect.top < 120 || rect.bottom > window.innerHeight - 140) {
-        const targetY = window.scrollY + rect.top - window.innerHeight / 2.5;
-        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
-      }
-
-      setActiveWordText(item.word);
-      setActiveRect({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-        fontSize: style.fontSize,
-        fontWeight: style.fontWeight,
-        fontFamily: style.fontFamily,
-      });
-    } catch (e) {
-      console.warn('Could not measure word rect:', e);
+    if (typeof document !== 'undefined') {
+      const strayActive = document.querySelectorAll('.nb-reading-word-active');
+      strayActive.forEach((el) => el.classList.remove('nb-reading-word-active'));
+      const strayHighlights = document.querySelectorAll('.nb-reading-spotlight');
+      strayHighlights.forEach((el) => el.classList.remove('nb-reading-spotlight'));
     }
   }, []);
 
+  /**
+   * Stops reading completely, cancels speech synthesis, and cleans up DOM
+   */
   const stopReading = useCallback(() => {
-    ttsService.stop();
-    setIsActive(false);
-    setIsPlaying(false);
-    setIsPaused(false);
-    setActiveRect(null);
-    setActiveWordText('');
-    setWords([]);
+    sessionIdRef.current++;
+    if (fallbackTimerRef.current !== undefined) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = undefined;
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
+    activeUtteranceRef.current = null;
+    unwrapCurrentBlock();
+    setReaderState('STOPPED');
+    setTimeout(() => {
+      setReaderState('IDLE');
+    }, 150);
+    setCurrentParagraphIndex(0);
+    setCurrentWordIndex(0);
+  }, [unwrapCurrentBlock]);
+
+  /**
+   * Highlights a specific word index inside the currently wrapped block
+   */
+  const highlightWordAtIndex = useCallback((wordIdx: number) => {
+    const wrapped = wrappedBlockRef.current;
+    if (!wrapped || !wrapped.wordSpans || wrapped.wordSpans.length === 0) return;
+
+    const clampedIdx = Math.max(0, Math.min(wordIdx, wrapped.wordSpans.length - 1));
+    setCurrentWordIndex(clampedIdx);
+    currentWordIdxRef.current = clampedIdx;
+
+    // Clear previous word highlight
+    wrapped.wordSpans.forEach((span, idx) => {
+      if (idx === clampedIdx) {
+        if (!span.classList.contains('nb-reading-word-active')) {
+          span.classList.add('nb-reading-word-active');
+        }
+      } else {
+        if (span.classList.contains('nb-reading-word-active')) {
+          span.classList.remove('nb-reading-word-active');
+        }
+      }
+    });
+
+    // Auto-scroll keeping active word comfortably in view without fighting user scrolling
+    const activeSpan = wrapped.wordSpans[clampedIdx];
+    if (activeSpan && activeSpan.isConnected) {
+      try {
+        const rect = activeSpan.getBoundingClientRect();
+        const topMargin = 72; // Nav height
+        const bottomMargin = 80;
+        const outOfView = rect.top < topMargin || rect.bottom > window.innerHeight - bottomMargin;
+        if (outOfView) {
+          activeSpan.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        }
+      } catch {}
+    }
   }, []);
 
-  const startPageReading = useCallback((container?: HTMLElement | string) => {
-    let targetRoot: HTMLElement | null = null;
-    if (typeof container === 'string') {
-      targetRoot = document.querySelector(container);
-    } else if (container) {
-      targetRoot = container;
+  /**
+   * Wraps readable words inside an element into individual spans for spotlighting
+   */
+  const wrapWordsInElement = useCallback((element: HTMLElement, text: string): WrappedBlockState => {
+    const originalHTML = element.innerHTML;
+
+    // Tokenize text into words with char boundaries
+    const words: PageWordEntry[] = [];
+    const wordRegex = /\S+/g;
+    let match: RegExpExecArray | null;
+    let wordId = 0;
+
+    while ((match = wordRegex.exec(text)) !== null) {
+      words.push({
+        id: wordId++,
+        word: match[0],
+        startChar: match.index,
+        endChar: match.index + match[0].length,
+      });
     }
 
-    if (!targetRoot) {
-      targetRoot = (document.querySelector('main') as HTMLElement) || document.body;
-    }
+    // Split text nodes and wrap each word
+    element.innerHTML = '';
+    const wordSpans: HTMLSpanElement[] = [];
 
-    const pageWords = extractWordsFromDOM(targetRoot);
-    if (!pageWords.length) return;
-
-    setWords(pageWords);
-    wordsRef.current = pageWords;
-    setCurrentWordIndex(0);
-    currentIdxRef.current = 0;
-    setIsActive(true);
-    setIsPlaying(true);
-    setIsPaused(false);
-
-    // Initial word spotlight
-    updateWordPosition(0);
-
-    const fullTextToRead = pageWords.map((w) => w.word).join(' ');
-
-    ttsService.speak(
-      fullTextToRead,
-      language,
-      speed,
-      0,
-      {
-        onWord: (wordIdx) => {
-          setCurrentWordIndex(wordIdx);
-          currentIdxRef.current = wordIdx;
-          updateWordPosition(wordIdx);
-        },
-        onStart: () => {
-          setIsPlaying(true);
-          setIsPaused(false);
-        },
-        onEnd: () => {
-          stopReading();
-        },
-        onPause: () => {
-          setIsPlaying(false);
-          setIsPaused(true);
-        },
-        onResume: () => {
-          setIsPlaying(true);
-          setIsPaused(false);
-        },
-        onError: () => {
-          stopReading();
-        },
+    let currentOffset = 0;
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      // Append any space/punctuation between words
+      if (w.startChar > currentOffset) {
+        const spacer = text.slice(currentOffset, w.startChar);
+        element.appendChild(document.createTextNode(spacer));
       }
-    );
-  }, [language, speed, stopReading, updateWordPosition]);
 
-  const startTextReading = useCallback((text: string, sourceElement?: HTMLElement | null) => {
-    if (sourceElement) {
-      const elWords = extractWordsFromDOM(sourceElement);
-      if (elWords.length > 0) {
-        setWords(elWords);
-        wordsRef.current = elWords;
-        setCurrentWordIndex(0);
-        currentIdxRef.current = 0;
-        setIsActive(true);
-        setIsPlaying(true);
-        setIsPaused(false);
-        updateWordPosition(0);
+      const span = document.createElement('span');
+      span.className = 'nb-reading-word';
+      span.dataset.wordIdx = String(i);
+      span.textContent = w.word;
+      element.appendChild(span);
+      wordSpans.push(span);
+      w.spanElement = span;
 
-        const speechText = elWords.map((w) => w.word).join(' ');
-        ttsService.speak(speechText, language, speed, 0, {
-          onWord: (wordIdx) => {
-            setCurrentWordIndex(wordIdx);
-            currentIdxRef.current = wordIdx;
-            updateWordPosition(wordIdx);
-          },
-          onStart: () => setIsPlaying(true),
-          onEnd: () => stopReading(),
-          onPause: () => setIsPlaying(false),
-          onResume: () => setIsPlaying(true),
-          onError: () => stopReading(),
-        });
+      currentOffset = w.endChar;
+    }
+
+    // Append any trailing characters
+    if (currentOffset < text.length) {
+      element.appendChild(document.createTextNode(text.slice(currentOffset)));
+    }
+
+    element.classList.add('nb-reading-spotlight');
+
+    return {
+      element,
+      originalHTML,
+      words,
+      wordSpans,
+    };
+  }, []);
+
+  /**
+   * Reads a paragraph block with word-by-word synchronization
+   */
+  const readParagraphAtIndex = useCallback(
+    (index: number, session: number, startingWordIdx: number = 0) => {
+      if (session !== sessionIdRef.current) return;
+
+      const list = paragraphsRef.current;
+      if (index < 0 || index >= list.length) {
+        // Complete reading
+        stopReading();
+        setReaderState('COMPLETED');
+        setTimeout(() => setReaderState('IDLE'), 350);
         return;
       }
+
+      // 1. Unwrap previous block
+      unwrapCurrentBlock();
+
+      const block = list[index];
+      setCurrentParagraphIndex(index);
+      currentParaIdxRef.current = index;
+
+      // 2. Wrap words in DOM
+      const wrapped = wrapWordsInElement(block.element, block.text);
+      wrappedBlockRef.current = wrapped;
+
+      if (!wrapped.words.length) {
+        // Advance if empty
+        readParagraphAtIndex(index + 1, session);
+        return;
+      }
+
+      // 3. Highlight initial word
+      highlightWordAtIndex(startingWordIdx);
+
+      if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+
+      // Calculate spoken slice if starting from a specific word
+      const textToSpeak =
+        startingWordIdx > 0 && wrapped.words[startingWordIdx]
+          ? block.text.slice(wrapped.words[startingWordIdx].startChar)
+          : block.text;
+
+      const config = getNaturalVoiceConfig(language, speed);
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = config.lang;
+      if (config.voice) {
+        utterance.voice = config.voice;
+      }
+      utterance.rate = config.rate;
+      utterance.pitch = config.pitch;
+      utterance.volume = config.volume;
+
+      activeUtteranceRef.current = utterance;
+      hasNativeBoundaryRef.current = false;
+
+      // Offset for charIndex mapping if slice was used
+      const charOffset = startingWordIdx > 0 && wrapped.words[startingWordIdx] ? wrapped.words[startingWordIdx].startChar : 0;
+
+      utterance.onstart = () => {
+        if (session === sessionIdRef.current) {
+          setReaderState('READING');
+
+          // Fallback timer loop for engines that do not fire onboundary
+          const startFallbackProgression = (wordIdx: number) => {
+            if (session !== sessionIdRef.current || hasNativeBoundaryRef.current) return;
+            if (wordIdx >= wrapped.words.length) return;
+
+            highlightWordAtIndex(wordIdx);
+
+            const word = wrapped.words[wordIdx].word;
+            // Base duration calculated from speech rate (standard ~150 wpm)
+            let duration = (Math.max(word.length, 3) / 5) * (60 / (155 * speed)) * 1000;
+            // Extend pause for punctuation
+            if (/[,;:]$/.test(word)) duration += 120;
+            if (/[.?!]$/.test(word)) duration += 240;
+
+            fallbackTimerRef.current = window.setTimeout(() => {
+              if (session === sessionIdRef.current && !hasNativeBoundaryRef.current) {
+                startFallbackProgression(wordIdx + 1);
+              }
+            }, Math.max(120, duration));
+          };
+
+          // Give native onboundary 250ms to fire before starting fallback timer
+          fallbackTimerRef.current = window.setTimeout(() => {
+            if (!hasNativeBoundaryRef.current && session === sessionIdRef.current) {
+              startFallbackProgression(startingWordIdx + 1);
+            }
+          }, 260);
+        }
+      };
+
+      utterance.onboundary = (e: SpeechSynthesisEvent) => {
+        if (session !== sessionIdRef.current) return;
+
+        // Mark that native boundary events are working so fallback timer yields
+        hasNativeBoundaryRef.current = true;
+        if (fallbackTimerRef.current !== undefined) {
+          clearTimeout(fallbackTimerRef.current);
+          fallbackTimerRef.current = undefined;
+        }
+
+        // On word boundaries or when charIndex is reported
+        const absoluteChar = e.charIndex + charOffset;
+
+        // Find matching word
+        for (let i = 0; i < wrapped.words.length; i++) {
+          const w = wrapped.words[i];
+          if (absoluteChar >= w.startChar && absoluteChar <= w.endChar) {
+            highlightWordAtIndex(i);
+            break;
+          }
+        }
+      };
+
+      utterance.onend = () => {
+        if (session === sessionIdRef.current) {
+          if (fallbackTimerRef.current !== undefined) {
+            clearTimeout(fallbackTimerRef.current);
+            fallbackTimerRef.current = undefined;
+          }
+          // Advance to next paragraph after a tiny natural pause
+          setTimeout(() => {
+            if (session === sessionIdRef.current) {
+              readParagraphAtIndex(index + 1, session, 0);
+            }
+          }, 240);
+        }
+      };
+
+      utterance.onerror = (e) => {
+        if (e.error === 'interrupted' || e.error === 'canceled') return;
+        console.warn('[SpotlightReader] Utterance error:', e);
+        if (session === sessionIdRef.current) {
+          readParagraphAtIndex(index + 1, session, 0);
+        }
+      };
+
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('[SpotlightReader] Speak error:', err);
+      }
+    },
+    [highlightWordAtIndex, language, speed, stopReading, unwrapCurrentBlock, wrapWordsInElement]
+  );
+
+  /**
+   * Starts reading the page from the beginning
+   */
+  const startPageReading = useCallback(
+    (container?: HTMLElement | string): boolean => {
+      stopReading();
+      const currentSession = ++sessionIdRef.current;
+      setReaderState('EXTRACTING');
+
+      const blocks = extractPageParagraphs(container);
+      if (!blocks || blocks.length === 0) {
+        setReaderState('ERROR');
+        setTimeout(() => setReaderState('IDLE'), 1800);
+        return false;
+      }
+
+      setParagraphs(blocks);
+      paragraphsRef.current = blocks;
+      setCurrentParagraphIndex(0);
+      currentParaIdxRef.current = 0;
+      setCurrentWordIndex(0);
+      currentWordIdxRef.current = 0;
+      setReaderState('READY');
+
+      readParagraphAtIndex(0, currentSession, 0);
+      return true;
+    },
+    [readParagraphAtIndex, stopReading]
+  );
+
+  /**
+   * Starts reading specific text or element
+   */
+  const startTextReading = useCallback(
+    (text: string, sourceElement?: HTMLElement | null): boolean => {
+      if (sourceElement) {
+        return startPageReading(sourceElement);
+      }
+      return startPageReading();
+    },
+    [startPageReading]
+  );
+
+  /**
+   * Pauses reading
+   */
+  const pauseReading = useCallback(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.pause();
+      } catch {}
+    }
+    if (fallbackTimerRef.current !== undefined) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = undefined;
+    }
+    setReaderState('PAUSED');
+  }, []);
+
+  /**
+   * Resumes reading from current word position
+   */
+  const resumeReading = useCallback(() => {
+    if (readerState !== 'PAUSED') return;
+
+    if (typeof window !== 'undefined' && window.speechSynthesis && window.speechSynthesis.paused) {
+      try {
+        window.speechSynthesis.resume();
+        setReaderState('READING');
+        return;
+      } catch {}
     }
 
-    // Default fallback to reading whole page
-    startPageReading();
-  }, [language, speed, startPageReading, stopReading, updateWordPosition]);
+    // If native resume fails, restart from current word
+    const currentSession = ++sessionIdRef.current;
+    setReaderState('READING');
+    readParagraphAtIndex(currentParaIdxRef.current, currentSession, currentWordIdxRef.current);
+  }, [readParagraphAtIndex, readerState]);
 
-  const pauseReading = useCallback(() => {
-    ttsService.pause();
-    setIsPlaying(false);
-    setIsPaused(true);
-  }, []);
+  /**
+   * Restarts reading from the very beginning
+   */
+  const restartReading = useCallback(() => {
+    stopReading();
+    setTimeout(() => {
+      startPageReading();
+    }, 100);
+  }, [startPageReading, stopReading]);
 
-  const resumeReading = useCallback(() => {
-    ttsService.resume();
-    setIsPlaying(true);
-    setIsPaused(false);
-  }, []);
+  /**
+   * Jumps to the next word
+   */
+  const nextWord = useCallback(() => {
+    const wrapped = wrappedBlockRef.current;
+    if (!wrapped || wrapped.words.length === 0) return;
 
-  const setSpeed = useCallback((newSpeed: number) => {
-    setSpeedState(newSpeed);
-    ttsService.setSpeed(newSpeed);
-  }, []);
+    const currentIdx = currentWordIdxRef.current;
+    if (currentIdx + 1 < wrapped.words.length) {
+      const nextIdx = currentIdx + 1;
+      const currentSession = ++sessionIdRef.current;
+      readParagraphAtIndex(currentParaIdxRef.current, currentSession, nextIdx);
+    } else if (currentParaIdxRef.current + 1 < paragraphsRef.current.length) {
+      // Jump to first word of next paragraph
+      const currentSession = ++sessionIdRef.current;
+      readParagraphAtIndex(currentParaIdxRef.current + 1, currentSession, 0);
+    }
+  }, [readParagraphAtIndex]);
 
-  const jumpToWord = useCallback((index: number) => {
-    if (index < 0 || index >= wordsRef.current.length) return;
-    setCurrentWordIndex(index);
-    currentIdxRef.current = index;
-    updateWordPosition(index);
-    ttsService.jumpToWord(index);
-  }, [updateWordPosition]);
+  /**
+   * Jumps to the previous word
+   */
+  const prevWord = useCallback(() => {
+    const wrapped = wrappedBlockRef.current;
+    if (!wrapped || wrapped.words.length === 0) return;
 
-  // Handle resize / scroll to re-align active rect
-  useEffect(() => {
-    if (!isActive) return;
+    const currentIdx = currentWordIdxRef.current;
+    if (currentIdx > 0) {
+      const targetIdx = currentIdx - 1;
+      const currentSession = ++sessionIdRef.current;
+      readParagraphAtIndex(currentParaIdxRef.current, currentSession, targetIdx);
+    } else if (currentParaIdxRef.current > 0) {
+      // Jump to previous paragraph
+      const currentSession = ++sessionIdRef.current;
+      readParagraphAtIndex(currentParaIdxRef.current - 1, currentSession, 0);
+    }
+  }, [readParagraphAtIndex]);
 
-    const handleUpdate = () => {
-      if (currentIdxRef.current >= 0) {
-        updateWordPosition(currentIdxRef.current);
+  /**
+   * Jumps to the next paragraph
+   */
+  const nextParagraph = useCallback(() => {
+    if (currentParaIdxRef.current + 1 < paragraphsRef.current.length) {
+      const currentSession = ++sessionIdRef.current;
+      readParagraphAtIndex(currentParaIdxRef.current + 1, currentSession, 0);
+    }
+  }, [readParagraphAtIndex]);
+
+  /**
+   * Jumps to the previous paragraph
+   */
+  const prevParagraph = useCallback(() => {
+    if (currentParaIdxRef.current > 0) {
+      const currentSession = ++sessionIdRef.current;
+      readParagraphAtIndex(currentParaIdxRef.current - 1, currentSession, 0);
+    }
+  }, [readParagraphAtIndex]);
+
+  /**
+   * Sets reading speed
+   */
+  const setSpeed = useCallback(
+    (newSpeed: number) => {
+      const clamped = Math.max(0.5, Math.min(2.5, newSpeed));
+      setSpeedState(clamped);
+      if (activeUtteranceRef.current) {
+        activeUtteranceRef.current.rate = clamped;
       }
-    };
+    },
+    []
+  );
 
-    window.addEventListener('scroll', handleUpdate, { passive: true });
-    window.addEventListener('resize', handleUpdate, { passive: true });
+  /**
+   * Jumps to a specific word index in current block
+   */
+  const jumpToWord = useCallback(
+    (index: number) => {
+      const currentSession = ++sessionIdRef.current;
+      readParagraphAtIndex(currentParaIdxRef.current, currentSession, index);
+    },
+    [readParagraphAtIndex]
+  );
 
-    return () => {
-      window.removeEventListener('scroll', handleUpdate);
-      window.removeEventListener('resize', handleUpdate);
-    };
-  }, [isActive, updateWordPosition]);
-
-  // Keyboard shortcuts (Escape to stop, Space to toggle play/pause)
+  // Keyboard shortcut listener: Escape stops reading
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isActive) {
         stopReading();
-      } else if (
-        e.code === 'Space' &&
-        isActive &&
-        (e.target as HTMLElement)?.tagName !== 'INPUT' &&
-        (e.target as HTMLElement)?.tagName !== 'TEXTAREA'
-      ) {
-        e.preventDefault();
-        if (isPlaying) {
-          pauseReading();
-        } else if (isPaused) {
-          resumeReading();
-        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isActive, isPlaying, isPaused, stopReading, pauseReading, resumeReading]);
+  }, [isActive, stopReading]);
+
+  // Clean up on component unmount
+  useEffect(() => {
+    return () => {
+      unwrapCurrentBlock();
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch {}
+      }
+    };
+  }, [unwrapCurrentBlock]);
+
+  const activeWords = wrappedBlockRef.current?.words || [];
+  const activeWord = activeWords[currentWordIndex]?.word || '';
+  const activeParagraphText = paragraphs[currentParagraphIndex]?.text || '';
 
   return (
     <SpotlightReaderContext.Provider
@@ -343,10 +606,16 @@ export function SpotlightReaderProvider({ children }: { children: ReactNode }) {
         isActive,
         isPlaying,
         isPaused,
-        words,
+        readerState,
+        paragraphs,
+        currentParagraphIndex,
+        totalParagraphs: paragraphs.length,
+        activeParagraphText,
+        words: activeWords,
         currentWordIndex,
-        activeRect,
-        activeWordText,
+        totalWords: activeWords.length,
+        activeWordText: activeWord,
+        activeRect: null,
         speed,
         language,
         startPageReading,
@@ -354,6 +623,11 @@ export function SpotlightReaderProvider({ children }: { children: ReactNode }) {
         pauseReading,
         resumeReading,
         stopReading,
+        restartReading,
+        nextWord,
+        prevWord,
+        nextParagraph,
+        prevParagraph,
         setSpeed,
         jumpToWord,
       }}

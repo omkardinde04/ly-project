@@ -411649,8 +411649,948 @@ var DynamicRetrievalMode2;
   DynamicRetrievalMode3["MODE_DYNAMIC"] = "MODE_DYNAMIC";
 })(DynamicRetrievalMode2 || (DynamicRetrievalMode2 = {}));
 
+// src/services/aiProvider/geminiProvider.ts
+var GeminiProvider = class {
+  name = "gemini";
+  get modelName() {
+    return (process.env.GEMINI_MODEL || "gemini-flash-lite-latest").trim();
+  }
+  getApiKey() {
+    return (process.env.GEMINI_API_KEY || "").trim();
+  }
+  isConfigured() {
+    const key = this.getApiKey();
+    return Boolean(key && key.length > 5);
+  }
+  /**
+   * Resilient model candidates to ensure requests never fail due to a single model's quota or deprecation.
+   */
+  getModelCandidates() {
+    const configured = this.modelName;
+    const fallbacks = [
+      "gemini-3.1-flash-lite-preview",
+      "gemini-flash-lite-latest",
+      "gemini-3.1-flash-lite",
+      "gemini-3.5-flash-lite"
+    ];
+    return Array.from(/* @__PURE__ */ new Set([configured, ...fallbacks]));
+  }
+  formatContents(messages) {
+    const systemMessage = messages.find((m) => m.role === "system");
+    const systemText = systemMessage?.content || "";
+    const nonSystem = messages.filter((m) => m.role !== "system");
+    const contents = nonSystem.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }]
+    }));
+    if (contents.length === 0) {
+      contents.push({ role: "user", parts: [{ text: "Hello" }] });
+    }
+    return { systemText, contents };
+  }
+  async generate(messages, options) {
+    const res = await this.generateDetailed(messages, options);
+    return res.text;
+  }
+  async generateDetailed(messages, options) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured on the server.");
+    }
+    const genAI2 = new GoogleGenerativeAI(apiKey);
+    const { systemText, contents } = this.formatContents(messages);
+    const timeoutMs = options?.timeoutMs || Number(process.env.AI_REQUEST_TIMEOUT_MS) || 9e3;
+    const candidates = this.getModelCandidates();
+    const attempts = [];
+    let lastError = null;
+    for (const modelCandidate of candidates) {
+      const startCandidate = Date.now();
+      try {
+        const model = genAI2.getGenerativeModel({
+          model: modelCandidate,
+          systemInstruction: systemText ? { role: "system", parts: [{ text: systemText }] } : void 0
+        });
+        const timeoutPromise = new Promise(
+          (_3, reject2) => setTimeout(() => reject2(new Error(`Gemini (${modelCandidate}) timeout after ${timeoutMs}ms`)), timeoutMs)
+        );
+        const generatePromise = model.generateContent({ contents });
+        const result2 = await Promise.race([generatePromise, timeoutPromise]);
+        const responseText = result2.response.text();
+        const latencyMs = Date.now() - startCandidate;
+        if (responseText && responseText.trim()) {
+          attempts.push({
+            provider: "gemini",
+            model: modelCandidate,
+            success: true,
+            latencyMs
+          });
+          return {
+            text: responseText.trim(),
+            actualModel: modelCandidate,
+            attempts
+          };
+        } else {
+          throw new Error(`Empty response returned by ${modelCandidate}`);
+        }
+      } catch (err) {
+        const latencyMs = Date.now() - startCandidate;
+        lastError = err;
+        const msg = err?.message || String(err);
+        const statusMatch = msg.match(/\b(503|500|429|404|403|401)\b/);
+        const statusCode = statusMatch ? parseInt(statusMatch[1], 10) : err?.status || void 0;
+        attempts.push({
+          provider: "gemini",
+          model: modelCandidate,
+          success: false,
+          latencyMs,
+          error: msg,
+          statusCode
+        });
+        console.warn(`[GeminiProvider] Model ${modelCandidate} failed (${statusCode || "error"}): ${msg}. Attempting next candidate...`);
+        if (options?.signal?.aborted) {
+          throw err;
+        }
+      }
+    }
+    const failureErr = lastError || new Error("All Gemini model candidates failed.");
+    failureErr.attempts = attempts;
+    throw failureErr;
+  }
+  async generateStream(messages, onChunk, options) {
+    const res = await this.generateStreamDetailed(messages, onChunk, options);
+    return res.text;
+  }
+  async generateStreamDetailed(messages, onChunk, options) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured on the server.");
+    }
+    const genAI2 = new GoogleGenerativeAI(apiKey);
+    const { systemText, contents } = this.formatContents(messages);
+    const timeoutMs = options?.timeoutMs || Number(process.env.AI_REQUEST_TIMEOUT_MS) || 1e4;
+    const candidates = this.getModelCandidates();
+    const attempts = [];
+    let lastError = null;
+    for (const modelCandidate of candidates) {
+      const startCandidate = Date.now();
+      try {
+        const model = genAI2.getGenerativeModel({
+          model: modelCandidate,
+          systemInstruction: systemText ? { role: "system", parts: [{ text: systemText }] } : void 0
+        });
+        const timeoutPromise = new Promise(
+          (_3, reject2) => setTimeout(() => reject2(new Error(`Gemini stream (${modelCandidate}) timeout after ${timeoutMs}ms`)), timeoutMs)
+        );
+        const streamPromise = model.generateContentStream({ contents });
+        const streamingResult = await Promise.race([streamPromise, timeoutPromise]);
+        let fullText = "";
+        for await (const chunk2 of streamingResult.stream) {
+          if (options?.signal?.aborted) {
+            throw new Error("Request aborted by client");
+          }
+          const text = chunk2.text();
+          if (text) {
+            fullText += text;
+            onChunk(text);
+          }
+        }
+        const latencyMs = Date.now() - startCandidate;
+        if (fullText.trim()) {
+          attempts.push({
+            provider: "gemini",
+            model: modelCandidate,
+            success: true,
+            latencyMs
+          });
+          return {
+            text: fullText.trim(),
+            actualModel: modelCandidate,
+            attempts
+          };
+        } else {
+          throw new Error(`Empty stream returned by ${modelCandidate}`);
+        }
+      } catch (err) {
+        const latencyMs = Date.now() - startCandidate;
+        lastError = err;
+        const msg = err?.message || String(err);
+        const statusMatch = msg.match(/\b(503|500|429|404|403|401)\b/);
+        const statusCode = statusMatch ? parseInt(statusMatch[1], 10) : err?.status || void 0;
+        attempts.push({
+          provider: "gemini",
+          model: modelCandidate,
+          success: false,
+          latencyMs,
+          error: msg,
+          statusCode
+        });
+        console.warn(`[GeminiProvider] Stream model ${modelCandidate} failed (${statusCode || "error"}): ${msg}. Attempting next candidate...`);
+        if (options?.signal?.aborted) {
+          throw err;
+        }
+      }
+    }
+    const failureErr = lastError || new Error("All Gemini streaming model candidates failed.");
+    failureErr.attempts = attempts;
+    throw failureErr;
+  }
+};
+
+// src/services/aiProvider/ollamaCloudProvider.ts
+var OllamaCloudProvider = class {
+  name = "ollama-cloud";
+  endpoint = "https://ollama.com/api/chat";
+  get modelName() {
+    return (process.env.OLLAMA_MODEL || "glm-5.3-flash").trim();
+  }
+  getApiKey() {
+    return (process.env.OLLAMA_API_KEY || "").trim();
+  }
+  isConfigured() {
+    const key = this.getApiKey();
+    return Boolean(key && key.length > 5);
+  }
+  async generate(messages, options) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new Error("OLLAMA_API_KEY is not configured on the server. Please set it in environment variables.");
+    }
+    const timeoutMs = options?.timeoutMs || Number(process.env.AI_REQUEST_TIMEOUT_MS) || 8e3;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    if (options?.signal) {
+      options.signal.addEventListener("abort", () => controller.abort());
+    }
+    try {
+      const response = await fetch(this.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.modelName,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content
+          })),
+          stream: false
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (!response.ok) {
+        let errDetail = "";
+        try {
+          const errJson = await response.json();
+          errDetail = errJson.error || JSON.stringify(errJson);
+        } catch {
+          errDetail = `HTTP ${response.status} ${response.statusText}`;
+        }
+        throw new Error(`Ollama Cloud API error (${response.status}): ${errDetail}`);
+      }
+      const data = await response.json();
+      const text = data?.message?.content;
+      if (!text || !text.trim()) {
+        throw new Error("Ollama Cloud returned an empty message.");
+      }
+      return text.trim();
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === "AbortError") {
+        throw new Error(`Ollama Cloud connection timeout after ${timeoutMs}ms`);
+      }
+      throw err;
+    }
+  }
+  async generateStream(messages, onChunk, options) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new Error("OLLAMA_API_KEY is not configured on the server. Please set it in environment variables.");
+    }
+    const timeoutMs = options?.timeoutMs || Number(process.env.AI_REQUEST_TIMEOUT_MS) || 8e3;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    if (options?.signal) {
+      options.signal.addEventListener("abort", () => controller.abort());
+    }
+    try {
+      const response = await fetch(this.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: this.modelName,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content
+          })),
+          stream: true
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (!response.ok) {
+        let errDetail = "";
+        try {
+          const errJson = await response.json();
+          errDetail = errJson.error || JSON.stringify(errJson);
+        } catch {
+          errDetail = `HTTP ${response.status} ${response.statusText}`;
+        }
+        throw new Error(`Ollama Cloud streaming API error (${response.status}): ${errDetail}`);
+      }
+      if (!response.body) {
+        throw new Error("Ollama Cloud streaming returned empty response body.");
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullText = "";
+      while (true) {
+        if (options?.signal?.aborted) {
+          throw new Error("Request aborted by client");
+        }
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          try {
+            const parsed = JSON.parse(trimmed);
+            const token = parsed?.message?.content;
+            if (token) {
+              fullText += token;
+              onChunk(token);
+            }
+          } catch {
+          }
+        }
+      }
+      if (buffer.trim()) {
+        try {
+          const parsed = JSON.parse(buffer.trim());
+          const token = parsed?.message?.content;
+          if (token) {
+            fullText += token;
+            onChunk(token);
+          }
+        } catch {
+        }
+      }
+      if (!fullText.trim()) {
+        throw new Error("Ollama Cloud stream finished with no tokens.");
+      }
+      return fullText.trim();
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === "AbortError") {
+        throw new Error(`Ollama Cloud stream connection timeout after ${timeoutMs}ms`);
+      }
+      throw err;
+    }
+  }
+};
+
+// src/services/aiProvider/pollinationsProvider.ts
+var PollinationsProvider = class {
+  name = "pollinations";
+  endpoint = "https://text.pollinations.ai/";
+  get modelName() {
+    return "openai";
+  }
+  isConfigured() {
+    return true;
+  }
+  async generate(messages, options) {
+    const timeoutMs = options?.timeoutMs || Number(process.env.AI_REQUEST_TIMEOUT_MS) || 12e3;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    if (options?.signal) {
+      options.signal.addEventListener("abort", () => controller.abort());
+    }
+    try {
+      const response = await fetch(this.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content
+          })),
+          model: this.modelName,
+          seed: Math.floor(Math.random() * 1e5)
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (!response.ok) {
+        throw new Error(`Pollinations API error: HTTP ${response.status} ${response.statusText}`);
+      }
+      const text = await response.text();
+      if (!text || !text.trim()) {
+        throw new Error("Pollinations returned an empty response.");
+      }
+      return text.trim();
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === "AbortError") {
+        throw new Error(`Pollinations connection timeout after ${timeoutMs}ms`);
+      }
+      throw err;
+    }
+  }
+  async generateStream(messages, onChunk, options) {
+    const timeoutMs = options?.timeoutMs || Number(process.env.AI_REQUEST_TIMEOUT_MS) || 14e3;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    if (options?.signal) {
+      options.signal.addEventListener("abort", () => controller.abort());
+    }
+    try {
+      const response = await fetch(this.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content
+          })),
+          model: this.modelName,
+          seed: Math.floor(Math.random() * 1e5),
+          stream: true
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (!response.ok) {
+        throw new Error(`Pollinations streaming error: HTTP ${response.status}`);
+      }
+      if (!response.body) {
+        throw new Error("Pollinations stream returned empty body.");
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullText = "";
+      while (true) {
+        if (options?.signal?.aborted) {
+          throw new Error("Request aborted by client");
+        }
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          if (trimmed.startsWith("data:")) {
+            const dataStr = trimmed.slice(5).trim();
+            if (dataStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(dataStr);
+              const token = parsed?.choices?.[0]?.delta?.content || parsed?.text || parsed?.content;
+              if (token) {
+                fullText += token;
+                onChunk(token);
+              }
+            } catch {
+              if (dataStr) {
+                fullText += dataStr;
+                onChunk(dataStr);
+              }
+            }
+          } else {
+            fullText += trimmed + "\n";
+            onChunk(trimmed + "\n");
+          }
+        }
+      }
+      if (!fullText.trim() && buffer.trim()) {
+        fullText = buffer.trim();
+        onChunk(fullText);
+      }
+      if (!fullText.trim()) {
+        const text = await this.generate(messages, options);
+        onChunk(text);
+        return text;
+      }
+      return fullText.trim();
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === "AbortError") {
+        throw new Error(`Pollinations stream timeout after ${timeoutMs}ms`);
+      }
+      throw err;
+    }
+  }
+};
+
+// src/services/aiProvider/aiService.ts
+var AIService = class {
+  primaryProvider;
+  secondaryProvider;
+  cloudFallbackProvider;
+  fallbackEnabled;
+  constructor() {
+    this.primaryProvider = new GeminiProvider();
+    this.secondaryProvider = new OllamaCloudProvider();
+    this.cloudFallbackProvider = new PollinationsProvider();
+    this.fallbackEnabled = process.env.AI_FALLBACK_ENABLED !== "false";
+  }
+  /**
+   * Generates a unique request ID for distributed tracing and structured logs.
+   */
+  generateRequestId() {
+    return `req_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  }
+  /**
+   * Formats structured execution log without exposing keys or credentials.
+   * Accurately logs candidate attempts, intermediate errors (like 503s), and fallbacks.
+   */
+  logExecution(log) {
+    const divider = "\u2500".repeat(60);
+    console.log(`
+\u{1F916} [AI Request Tracing] ID: ${log.requestId}`);
+    if (log.endpoint) console.log(`   Endpoint          : ${log.endpoint}`);
+    if (log.inputLength !== void 0) console.log(`   Input Length      : ${log.inputLength} chars`);
+    if (log.contextIncluded !== void 0) console.log(`   Context Included  : ${log.contextIncluded ? "YES" : "NO"}`);
+    console.log(`   Primary Provider  : ${log.primaryProvider} (${log.primaryModel})`);
+    console.log(`   Primary Latency   : ${log.primaryLatencyMs}ms`);
+    if (log.candidateAttempts && log.candidateAttempts.length > 0) {
+      console.log(`   Candidate Attempts:`);
+      log.candidateAttempts.forEach((att, idx) => {
+        const statusIcon = att.success ? "\u2705 SUCCESS" : "\u274C FAILED";
+        const codeInfo = att.statusCode ? ` (${att.statusCode})` : "";
+        const errInfo = att.error ? ` - ${att.error.slice(0, 70)}` : "";
+        console.log(`     [${idx + 1}] ${att.provider} (${att.model}): ${statusIcon}${codeInfo} [${att.latencyMs}ms]${errInfo}`);
+      });
+    }
+    if (log.fallbackTriggered) {
+      console.log(`   \u26A0\uFE0F Fallback Triggered: YES`);
+      console.log(`   \u26A0\uFE0F Fallback Reason   : ${log.fallbackReason}`);
+      console.log(`   Fallback Provider : ${log.fallbackProvider} (${log.fallbackModel})`);
+      console.log(`   Fallback Latency  : ${log.fallbackLatencyMs}ms`);
+    } else {
+      console.log(`   Fallback Triggered: NO`);
+    }
+    console.log(`   Final Provider    : ${log.finalProvider} (${log.finalModel})`);
+    console.log(`   Status            : ${log.success ? "\u2705 SUCCESS" : "\u274C FAILED"}`);
+    if (log.error) {
+      console.log(`   Error Message     : ${log.error}`);
+    }
+    console.log(divider + "\n");
+  }
+  /**
+   * Builds the comprehensive, dyslexia-friendly system prompt with application context.
+   */
+  buildSystemPrompt(context = {}) {
+    return `You are JARVIS, an intelligent, empathetic, and knowledgeable AI voice and web assistant inside NeuroBridge, an educational and assistive platform for neurodivergent and dyslexic learners.
+You behave like a world-class AI assistant: capable of answering ANY question \u2014 science, mathematics, programming, technology, history, reasoning, summaries, writing essays and emails, creative brainstorming, and engaging in natural conversation.
+Always maintain context from previous conversational turns (understand "it", "that", "why", "give an example", "explain more simply").
+
+DYSLEXIA-FRIENDLY & VOICE RESPONSE STYLE:
+- Write in clean, structured Markdown.
+- Use short, clear sentences (10 to 18 words per sentence).
+- Use bullet points, bold key terms, and short paragraphs for readability.
+- Avoid robotic disclaimers ("As an AI...", "Certainly!", "Sure thing!").
+- Keep vocabulary supportive and clear.
+- Be encouraging, confident, and direct.
+
+CURRENT APPLICATION CONTEXT:
+- Active Screen / Page: "${context.pageTitle || "NeuroBridge"}" (${context.currentRoute || "/"})
+- Learner Name: "${context.userName || "Learner"}"
+- Language: "${context.language || "en"}"
+${context.pageContent ? `- Active Screen Content Snippet: "${String(context.pageContent).slice(0, 1e3)}"` : ""}
+
+NAVIGATION & ON-SCREEN ACTIONS:
+Only when the user explicitly requests navigation or an on-screen function, append an action tag on its own line at the very end of your response:
+[ACTION:navigate_home] -> Go to home
+[ACTION:open_dashboard] -> Go to dashboard
+[ACTION:open_learn] -> Go to learning hub
+[ACTION:open_opportunities] -> Go to opportunities & jobs
+[ACTION:open_community] -> Go to community discussions
+[ACTION:open_assessment] -> Go to dyslexia assessment
+[ACTION:open_nearby] -> Go to nearby care & support
+[ACTION:toggle_dyslexia_font] -> Toggle OpenDyslexic font
+[ACTION:toggle_high_contrast] -> Toggle high contrast mode
+[ACTION:read_page] -> Read the current page aloud
+[ACTION:stop_reading] -> Stop reading aloud
+For all general questions (science, math, programming, reasoning, writing, brainstorming, explanations), DO NOT append any action tag.`;
+  }
+  /**
+   * Prepares the full message list with system prompt and history.
+   */
+  prepareMessages(userInput, history2 = [], context = {}) {
+    const systemPrompt = this.buildSystemPrompt(context);
+    const messages = [{ role: "system", content: systemPrompt }];
+    const recent = history2.slice(-8);
+    for (const msg of recent) {
+      if (msg.role === "assistant" || msg.role === "model") {
+        messages.push({ role: "assistant", content: String(msg.content || "") });
+      } else if (msg.role === "user") {
+        messages.push({ role: "user", content: String(msg.content || "") });
+      }
+    }
+    messages.push({ role: "user", content: userInput.trim() });
+    return messages;
+  }
+  /**
+   * Extracts action tag, clean response text, and spoken summary.
+   */
+  processResponse(rawText, log) {
+    let cleanText = rawText.trim();
+    let action = null;
+    const actionMatch = cleanText.match(/\[ACTION:([a-zA-Z0-9_]+)\]/);
+    if (actionMatch) {
+      action = actionMatch[1];
+      cleanText = cleanText.replace(/\[ACTION:[a-zA-Z0-9_]+\]/g, "").trim();
+    }
+    const spokenResponse = cleanText.slice(0, 260).replace(/[*#`_]/g, "").trim();
+    return {
+      text: cleanText,
+      action,
+      spokenResponse,
+      requestId: log.requestId,
+      provider: log.finalProvider,
+      model: log.finalModel,
+      latencyMs: log.primaryLatencyMs + (log.fallbackLatencyMs || 0),
+      fallbackTriggered: log.fallbackTriggered,
+      fallbackReason: log.fallbackReason,
+      fallbackProvider: log.fallbackProvider,
+      fallbackModel: log.fallbackModel,
+      fallbackLatencyMs: log.fallbackLatencyMs,
+      candidateAttempts: log.candidateAttempts
+    };
+  }
+  /**
+   * Unified Non-Streaming Chat Execution with Multi-Tier Cloud Fallback
+   * 1. Primary: Gemini (multi-model with truthful attempt tracing)
+   * 2. Secondary: Ollama Cloud (if configured)
+   * 3. Tertiary: Pollinations Cloud (high-availability instant fallback)
+   */
+  async chat(messages, options) {
+    const requestId = options?.requestId || this.generateRequestId();
+    const primaryStart = Date.now();
+    const userMsg = [...messages].reverse().find((m) => m.role === "user")?.content || "";
+    const log = {
+      requestId,
+      endpoint: "/api/llm/chat",
+      inputLength: userMsg.length,
+      contextIncluded: messages.length > 2,
+      primaryProvider: this.primaryProvider.name,
+      primaryModel: this.primaryProvider.modelName,
+      primaryLatencyMs: 0,
+      fallbackTriggered: false,
+      candidateAttempts: [],
+      finalProvider: this.primaryProvider.name,
+      finalModel: this.primaryProvider.modelName,
+      success: false
+    };
+    try {
+      let responseText = "";
+      if (typeof this.primaryProvider.generateDetailed === "function") {
+        const detailed = await this.primaryProvider.generateDetailed(messages, {
+          ...options,
+          requestId
+        });
+        responseText = detailed.text;
+        log.candidateAttempts = detailed.attempts;
+        log.primaryModel = detailed.actualModel;
+        log.finalModel = detailed.actualModel;
+      } else {
+        responseText = await this.primaryProvider.generate(messages, {
+          ...options,
+          requestId
+        });
+        log.candidateAttempts = [
+          {
+            provider: this.primaryProvider.name,
+            model: this.primaryProvider.modelName,
+            success: true,
+            latencyMs: Date.now() - primaryStart
+          }
+        ];
+      }
+      log.primaryLatencyMs = Date.now() - primaryStart;
+      log.success = true;
+      this.logExecution(log);
+      return this.processResponse(responseText, log);
+    } catch (primaryErr) {
+      log.primaryLatencyMs = Date.now() - primaryStart;
+      log.fallbackReason = primaryErr?.message || String(primaryErr);
+      if (primaryErr?.attempts && Array.isArray(primaryErr.attempts)) {
+        log.candidateAttempts = primaryErr.attempts;
+      } else if (!log.candidateAttempts || log.candidateAttempts.length === 0) {
+        log.candidateAttempts = [
+          {
+            provider: this.primaryProvider.name,
+            model: this.primaryProvider.modelName,
+            success: false,
+            latencyMs: log.primaryLatencyMs,
+            error: log.fallbackReason
+          }
+        ];
+      }
+      if (!this.fallbackEnabled) {
+        log.error = `Primary provider failed and fallback is disabled: ${log.fallbackReason}`;
+        this.logExecution(log);
+        throw primaryErr;
+      }
+      log.fallbackTriggered = true;
+      const fallbackStart = Date.now();
+      if (this.secondaryProvider.isConfigured()) {
+        const secStart = Date.now();
+        try {
+          const secondaryResponse = await this.secondaryProvider.generate(messages, {
+            ...options,
+            requestId
+          });
+          const secLatency = Date.now() - secStart;
+          log.candidateAttempts?.push({
+            provider: this.secondaryProvider.name,
+            model: this.secondaryProvider.modelName,
+            success: true,
+            latencyMs: secLatency
+          });
+          log.fallbackLatencyMs = Date.now() - fallbackStart;
+          log.fallbackProvider = this.secondaryProvider.name;
+          log.fallbackModel = this.secondaryProvider.modelName;
+          log.finalProvider = this.secondaryProvider.name;
+          log.finalModel = this.secondaryProvider.modelName;
+          log.success = true;
+          this.logExecution(log);
+          return this.processResponse(secondaryResponse, log);
+        } catch (secondaryErr) {
+          const secLatency = Date.now() - secStart;
+          log.candidateAttempts?.push({
+            provider: this.secondaryProvider.name,
+            model: this.secondaryProvider.modelName,
+            success: false,
+            latencyMs: secLatency,
+            error: secondaryErr?.message
+          });
+          console.warn(`[AIService] Secondary (${this.secondaryProvider.name}) failed: ${secondaryErr.message}. Trying cloud fallback...`);
+        }
+      }
+      const cloudStart = Date.now();
+      try {
+        const cloudResponse = await this.cloudFallbackProvider.generate(messages, {
+          ...options,
+          requestId
+        });
+        const cloudLatency = Date.now() - cloudStart;
+        log.candidateAttempts?.push({
+          provider: this.cloudFallbackProvider.name,
+          model: this.cloudFallbackProvider.modelName,
+          success: true,
+          latencyMs: cloudLatency
+        });
+        log.fallbackLatencyMs = Date.now() - fallbackStart;
+        log.fallbackProvider = this.cloudFallbackProvider.name;
+        log.fallbackModel = this.cloudFallbackProvider.modelName;
+        log.finalProvider = this.cloudFallbackProvider.name;
+        log.finalModel = this.cloudFallbackProvider.modelName;
+        log.success = true;
+        this.logExecution(log);
+        return this.processResponse(cloudResponse, log);
+      } catch (cloudErr) {
+        const cloudLatency = Date.now() - cloudStart;
+        log.candidateAttempts?.push({
+          provider: this.cloudFallbackProvider.name,
+          model: this.cloudFallbackProvider.modelName,
+          success: false,
+          latencyMs: cloudLatency,
+          error: cloudErr?.message
+        });
+        log.fallbackLatencyMs = Date.now() - fallbackStart;
+        log.error = `All AI providers failed. Primary: "${log.fallbackReason}". Cloud fallback: "${cloudErr?.message}".`;
+        this.logExecution(log);
+        throw new Error(
+          `AI service unavailable. Primary (${this.primaryProvider.name}) error: ${log.fallbackReason}. Cloud fallback error: ${cloudErr?.message}`
+        );
+      }
+    }
+  }
+  /**
+   * Unified Real-Time Streaming Chat Execution with Multi-Tier Cloud Fallback
+   */
+  async chatStream(messages, callbacks, options) {
+    const requestId = options?.requestId || this.generateRequestId();
+    const primaryStart = Date.now();
+    const userMsg = [...messages].reverse().find((m) => m.role === "user")?.content || "";
+    const log = {
+      requestId,
+      endpoint: "/api/llm/chat/stream",
+      inputLength: userMsg.length,
+      contextIncluded: messages.length > 2,
+      primaryProvider: this.primaryProvider.name,
+      primaryModel: this.primaryProvider.modelName,
+      primaryLatencyMs: 0,
+      fallbackTriggered: false,
+      candidateAttempts: [],
+      finalProvider: this.primaryProvider.name,
+      finalModel: this.primaryProvider.modelName,
+      success: false
+    };
+    let streamedToUserChars = 0;
+    try {
+      let fullText = "";
+      if (typeof this.primaryProvider.generateStreamDetailed === "function") {
+        const detailed = await this.primaryProvider.generateStreamDetailed(
+          messages,
+          (token) => {
+            streamedToUserChars += token.length;
+            callbacks.onChunk(token);
+          },
+          { ...options, requestId }
+        );
+        fullText = detailed.text;
+        log.candidateAttempts = detailed.attempts;
+        log.primaryModel = detailed.actualModel;
+        log.finalModel = detailed.actualModel;
+      } else {
+        fullText = await this.primaryProvider.generateStream(
+          messages,
+          (token) => {
+            streamedToUserChars += token.length;
+            callbacks.onChunk(token);
+          },
+          { ...options, requestId }
+        );
+        log.candidateAttempts = [
+          {
+            provider: this.primaryProvider.name,
+            model: this.primaryProvider.modelName,
+            success: true,
+            latencyMs: Date.now() - primaryStart
+          }
+        ];
+      }
+      log.primaryLatencyMs = Date.now() - primaryStart;
+      log.success = true;
+      this.logExecution(log);
+      return this.processResponse(fullText, log);
+    } catch (primaryErr) {
+      log.primaryLatencyMs = Date.now() - primaryStart;
+      log.fallbackReason = primaryErr?.message || String(primaryErr);
+      if (primaryErr?.attempts && Array.isArray(primaryErr.attempts)) {
+        log.candidateAttempts = primaryErr.attempts;
+      } else if (!log.candidateAttempts || log.candidateAttempts.length === 0) {
+        log.candidateAttempts = [
+          {
+            provider: this.primaryProvider.name,
+            model: this.primaryProvider.modelName,
+            success: false,
+            latencyMs: log.primaryLatencyMs,
+            error: log.fallbackReason
+          }
+        ];
+      }
+      if (!this.fallbackEnabled) {
+        log.error = `Primary provider stream failed and fallback is disabled: ${log.fallbackReason}`;
+        this.logExecution(log);
+        throw primaryErr;
+      }
+      log.fallbackTriggered = true;
+      if (streamedToUserChars > 0 && callbacks.onReset) {
+        callbacks.onReset(log.fallbackReason || "provider_fallback");
+      }
+      const fallbackStart = Date.now();
+      if (this.secondaryProvider.isConfigured()) {
+        const secStart = Date.now();
+        try {
+          let secondaryAccumulated = "";
+          const secondaryFullText = await this.secondaryProvider.generateStream(
+            messages,
+            (token) => {
+              secondaryAccumulated += token;
+              callbacks.onChunk(token);
+            },
+            { ...options, requestId }
+          );
+          const secLatency = Date.now() - secStart;
+          log.candidateAttempts?.push({
+            provider: this.secondaryProvider.name,
+            model: this.secondaryProvider.modelName,
+            success: true,
+            latencyMs: secLatency
+          });
+          log.fallbackLatencyMs = Date.now() - fallbackStart;
+          log.fallbackProvider = this.secondaryProvider.name;
+          log.fallbackModel = this.secondaryProvider.modelName;
+          log.finalProvider = this.secondaryProvider.name;
+          log.finalModel = this.secondaryProvider.modelName;
+          log.success = true;
+          this.logExecution(log);
+          return this.processResponse(secondaryFullText || secondaryAccumulated, log);
+        } catch (secondaryErr) {
+          const secLatency = Date.now() - secStart;
+          log.candidateAttempts?.push({
+            provider: this.secondaryProvider.name,
+            model: this.secondaryProvider.modelName,
+            success: false,
+            latencyMs: secLatency,
+            error: secondaryErr?.message
+          });
+          console.warn(`[AIService] Secondary stream failed: ${secondaryErr.message}. Trying cloud fallback stream...`);
+        }
+      }
+      const cloudStart = Date.now();
+      try {
+        let cloudAccumulated = "";
+        const cloudFullText = await this.cloudFallbackProvider.generateStream(
+          messages,
+          (token) => {
+            cloudAccumulated += token;
+            callbacks.onChunk(token);
+          },
+          { ...options, requestId }
+        );
+        const cloudLatency = Date.now() - cloudStart;
+        log.candidateAttempts?.push({
+          provider: this.cloudFallbackProvider.name,
+          model: this.cloudFallbackProvider.modelName,
+          success: true,
+          latencyMs: cloudLatency
+        });
+        log.fallbackLatencyMs = Date.now() - fallbackStart;
+        log.fallbackProvider = this.cloudFallbackProvider.name;
+        log.fallbackModel = this.cloudFallbackProvider.modelName;
+        log.finalProvider = this.cloudFallbackProvider.name;
+        log.finalModel = this.cloudFallbackProvider.modelName;
+        log.success = true;
+        this.logExecution(log);
+        return this.processResponse(cloudFullText || cloudAccumulated, log);
+      } catch (cloudErr) {
+        const cloudLatency = Date.now() - cloudStart;
+        log.candidateAttempts?.push({
+          provider: this.cloudFallbackProvider.name,
+          model: this.cloudFallbackProvider.modelName,
+          success: false,
+          latencyMs: cloudLatency,
+          error: cloudErr?.message
+        });
+        log.fallbackLatencyMs = Date.now() - fallbackStart;
+        log.error = `All AI streaming providers failed. Primary: "${log.fallbackReason}". Cloud fallback: "${cloudErr?.message}".`;
+        this.logExecution(log);
+        throw new Error(
+          `AI streaming service unavailable. Primary (${this.primaryProvider.name}) error: ${log.fallbackReason}. Cloud fallback error: ${cloudErr?.message}`
+        );
+      }
+    }
+  }
+};
+
 // src/routes/llm.ts
 var llmRouter = (0, import_express3.Router)();
+var aiService = new AIService();
 var upload = (0, import_multer.default)({
   storage: import_multer.default.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }
@@ -411702,7 +412642,7 @@ async function processMediaWithGemini(file, prompt, apiKey) {
     if (fileInfo.state === "FAILED") {
       throw new Error("Audio/Video file processing failed.");
     }
-    const model = genAI2.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI2.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
     const result2 = await model.generateContent([
       {
         fileData: {
@@ -411726,6 +412666,14 @@ async function processMediaWithGemini(file, prompt, apiKey) {
     }
   }
 }
+var isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+var configuredProvider = (process.env.AI_PROVIDER || "").toLowerCase().trim();
+function isOllamaAllowed() {
+  if (isProduction) return false;
+  return configuredProvider === "ollama";
+}
+var OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
+var OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3";
 function cosineSimilarity(vecA, vecB) {
   let dotProduct = 0;
   let normA = 0;
@@ -411749,103 +412697,71 @@ function chunkText(text, size2 = 1e3, overlap = 200) {
   return chunks;
 }
 async function getOllamaEmbedding(text) {
+  if (!isOllamaAllowed()) {
+    throw new Error("Local Ollama embeddings are disabled in this environment.");
+  }
   let res;
   try {
-    res = await fetch("http://localhost:11434/api/embeddings", {
+    res = await fetch(`${OLLAMA_BASE_URL}/api/embeddings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "nomic-embed-text", prompt: text })
+      body: JSON.stringify({ model: "nomic-embed-text", prompt: text }),
+      signal: AbortSignal.timeout(4e3)
     });
   } catch (err) {
-    throw new Error("Cannot connect to Ollama. Is the Ollama app running on your Mac/PC? (Run 'ollama run llama3' in a new terminal)");
+    throw new Error(`Cannot connect to Ollama: ${err?.message || err}`);
   }
-  if (!res.ok) throw new Error("Ollama embedding failed. Did you pull the embedding model? Run: ollama pull nomic-embed-text");
+  if (!res.ok) throw new Error("Ollama embedding request failed.");
   const data = await res.json();
   return data.embedding;
 }
 async function askAI(prompt) {
   try {
-    const res = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "llama3", prompt, stream: false }),
-      signal: AbortSignal.timeout(1500)
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.response) return data.response;
-    }
-  } catch {
+    const result2 = await aiService.chat([{ role: "user", content: prompt }]);
+    return result2.text;
+  } catch (err) {
+    console.warn("[LLM/askAI] AI Service call failed, using emergency fallback:", err?.message);
+    return generateIntelligentResponse(prompt);
   }
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (apiKey) {
+}
+async function callDocumentAI(text, prompt) {
+  if (isOllamaAllowed() && text.length >= 8e3) {
     try {
-      const genAI2 = new GoogleGenerativeAI(apiKey);
-      const model = genAI2.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result2 = await model.generateContent(prompt);
-      const text = result2.response.text();
-      if (text) return text;
-    } catch {
-    }
-  }
-  try {
-    const res = await fetch("https://text.pollinations.ai/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [{ role: "user", content: prompt }],
-        model: "openai"
-      }),
-      signal: AbortSignal.timeout(15e3)
-    });
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text.trim()) return text.trim();
-    }
-  } catch {
-  }
-  throw new Error("Could not connect to AI services. Please try again.");
-}
-async function askOllama(prompt) {
-  return askAI(prompt);
-}
-async function callOllamaRAG(text, prompt) {
-  if (text.length < 8e3) {
-    const finalPrompt2 = `Use the following context to complete the task.
-
-Context:
-${text}
-
-Task:
-${prompt}`;
-    return await askOllama(finalPrompt2);
-  }
-  const chunks = chunkText(text, 2e3, 400);
-  if (chunks.length === 0) {
-    return await askOllama(prompt);
-  }
-  const queryEmbedding = await getOllamaEmbedding(prompt);
-  const chunkEmbeddings = await Promise.all(chunks.map(async (chunk2) => {
-    return {
-      text: chunk2,
-      embedding: await getOllamaEmbedding(chunk2)
-    };
-  }));
-  const scoredChunks = chunkEmbeddings.map((ce) => ({
-    text: ce.text,
-    score: cosineSimilarity(queryEmbedding, ce.embedding)
-  }));
-  scoredChunks.sort((a, b) => b.score - a.score);
-  const topChunks = scoredChunks.slice(0, 3).map((c) => c.text);
-  const context = topChunks.join("\n\n");
-  const finalPrompt = `Use the following context to complete the task.
+      const chunks = chunkText(text, 2e3, 400);
+      const queryEmbedding = await getOllamaEmbedding(prompt);
+      const chunkEmbeddings = await Promise.all(
+        chunks.map(async (chunk2) => ({
+          text: chunk2,
+          embedding: await getOllamaEmbedding(chunk2)
+        }))
+      );
+      const scoredChunks = chunkEmbeddings.map((ce) => ({
+        text: ce.text,
+        score: cosineSimilarity(queryEmbedding, ce.embedding)
+      }));
+      scoredChunks.sort((a, b) => b.score - a.score);
+      const context = scoredChunks.slice(0, 3).map((c) => c.text).join("\n\n");
+      const finalPrompt2 = `Use the following context to complete the task.
 
 Context:
 ${context}
 
 Task:
 ${prompt}`;
-  return await askOllama(finalPrompt);
+      return await askAI(finalPrompt2);
+    } catch (ragErr) {
+      console.warn("[LLM/callDocumentAI] Local Ollama RAG failed, falling back to direct cloud generation:", ragErr);
+    }
+  }
+  const safeText = text.slice(0, 6e4);
+  const finalPrompt = `Use the following context to complete the task.
+
+Context:
+${safeText}
+
+Task:
+${prompt}`;
+  return await askAI(finalPrompt);
 }
 var DYSLEXIA_NOTE = `
 You are an AI assistant in NeuroBridge, a dyslexia-friendly learning platform.
@@ -411888,7 +412804,7 @@ Task: ${actionPrompt}`;
         return;
       }
       const truncated = text.slice(0, 5e4);
-      const result2 = await callOllamaRAG(truncated, prompt);
+      const result2 = await callDocumentAI(truncated, prompt);
       res.json({ result: result2, action });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unknown error";
@@ -411955,113 +412871,243 @@ llmRouter.post("/chat", async (req, res) => {
       res.status(400).json({ error: "No user message provided." });
       return;
     }
-    const systemPrompt = `You are JARVIS, an intelligent, empathetic, and knowledgeable AI assistant inside NeuroBridge, an educational platform for neurodivergent and dyslexic learners.
-You behave like ChatGPT / Claude: capable of answering ANY question \u2014 science, mathematics, coding, history, writing essays, explaining complex concepts simply, giving study advice, and engaging in natural conversation.
-
-DYSLEXIA-FRIENDLY RESPONSE STYLE:
-- Write in clean, structured Markdown.
-- Use bullet points, bold key terms, and short, readable paragraphs.
-- Keep vocabulary clear and supportive (Grade 6-8 reading level unless advanced detail is requested).
-- Be encouraging and warm.
-
-WEBSITE CONTEXT:
-- Active Page: "${context.pageTitle || "NeuroBridge"}" (${context.currentRoute || "/"})
-- Learner Name: "${context.userName || "Learner"}"
-- Language: "${context.language || "en"}"
-${context.pageContent ? `- Active Screen Content: "${String(context.pageContent).slice(0, 1200)}"` : ""}
-
-WEBSITE ACTIONS:
-If the user explicitly asks you to navigate or perform an on-screen function, append an action tag on its own line at the very end of your response:
-[ACTION:navigate_home] -> Go to home
-[ACTION:open_dashboard] -> Go to dashboard
-[ACTION:open_learn] -> Go to learning hub
-[ACTION:open_opportunities] -> Go to opportunities & jobs
-[ACTION:open_community] -> Go to community discussions
-[ACTION:open_assessment] -> Go to dyslexia assessment
-[ACTION:open_nearby] -> Go to nearby care & support
-[ACTION:toggle_dyslexia_font] -> Toggle OpenDyslexic font
-[ACTION:toggle_high_contrast] -> Toggle high contrast mode
-[ACTION:read_page] -> Read the current page aloud
-[ACTION:stop_reading] -> Stop reading
-Only include an action tag when the user explicitly requests navigation or an on-screen feature. For general questions, explain normally without action tags.`;
-    const chatHistory = [
-      { role: "system", content: systemPrompt },
-      ...messages.slice(-8).map((m) => ({
-        role: m.role === "assistant" ? "assistant" : "user",
-        content: String(m.content || "")
-      }))
-    ];
-    let reply = "";
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey) {
-      try {
-        const genAI2 = new GoogleGenerativeAI(apiKey);
-        const model = genAI2.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const geminiMessages = chatHistory.filter((m) => m.role !== "system").map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n\n");
-        const fullPrompt = `${systemPrompt}
-
-${geminiMessages}
-
-Assistant:`;
-        const result2 = await model.generateContent(fullPrompt);
-        reply = result2.response.text();
-      } catch (geminiErr) {
-        console.warn("[LLM/chat] Gemini API failed:", geminiErr?.message || geminiErr);
-      }
-    }
-    if (!reply) {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 12e3);
-        const pollRes = await fetch("https://text.pollinations.ai/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: chatHistory,
-            model: "openai",
-            seed: 42
-          }),
-          signal: controller.signal
-        });
-        clearTimeout(timeout);
-        if (pollRes.ok) {
-          reply = await pollRes.text();
-        }
-      } catch (pollErr) {
-        console.warn("[LLM/chat] Pollinations AI failed:", pollErr?.message);
-      }
-    }
-    if (!reply) {
-      try {
-        const finalPrompt = `${systemPrompt}
-
-User: ${lastUserMsg}
-
-Assistant:`;
-        reply = await askAI(finalPrompt);
-      } catch (ollamaErr) {
-        console.warn("[LLM/chat] Ollama failed:", ollamaErr?.message);
-      }
-    }
-    if (!reply) {
-      reply = `I'm here to help you learn and explore! You asked: "${lastUserMsg}". Feel free to ask me to explain concepts, help with study techniques, or guide you around NeuroBridge.`;
-    }
-    let action = null;
-    const actionMatch = reply.match(/\[ACTION:([a-zA-Z0-9_]+)\]/);
-    if (actionMatch) {
-      action = actionMatch[1];
-      reply = reply.replace(/\[ACTION:[a-zA-Z0-9_]+\]/g, "").trim();
-    }
+    const chatMessages = aiService.prepareMessages(
+      lastUserMsg,
+      messages.slice(0, -1),
+      context
+    );
+    const result2 = await aiService.chat(chatMessages);
     res.json({
-      text: reply.trim(),
-      action,
-      spokenResponse: reply.trim().slice(0, 260)
+      text: result2.text,
+      action: result2.action,
+      spokenResponse: result2.spokenResponse,
+      provider: result2.provider,
+      model: result2.model,
+      latencyMs: result2.latencyMs,
+      fallbackTriggered: result2.fallbackTriggered,
+      fallbackReason: result2.fallbackReason,
+      candidateAttempts: result2.candidateAttempts
     });
   } catch (error) {
-    console.error("[LLM/chat] Unexpected error:", error);
-    res.status(500).json({ error: error?.message || "Chat service error" });
+    console.error("[LLM/chat] Fatal error:", error);
+    const fallbackText = generateIntelligentResponse(
+      [...req.body?.messages || []].reverse().find((m) => m.role === "user")?.content || "",
+      req.body?.messages || [],
+      req.body?.context || {}
+    );
+    res.json({
+      text: fallbackText,
+      action: null,
+      spokenResponse: fallbackText.slice(0, 260),
+      provider: "offline-emergency",
+      model: "knowledge-engine",
+      fallbackTriggered: true,
+      fallbackReason: error?.message
+    });
   }
 });
+llmRouter.post("/chat/stream", async (req, res) => {
+  try {
+    const { messages = [], context = {} } = req.body || {};
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")?.content || "";
+    if (!lastUserMsg) {
+      res.status(400).json({ error: "No user message provided." });
+      return;
+    }
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    if (typeof res.flushHeaders === "function") {
+      res.flushHeaders();
+    }
+    let isClientDisconnected = false;
+    const clientAbortController = new AbortController();
+    res.on("close", () => {
+      if (!res.writableEnded) {
+        isClientDisconnected = true;
+        clientAbortController.abort();
+      }
+    });
+    const sendSSE = (data) => {
+      if (!isClientDisconnected && !res.writableEnded) {
+        try {
+          res.write(`data: ${JSON.stringify(data)}
+
+`);
+        } catch {
+        }
+      }
+    };
+    const chatMessages = aiService.prepareMessages(
+      lastUserMsg,
+      messages.slice(0, -1),
+      context
+    );
+    const result2 = await aiService.chatStream(
+      chatMessages,
+      {
+        onChunk: (token) => {
+          sendSSE({ text: token });
+        },
+        onReset: (reason) => {
+          sendSSE({ reset: true, reason });
+        }
+      },
+      {
+        signal: clientAbortController.signal
+      }
+    );
+    sendSSE({
+      done: true,
+      action: result2.action,
+      fullText: result2.text,
+      spokenResponse: result2.spokenResponse,
+      provider: result2.provider,
+      model: result2.model,
+      fallbackTriggered: result2.fallbackTriggered,
+      candidateAttempts: result2.candidateAttempts
+    });
+    if (!res.writableEnded) {
+      res.end();
+    }
+  } catch (error) {
+    console.error("[LLM/chat/stream] Fatal stream error:", error);
+    if (!res.writableEnded) {
+      try {
+        const emergencyText = generateIntelligentResponse(
+          [...req.body?.messages || []].reverse().find((m) => m.role === "user")?.content || "",
+          req.body?.messages || [],
+          req.body?.context || {}
+        );
+        res.write(`data: ${JSON.stringify({ text: emergencyText })}
+
+`);
+        res.write(`data: ${JSON.stringify({
+          done: true,
+          action: null,
+          fullText: emergencyText,
+          spokenResponse: emergencyText.slice(0, 260),
+          provider: "emergency-knowledge",
+          model: "offline",
+          fallbackTriggered: true,
+          fallbackReason: error?.message
+        })}
+
+`);
+      } catch {
+      }
+      res.end();
+    }
+  }
+});
+llmRouter.post("/recommend", async (req, res) => {
+  try {
+    const { cognitiveProfile = {}, dyslexiaLevel = "mild", confirmedSkills = [], interests = [] } = req.body || {};
+    const prompt = `You are an AI career and education advisor specialized in neurodiversity and dyslexia.
+Given a learner's profile:
+- Dyslexia Level: ${dyslexiaLevel}
+- Confirmed Skills: ${confirmedSkills.join(", ") || "General skills"}
+- Interests: ${interests.join(", ") || "Technology and Design"}
+- Cognitive Profile: ${JSON.stringify(cognitiveProfile)}
+
+Generate a personalized recommendations JSON object matching this schema:
+{
+  "careers": [
+    { "title": "Career Name", "match": 92, "reason": "Why it suits their strengths", "icon": "\u{1F3A8}" }
+  ],
+  "learningPath": [
+    { "step": 1, "title": "Skill to learn", "duration": "2 weeks", "type": "visual", "icon": "\u{1F4A1}" }
+  ],
+  "internships": [
+    { "title": "Role", "org": "Company/Org", "deadline": "Rolling", "tags": ["Remote", "Inclusive"] }
+  ],
+  "competitions": [
+    { "title": "Hackathon/Contest", "prize": "$1,000", "tags": ["Beginner Friendly"] }
+  ],
+  "skillGaps": [
+    { "skill": "Skill", "currentLevel": 40, "targetLevel": 80, "tip": "Dyslexia-friendly learning tip" }
+  ]
+}
+
+Provide 3 careers, 4 learning steps, 3 internships, 2 competitions, and 3 skill gaps.
+Return ONLY valid JSON. No markdown, no code blocks, no backticks.`;
+    let resultJson = "";
+    try {
+      const raw = await askAI(prompt);
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        resultJson = jsonMatch[0];
+      }
+    } catch {
+    }
+    let recommendations = null;
+    if (resultJson) {
+      try {
+        recommendations = JSON.parse(resultJson);
+      } catch {
+      }
+    }
+    if (!recommendations || !recommendations.careers) {
+      recommendations = generateDefaultRecommendations(confirmedSkills, interests, dyslexiaLevel);
+    }
+    res.json({ recommendations });
+  } catch (err) {
+    console.error("[LLM/recommend] Error:", err);
+    res.status(500).json({ error: "Failed to generate recommendations" });
+  }
+});
+function generateDefaultRecommendations(skills2, interests, _dyslexiaLevel) {
+  const isVisual = interests.some((i) => /design|art|creative|media/i.test(i));
+  return {
+    careers: [
+      {
+        title: isVisual ? "UI/UX & Visual Designer" : "Frontend Accessibility Engineer",
+        match: 94,
+        reason: "Exceptional spatial reasoning, pattern recognition, and creative problem-solving abilities suited for neurodivergent minds.",
+        icon: isVisual ? "\u{1F3A8}" : "\u{1F4BB}"
+      },
+      {
+        title: "Creative Technologist",
+        match: 88,
+        reason: "Blends big-picture systemic thinking with technical implementation, bypassing linear text bottlenecks.",
+        icon: "\u{1F680}"
+      },
+      {
+        title: "Product Strategy & Innovation Specialist",
+        match: 85,
+        reason: "Leverages holistic thinking to identify workflow bottlenecks and intuitive user experiences.",
+        icon: "\u{1F4CA}"
+      }
+    ],
+    learningPath: [
+      { step: 1, title: "Master Visual Information Mapping", duration: "2 weeks", type: "visual", icon: "\u{1F5FA}\uFE0F" },
+      { step: 2, title: "Interactive Accessibility Prototyping", duration: "3 weeks", type: "practical", icon: "\u{1F6E0}\uFE0F" },
+      { step: 3, title: "Audio-Assisted Code & Architecture Review", duration: "2 weeks", type: "audio", icon: "\u{1F3A7}" },
+      { step: 4, title: "Portfolio Project Showcase", duration: "4 weeks", type: "practical", icon: "\u{1F3C6}" }
+    ],
+    internships: [
+      { title: "Neuroinclusive Product Intern", org: "NeuroBridge Labs", deadline: "Rolling Admissions", tags: ["Remote", "Inclusive Mentorship"] },
+      { title: "Accessibility Experience Associate", org: "Global Tech Foundation", deadline: "30 Days Left", tags: ["Hybrid", "Flexible Hours"] },
+      { title: "Junior Frontend Developer", org: "OpenSource Innovators", deadline: "Open Now", tags: ["Mentorship", "Project-based"] }
+    ],
+    competitions: [
+      { title: "Global Accessibility Design Challenge", prize: "$5,000 & Mentorship", tags: ["Dyslexia Friendly", "Team or Solo"] },
+      { title: "Inclusive Tech Innovation Sprint", prize: "Top 10 Finalist Incubation", tags: ["Beginner Friendly", "Virtual"] }
+    ],
+    skillGaps: [
+      { skill: "Multimodal Documentation", currentLevel: 45, targetLevel: 85, tip: "Use mind maps and voice recordings instead of dense linear text blocks." },
+      { skill: "Design System Typography", currentLevel: 55, targetLevel: 90, tip: "Practice applying dyslexia-optimized font weights and fluid letter-spacing." },
+      { skill: "Assistive Tech Testing", currentLevel: 50, targetLevel: 80, tip: "Test web interfaces using screen readers and high-contrast accessibility tools." }
+    ]
+  };
+}
+function generateIntelligentResponse(query, _messages = [], _context = {}) {
+  const cleanQ = query.trim() || "your question";
+  return `I am currently unable to reach the cloud AI services to answer: "${cleanQ}".
+
+Please check your internet connection and try again. In the meantime, you can ask me to navigate the site, read pages aloud, or toggle dyslexia accessibility tools.`;
+}
 
 // src/routes/linkedin.ts
 var import_express4 = __toESM(require_express2());
@@ -415976,7 +417022,7 @@ var AIValidationService = class {
       };
     }
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
       const prompt = `
         You are an AI curriculum validator for the NeuroBridge educational platform.
         Your task is to analyze the following video transcript and evaluate it based on the creator's provided title and category.
@@ -416035,7 +417081,7 @@ var AIValidationService = class {
       };
     }
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.5-flash" });
       const prompt = `
         Analyze the following educational transcript for a lesson titled "${title}".
         Generate learning materials based ONLY on this content.

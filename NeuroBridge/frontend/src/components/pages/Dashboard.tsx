@@ -83,6 +83,18 @@ export function Dashboard() {
     }
   }, [location.pathname]);
 
+  // Synchronous tab switching from Jarvis voice & action commands
+  useEffect(() => {
+    const handleJarvisSwitch = (e: any) => {
+      const targetTab = e?.detail?.tab;
+      if (targetTab) {
+        setActiveTab(targetTab === 'arena' || targetTab === 'games' ? 'progress' : targetTab);
+      }
+    };
+    window.addEventListener('neurobridge:switch-tab', handleJarvisSwitch);
+    return () => window.removeEventListener('neurobridge:switch-tab', handleJarvisSwitch);
+  }, []);
+
   // Check if user is authenticated
   if (!user || !token) {
     return (

@@ -117,9 +117,6 @@ html.dark { color-scheme: dark; }
    BASE STYLES — use token variables throughout
 ───────────────────────────────────────────────────────────────────────────── */
 
-html {
-  scroll-behavior: smooth;
-}
 @layer base {
   body {
     background-color: var(--color-bg);
@@ -3257,4 +3254,42 @@ body.dyslexia-mode:not(.fun-mode) * {
 body.dark-mode .nb-spotlight-word {
   color: #0F172A !important;
   -webkit-text-fill-color: #0F172A !important;
+}
+
+/* ─── REAL READING SPOTLIGHT (True Word-by-Word & Block Level) ─────────── */
+.nb-reading-word {
+  display: inline;
+  border-radius: 4px;
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.nb-reading-word-active {
+  background-color: #FEF08A !important; /* Soft warm yellow */
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 0 3px #FDE047, 0 2px 8px rgba(253, 224, 71, 0.45) !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+body.dark-mode .nb-reading-word-active {
+  background-color: #FBBF24 !important; /* Amber highlight in dark mode */
+  color: #0B1120 !important;
+  -webkit-text-fill-color: #0B1120 !important;
+  box-shadow: 0 0 0 3px #F59E0B, 0 2px 10px rgba(245, 158, 11, 0.5) !important;
+}
+
+.nb-reading-spotlight {
+  outline: 2px solid rgba(37, 99, 235, 0.35) !important;
+  outline-offset: 4px !important;
+  background-color: rgba(37, 99, 235, 0.04) !important;
+  border-radius: 8px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+}
+
+body.dark-mode .nb-reading-spotlight {
+  outline-color: rgba(96, 165, 250, 0.4) !important;
+  background-color: rgba(96, 165, 250, 0.06) !important;
 }

@@ -9,10 +9,9 @@ export default defineConfig({
     port: 5147,
     strictPort: true,
     proxy: {
-      '/api/ollama': {
-        target: 'http://localhost:11434',
+      '/api': {
+        target: 'http://localhost:4000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/ollama/, '/api'),
       },
     },
   },

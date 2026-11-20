@@ -8,6 +8,7 @@ import type {
   UserProfile
 } from '../types/assistant';
 import { getTemplate } from '../utils/assistantPrompts';
+import { API_BASE } from '../config/api';
 
 // ============================================================================
 // RESPONSE GENERATOR ENGINE
@@ -200,25 +201,24 @@ You are a warm, intelligent, calm, and confident AI assistant that speaks natura
 The user is talking to you via a voice/text interface. Keep your answers CONCISE, friendly, and conversational (1-2 short sentences max). Use natural punctuation to guide speech pauses.
 Language code requested: ${this.language}.`;
 
-      const response = await fetch('/api/ollama/generate', {
+      const response = await fetch(`${API_BASE}/api/llm/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'llama3', // You can change this to any model you have installed like 'mistral' or 'phi'
-          prompt: `${systemPrompt}\n\nUser: ${userInput}\nJarvis:`,
-          stream: false
+          messages: [{ role: 'user', content: userInput }],
+          context: { language: this.language }
         })
       });
 
       if (!response.ok) {
-        console.warn('Ollama request failed:', response.statusText);
+        console.warn('AI request failed:', response.statusText);
         return null;
       }
 
       const data = await response.json();
-      return typeof data.response === 'string' ? data.response : null;
+      return typeof data.text === 'string' ? data.text : null;
     } catch (error) {
       console.warn('External AI request failed:', error);
       return null;
@@ -332,6 +332,13 @@ export class ConversationManager {
       timestamp: Date.now(),
       language
     });
+  }
+
+  updateLastMessage(text: string): void {
+    const last = this.state.messages[this.state.messages.length - 1];
+    if (last) {
+      last.text = text;
+    }
   }
 
   advanceStep(): void {

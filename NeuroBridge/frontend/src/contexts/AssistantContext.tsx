@@ -20,7 +20,7 @@ import { ConversationManager } from '../services/assistantEngine';
 import { JarvisAgentEngine } from '../services/jarvisAgentEngine';
 import { JarvisExecutor } from '../services/jarvisExecutor';
 import { getPageTitleForRoute } from '../services/jarvisActionRegistry';
-import { getSpeechService } from '../services/speechService';
+import { getSpeechService, type JarvisVoiceState } from '../services/speechService';
 import { useAuth } from './AuthContext';
 import { useDyslexia } from './DyslexiaContext';
 import { useSpotlightReader } from './SpotlightReaderContext';
@@ -35,6 +35,13 @@ interface AssistantContextType {
   wakeWordEnabled: boolean;
   setWakeWordEnabled: (enabled: boolean) => void;
   
+  // Voice State Machine & Live Transcripts
+  voiceState: JarvisVoiceState;
+  liveTranscript: string;
+  setLiveTranscript: (text: string) => void;
+  streamingText: string;
+  interrupt: () => void;
+
   // Agent Execution & Status States
   conversationState: ConversationState;
   userProfile: Partial<UserProfile>;
@@ -89,6 +96,20 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [wakeWordEnabled, setWakeWordEnabled] = useState(false);
 
+  // Voice State Machine & Streaming States
+  const [voiceState, setVoiceState] = useState<JarvisVoiceState>('IDLE');
+  const [liveTranscript, setLiveTranscript] = useState<string>('');
+  const [streamingText, setStreamingText] = useState<string>('');
+  const activeAbortControllerRef = useRef<AbortController | null>(null);
+
+  // Subscribe to Master Voice State Machine
+  useEffect(() => {
+    const unsubscribe = speechService.onStateChange((nextState) => {
+      setVoiceState(nextState);
+    });
+    return () => unsubscribe();
+  }, [speechService]);
+
   // Agent dynamic execution states
   const [agentStatus, setAgentStatus] = useState<AgentExecutionStatus>('idle');
   const [currentActionName, setCurrentActionName] = useState<string | null>(null);
@@ -117,12 +138,40 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       navigate,
       currentRoute: location.pathname,
       dyslexiaContext: {
+        // Dark mode
+        isDarkMode: dyslexia.isDarkMode,
+        toggleDarkMode: dyslexia.toggleDarkMode,
+        setDarkMode: (enabled: boolean) => {
+          if (enabled !== dyslexia.isDarkMode) dyslexia.toggleDarkMode();
+        },
+        // Fun mode
         isDyslexiaMode: dyslexia.isDyslexiaMode,
         toggleDyslexiaMode: dyslexia.toggleDyslexiaMode,
+        enableFunMode: dyslexia.enableFunMode,
+        disableFunMode: () => { if (dyslexia.isDyslexiaMode) dyslexia.toggleDyslexiaMode(); },
+        // Fun font
+        funFont: dyslexia.funFont,
+        setFunFont: dyslexia.setFunFont,
+        // Line spacing
+        funLineHeight: dyslexia.funLineHeight,
+        setFunLineHeight: dyslexia.setFunLineHeight,
+        // Font weight
+        funWeight: dyslexia.funWeight,
+        setFunWeight: dyslexia.setFunWeight,
+        // Letter spacing
+        funLetterSpacing: dyslexia.funLetterSpacing,
+        setFunLetterSpacing: dyslexia.setFunLetterSpacing,
+        // Reset
+        resetFunSettings: dyslexia.resetFunSettings,
+        // High contrast
         highContrast: dyslexia.highContrast,
-        toggleHighContrast: () => dyslexia.setHighContrast(!dyslexia.highContrast),
+        setHighContrast: dyslexia.setHighContrast,
+        // Text size
         textSize: dyslexia.textSize,
         setTextSize: dyslexia.setTextSize,
+        // Motion
+        reduceMotion: dyslexia.reduceMotion,
+        setReduceMotion: dyslexia.setReduceMotion,
       },
       authContext: {
         logout,
@@ -139,6 +188,11 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         pauseReading: spotlightReader.pauseReading,
         resumeReading: spotlightReader.resumeReading,
         stopReading: spotlightReader.stopReading,
+        restartReading: spotlightReader.restartReading,
+        nextWord: spotlightReader.nextWord,
+        prevWord: spotlightReader.prevWord,
+        nextParagraph: spotlightReader.nextParagraph,
+        prevParagraph: spotlightReader.prevParagraph,
         setSpeed: spotlightReader.setSpeed,
         speed: spotlightReader.speed,
       },
@@ -151,12 +205,40 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       navigate,
       currentRoute: location.pathname,
       dyslexiaContext: {
+        // Dark mode
+        isDarkMode: dyslexia.isDarkMode,
+        toggleDarkMode: dyslexia.toggleDarkMode,
+        setDarkMode: (enabled: boolean) => {
+          if (enabled !== dyslexia.isDarkMode) dyslexia.toggleDarkMode();
+        },
+        // Fun mode
         isDyslexiaMode: dyslexia.isDyslexiaMode,
         toggleDyslexiaMode: dyslexia.toggleDyslexiaMode,
+        enableFunMode: dyslexia.enableFunMode,
+        disableFunMode: () => { if (dyslexia.isDyslexiaMode) dyslexia.toggleDyslexiaMode(); },
+        // Fun font
+        funFont: dyslexia.funFont,
+        setFunFont: dyslexia.setFunFont,
+        // Line spacing
+        funLineHeight: dyslexia.funLineHeight,
+        setFunLineHeight: dyslexia.setFunLineHeight,
+        // Font weight
+        funWeight: dyslexia.funWeight,
+        setFunWeight: dyslexia.setFunWeight,
+        // Letter spacing
+        funLetterSpacing: dyslexia.funLetterSpacing,
+        setFunLetterSpacing: dyslexia.setFunLetterSpacing,
+        // Reset
+        resetFunSettings: dyslexia.resetFunSettings,
+        // High contrast
         highContrast: dyslexia.highContrast,
-        toggleHighContrast: () => dyslexia.setHighContrast(!dyslexia.highContrast),
+        setHighContrast: dyslexia.setHighContrast,
+        // Text size
         textSize: dyslexia.textSize,
         setTextSize: dyslexia.setTextSize,
+        // Motion
+        reduceMotion: dyslexia.reduceMotion,
+        setReduceMotion: dyslexia.setReduceMotion,
       },
       authContext: {
         logout,
@@ -173,6 +255,11 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         pauseReading: spotlightReader.pauseReading,
         resumeReading: spotlightReader.resumeReading,
         stopReading: spotlightReader.stopReading,
+        restartReading: spotlightReader.restartReading,
+        nextWord: spotlightReader.nextWord,
+        prevWord: spotlightReader.prevWord,
+        nextParagraph: spotlightReader.nextParagraph,
+        prevParagraph: spotlightReader.prevParagraph,
         setSpeed: spotlightReader.setSpeed,
         speed: spotlightReader.speed,
       },
@@ -190,9 +277,20 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     updateConversationState();
   }, [conversationManager, updateConversationState, userProfile.language]);
 
+  // Interrupt active speech and AI stream
+  const interrupt = useCallback(() => {
+    if (activeAbortControllerRef.current) {
+      activeAbortControllerRef.current.abort();
+      activeAbortControllerRef.current = null;
+    }
+    speechService.interrupt();
+    setStreamingText('');
+    setAgentStatus('idle');
+  }, [speechService]);
+
   /**
    * Main Unified Input Pipeline for Jarvis Web Agent (Voice & Text)
-   * Pipeline: User Input -> Intent Analysis (Llama 3/NLP) -> Execution -> Verification -> Feedback
+   * Pipeline: User Input -> Real-time Streaming Intent (SSE) -> Word-by-Word Display -> Sentence TTS -> Execution -> Feedback
    */
   const processUserInput = useCallback(async (input: string): Promise<AssistantResponse | null> => {
     const cleanInput = input.trim();
@@ -201,8 +299,18 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     // Ensure floating window is open
     setIsOpen(true);
 
+    // Cancel any previous in-flight AI stream
+    if (activeAbortControllerRef.current) {
+      activeAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    activeAbortControllerRef.current = abortController;
+    speechService.setAbortController(abortController);
+
     // 1. Record User Message
     addMessage('user', cleanInput);
+    setLiveTranscript('');
+    setStreamingText('');
 
     // If awaiting confirmation and user answers yes/no
     if (pendingConfirmation) {
@@ -252,27 +360,71 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         content: m.text,
       })),
       language: userProfile.language || 'en',
-      pageContent: extractCleanPageText(1500),
+      pageContent: extractCleanPageText(1200),
       selectedText: getSelectedPageText(),
     };
 
-    // 4. Determine Intent with Llama 3 / Heuristic Engine
+    // 4. Initialize assistant placeholder message for live progressive streaming
+    let hasCreatedAssistantBubble = false;
+
+    // 5. Stream Intent & Response from LLM
     let intent: StructuredIntent;
     try {
-      intent = await agentEngine.processInput(cleanInput, contextPayload);
-    } catch (e) {
+      intent = await agentEngine.processInputStream(cleanInput, contextPayload, {
+        signal: abortController.signal,
+        onChunk: (_token, accumulated) => {
+          setStreamingText(accumulated);
+          if (!hasCreatedAssistantBubble) {
+            hasCreatedAssistantBubble = true;
+            addMessage('assistant', accumulated);
+          } else {
+            conversationManager.updateLastMessage(accumulated);
+            updateConversationState();
+          }
+        },
+        onSentence: (sentence) => {
+          // Immediately speak sentence while subsequent response continues streaming!
+          speechService.enqueueSentenceToSpeak(sentence, {
+            language: userProfile.language || 'en',
+          });
+        },
+        onReset: (reason?: string) => {
+          console.warn('[AssistantContext] AI Provider fallback reset triggered:', reason);
+          speechService.interrupt();
+          setStreamingText('');
+          if (hasCreatedAssistantBubble) {
+            conversationManager.updateLastMessage('');
+            updateConversationState();
+          }
+        },
+      });
+    } catch (e: any) {
+      if (e?.name === 'AbortError') {
+        return null;
+      }
       console.warn('[AssistantContext] Intent processing error, using fallback', e);
       intent = agentEngine.fallbackHeuristicIntent(cleanInput, contextPayload);
+    } finally {
+      activeAbortControllerRef.current = null;
+      speechService.setAbortController(null);
+      setStreamingText('');
     }
 
-    // 5. Handle Sensitive Action Confirmations
+    if (!intent) return null;
+
+    // 6. Handle Sensitive Action Confirmations
     if (intent.type === 'confirmation_required') {
       const confirmationResult = await executor.executeIntent(intent);
       setPendingConfirmation(executor.getPendingConfirmation());
       setAgentStatus('awaiting_confirmation');
 
       const promptText = confirmationResult.message;
-      addMessage('assistant', promptText);
+      if (!hasCreatedAssistantBubble) {
+        addMessage('assistant', promptText);
+      } else {
+        conversationManager.updateLastMessage(promptText);
+        updateConversationState();
+      }
 
       return {
         text: promptText,
@@ -280,18 +432,36 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    // 6. Handle Direct Website Action Execution with Lifecycle & Verification
+    // 7. Handle Direct Website Action Execution with Lifecycle & Verification
     if (intent.type === 'action' && intent.action) {
       setAgentStatus('executing');
       setCurrentActionName(intent.displayText || 'Executing action...');
+
+      // Prevent audio clobbering: If starting page reading, immediately interrupt assistant voice
+      if (intent.action === 'read_page') {
+        speechService.interrupt();
+      }
 
       const actionResult = await executor.executeIntent(intent);
 
       const spokenFeedback = actionResult.spokenResponse || intent.spokenResponse || actionResult.message;
       const displayFeedback = actionResult.message;
 
-      addMessage('assistant', displayFeedback);
+      if (!hasCreatedAssistantBubble) {
+        addMessage('assistant', displayFeedback);
+      } else {
+        conversationManager.updateLastMessage(displayFeedback);
+        updateConversationState();
+      }
+
       setAgentStatus(actionResult.success ? 'success' : 'error');
+
+      // Only speak action feedback if NOT reading the page (page reader speaks the content directly)
+      if (intent.action !== 'read_page' && actionResult.success && actionResult.spokenResponse) {
+        speechService.enqueueSentenceToSpeak(actionResult.spokenResponse, {
+          language: userProfile.language || 'en',
+        });
+      }
 
       setTimeout(() => {
         setAgentStatus('idle');
@@ -304,16 +474,21 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    // 7. Handle Conversational Answer
+    // 8. Handle Conversational Answer
     setAgentStatus('idle');
     const responseText = intent.displayText || intent.spokenResponse || "I'm ready to help you navigate NeuroBridge.";
-    addMessage('assistant', responseText);
+    if (!hasCreatedAssistantBubble) {
+      addMessage('assistant', responseText);
+    } else {
+      conversationManager.updateLastMessage(responseText);
+      updateConversationState();
+    }
 
     return {
       text: responseText,
       nextAction: 'wait',
     };
-  }, [addMessage, pendingConfirmation, location.pathname, user?.name, conversationManager, userProfile.language, agentEngine, executor]);
+  }, [addMessage, pendingConfirmation, location.pathname, user?.name, conversationManager, userProfile.language, agentEngine, executor, updateConversationState, speechService]);
 
   // Confirm pending action helper
   const confirmPendingAction = useCallback(async (): Promise<ActionResult | null> => {
@@ -388,6 +563,11 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     isAutoStarted,
     wakeWordEnabled,
     setWakeWordEnabled,
+    voiceState,
+    liveTranscript,
+    setLiveTranscript,
+    streamingText,
+    interrupt,
     conversationState,
     userProfile,
     agentStatus,

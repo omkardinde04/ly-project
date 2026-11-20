@@ -63,6 +63,8 @@ export interface ActionResult {
   spokenResponse?: string;
   redirectUrl?: string;
   details?: any;
+  executed?: boolean;
+  verified?: boolean;
 }
 
 export interface PendingConfirmation {
