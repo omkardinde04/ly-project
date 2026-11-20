@@ -409993,6 +409993,22 @@ var DatabaseService = class {
     const user = await User_default.findByIdAndUpdate(userId3, assessmentData, { new: true });
     return toUser(user);
   }
+  async resetUserAssessment(userId3) {
+    const user = await User_default.findByIdAndUpdate(
+      userId3,
+      {
+        $set: { assessment_completed: false },
+        $unset: {
+          assessment_score: 1,
+          classification: 1,
+          assessment_metrics: 1,
+          reading_profile: 1
+        }
+      },
+      { new: true }
+    );
+    return toUser(user);
+  }
   // Update user reading profile
   async updateUserReadingProfile(userId3, readingProfile) {
     const user = await User_default.findByIdAndUpdate(userId3, { reading_profile: readingProfile }, { new: true });
@@ -410251,11 +410267,10 @@ authRouter.post("/assessment/complete", AuthService.authenticateToken, async (re
 });
 authRouter.post("/assessment/retake", AuthService.authenticateToken, async (req, res) => {
   try {
-    await database_default.updateUserAssessment(req.user.userId, {
-      assessment_completed: false,
-      assessment_score: void 0,
-      classification: void 0
-    });
+    const user = await database_default.resetUserAssessment(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     res.json({ success: true, message: "Assessment reset successfully" });
   } catch (error) {
     console.error("Unified assessment retake error:", error);
@@ -413533,11 +413548,10 @@ googleAuthRouter.post("/reading-profile", AuthService.authenticateToken, async (
 });
 googleAuthRouter.post("/assessment/retake", AuthService.authenticateToken, async (req, res) => {
   try {
-    await database_default.updateUserAssessment(req.user.userId, {
-      assessment_completed: false,
-      assessment_score: void 0,
-      classification: void 0
-    });
+    const user = await database_default.resetUserAssessment(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     res.json({ success: true, message: "Assessment reset successfully" });
   } catch (error) {
     console.error("Assessment retake error:", error);
@@ -415930,11 +415944,10 @@ emailAuthRouter.post("/assessment/complete", AuthService.authenticateToken, asyn
 });
 emailAuthRouter.post("/assessment/retake", AuthService.authenticateToken, async (req, res) => {
   try {
-    await database_default.updateUserAssessment(req.user.userId, {
-      assessment_completed: false,
-      assessment_score: void 0,
-      classification: void 0
-    });
+    const user = await database_default.resetUserAssessment(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     res.json({ success: true, message: "Assessment reset successfully" });
   } catch (error) {
     console.error("Email assessment retake error:", error);
